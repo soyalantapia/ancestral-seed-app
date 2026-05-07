@@ -170,7 +170,7 @@ function BlockchainSection() {
     },
   ]
   return (
-    <section id="como-funciona" className="bg-pattern-gold/30 bg-white">
+    <section id="como-funciona" className="bg-white">
       <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-20">
         <div className="text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">

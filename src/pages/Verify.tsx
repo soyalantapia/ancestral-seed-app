@@ -351,16 +351,28 @@ function ProcessSteps() {
         <h2 className="mt-2 text-center text-2xl font-extrabold text-navy-500 md:text-3xl">
           Proceso de verificación
         </h2>
-        <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-6">
-          {steps.map((s) => (
+        <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-2">
+          {steps.map((s, i) => (
             <div
               key={s.num}
               className="flex flex-col items-center text-center"
             >
-              <span className="text-3xl font-extrabold text-navy-500">
-                {s.num}.
-              </span>
-              <p className="mt-3 font-bold text-navy-500">{s.title}</p>
+              <div className="flex w-full items-center gap-3">
+                <div className="hidden flex-1 md:block">
+                  {i > 0 && (
+                    <span className="block h-px w-full bg-gold-500" />
+                  )}
+                </div>
+                <span className="text-3xl font-extrabold text-navy-500 leading-none">
+                  {s.num}.
+                </span>
+                <div className="hidden flex-1 md:block">
+                  {i < steps.length - 1 && (
+                    <span className="block h-px w-full bg-gold-500" />
+                  )}
+                </div>
+              </div>
+              <p className="mt-4 font-bold text-navy-500">{s.title}</p>
               <p className="mt-1 max-w-[26ch] text-xs text-navy-300">{s.copy}</p>
             </div>
           ))}
