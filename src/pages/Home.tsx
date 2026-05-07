@@ -1,0 +1,367 @@
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  CheckCircle2,
+  Eye,
+  FileText,
+  Leaf,
+  Sparkles,
+  Users,
+} from 'lucide-react'
+import { useFeaturedCertifications } from '@/hooks/useCertifications'
+import { CertificationCard } from '@/components/features/CertificationCard'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Accordion, type AccordionItem } from '@/components/ui/accordion'
+import { cn } from '@/lib/utils'
+
+export default function Home() {
+  return (
+    <>
+      <Hero />
+      <Pillars />
+      <AncestralVision />
+      <BlockchainSection />
+      <ProcessSection />
+      <FeaturedCertifications />
+      <CTASection />
+    </>
+  )
+}
+
+function Hero() {
+  const navigate = useNavigate()
+  return (
+    <section className="relative overflow-hidden bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
+      <div className="mx-auto max-w-[1320px] px-4 md:px-8">
+        <div className="grid grid-cols-1 items-center gap-6 rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-7">
+            <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-navy-500 md:text-4xl lg:text-5xl">
+              Autenticidad ancestral,<br className="hidden md:inline" />{' '}
+              certificada digitalmente
+            </h1>
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-navy-300 md:text-base">
+              Validamos la autenticidad de productos y saberes originarios
+              mediante un sistema de certificación cultural, auditoría y
+              tecnología blockchain.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Button
+                variant="gold"
+                size="lg"
+                onClick={() => navigate('/login')}
+              >
+                Certificar Producto
+              </Button>
+              <Button
+                variant="outlineNavy"
+                size="lg"
+                onClick={() => navigate('/verificar')}
+              >
+                Verificar Certificado
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-center lg:col-span-5">
+            <img
+              src="/logo-large.png"
+              alt="Ancestral Seed"
+              className="h-48 w-48 object-contain md:h-64 md:w-64"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Pillars() {
+  const pillars = [
+    { icon: Leaf, title: 'Lorem ipsum' },
+    { icon: CheckCircle2, title: 'Lorem ipsum' },
+    { icon: Eye, title: 'Lorem ipsum' },
+    { icon: Users, title: 'Lorem ipsum' },
+  ]
+  return (
+    <section className="bg-white">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-14 md:grid-cols-4 md:px-8 md:py-16">
+        {pillars.map((p, i) => (
+          <div key={i} className="flex flex-col items-center text-center">
+            <p.icon className="h-7 w-7 text-navy-500" strokeWidth={1.5} />
+            <h3 className="mt-4 text-sm font-bold text-navy-500">{p.title}</h3>
+            <p className="mt-2 text-xs leading-relaxed text-navy-300">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AncestralVision() {
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
+        <div className="text-center">
+          <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
+            <Sparkles className="h-3.5 w-3.5 text-gold-500" />
+            Sobre nosotros
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+            La mirada ancestral que nos guía
+          </h2>
+        </div>
+        <div className="mt-10 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+          <div className="overflow-hidden rounded-3xl">
+            <img
+              src="https://images.unsplash.com/photo-1519055548599-6d4d129508c4?w=1200&q=80"
+              alt="Ceremonia ancestral con humo de copal"
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="rounded-3xl bg-pattern-aztec p-8 text-white md:p-10">
+            <p className="text-sm leading-relaxed text-neutral-300 md:text-base">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat.
+            </p>
+            <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
+              Duis aute irure dolor in reprehenderit in voluptate velit esse
+              cillum dolore eu fugiat nulla pariatur.
+            </p>
+            <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BlockchainSection() {
+  const items: AccordionItem[] = [
+    {
+      id: 'q1',
+      question: '¿Qué es la blockchain?',
+      answer:
+        'Un registro distribuido e inmutable que garantiza que la información del certificado no pueda alterarse después de emitida.',
+    },
+    {
+      id: 'q2',
+      question: '¿Qué rol cumple la blockchain en las certificaciones?',
+      answer:
+        'Cada certificado se firma digitalmente y se registra en la red, generando un hash único verificable por cualquiera.',
+    },
+    {
+      id: 'q3',
+      question: '¿Qué asegura esta tecnología?',
+      answer:
+        'Trazabilidad completa, transparencia y resistencia a la manipulación: lo que se publica queda público y verificable para siempre.',
+    },
+    {
+      id: 'q4',
+      question: '¿Qué significa esto para las comunidades?',
+      answer:
+        'Reconocimiento, protección frente al fraude y una herramienta para defender el origen y la autoría de su saber.',
+    },
+  ]
+  return (
+    <section id="como-funciona" className="bg-pattern-gold/30 bg-white">
+      <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-20">
+        <div className="text-center">
+          <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
+            <Sparkles className="h-3.5 w-3.5 text-gold-500" />
+            ¿Cómo cuidamos la autenticidad?
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+            Blockchain para certificaciones confiables y transparentes
+          </h2>
+        </div>
+        <div className="mt-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+          <Accordion items={items} />
+          <div className="relative h-[420px] hidden lg:block">
+            <div className="absolute left-0 top-2 h-72 w-80 overflow-hidden rounded-3xl shadow-xl">
+              <img
+                src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=900&q=80"
+                alt="Comunidad ancestral compartiendo saberes"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="absolute right-0 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
+              <img
+                src="https://images.unsplash.com/photo-1623652366060-f4dccf3b9da3?w=900&q=80"
+                alt="Producto ancestral certificado"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 lg:hidden">
+            <img
+              src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=600&q=80"
+              alt=""
+              className="aspect-square rounded-2xl object-cover"
+            />
+            <img
+              src="https://images.unsplash.com/photo-1623652366060-f4dccf3b9da3?w=600&q=80"
+              alt=""
+              className="aspect-square rounded-2xl object-cover"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ProcessSection() {
+  const steps = [
+    {
+      num: '1',
+      title: 'Elegí un método',
+      copy: 'Escaneá el código QR o ingresá el ID/Hash para acceder al certificado.',
+    },
+    {
+      num: '2',
+      title: 'Validamos la información',
+      copy: 'Confirmamos que los datos coincidan con los registros oficiales.',
+    },
+    {
+      num: '3',
+      title: 'Accedé al certificado',
+      copy: 'Te mostramos la ficha pública del certificado en segundos.',
+    },
+  ]
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
+        <div className="text-center">
+          <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
+            <Sparkles className="h-3.5 w-3.5 text-gold-500" />
+            ¿Cómo funciona?
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+            Proceso de Verificación
+          </h2>
+        </div>
+        <div className="mt-10 rounded-3xl bg-pattern-aztec p-6 md:p-10">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-4">
+            {steps.map((s, i) => (
+              <div
+                key={s.num}
+                className={cn(
+                  'flex flex-col items-center text-center md:items-start md:text-left md:px-4',
+                  i > 0 && 'md:border-l md:border-navy-300/40',
+                )}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-base font-extrabold text-navy-500">
+                  {s.num}
+                </div>
+                <p className="mt-4 text-base font-bold text-white">
+                  {s.title}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-neutral-400 md:text-sm">
+                  {s.copy}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FeaturedCertifications() {
+  const { data, isLoading, error } = useFeaturedCertifications()
+  return (
+    <section className="bg-white">
+      <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
+        <div className="text-center">
+          <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
+            <FileText className="h-3.5 w-3.5 text-gold-500" />
+            Directorio de Certificaciones
+          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+            Productos y servicios certificados
+          </h2>
+        </div>
+
+        {isLoading && (
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-[4/3] w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-9 w-32" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-10 rounded-2xl border border-error-300 bg-error-100 p-6 text-center text-error-400">
+            <p className="font-semibold">No pudimos cargar los certificados</p>
+            <p className="mt-1 text-sm">{error}</p>
+          </div>
+        )}
+
+        {data && (
+          <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {data.map((c) => (
+              <CertificationCard key={c.id} certification={c} />
+            ))}
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center">
+          <Link
+            to="/directorio"
+            className={cn(buttonVariants({ variant: 'gold', size: 'md' }))}
+          >
+            Ver todos los certificados
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CTASection() {
+  return (
+    <section className="px-4 pb-16 md:px-8 md:pb-20">
+      <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-3xl">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1490718720478-364a07a997cd?w=1600&q=80')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/65 to-navy-500/85" />
+        <div className="relative z-10 px-6 py-12 text-center text-white md:px-12 md:py-16">
+          <h3 className="text-2xl font-extrabold md:text-3xl">
+            Comienza tu certificación ancestral
+          </h3>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-200 md:text-base">
+            Te acompañamos en todo el proceso con guías, videos y soporte
+            personalizado.
+          </p>
+          <Link
+            to="/login"
+            className={cn(
+              buttonVariants({ variant: 'gold', size: 'lg' }),
+              'mt-7',
+            )}
+          >
+            Certificar Producto
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}

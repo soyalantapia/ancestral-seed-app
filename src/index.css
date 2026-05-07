@@ -1,0 +1,234 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand scale — extracted from Figma Design System */
+  --color-gold-100: #f4eccc;
+  --color-gold-200: #ead999;
+  --color-gold-300: #dfc666;
+  --color-gold-400: #d3b333;
+  --color-gold-500: #c7a800;
+  --color-gold-600: #a28000;
+  --color-gold-700: #796000;
+  --color-gold-800: #514000;
+  --color-gold-900: #282000;
+
+  --color-navy-100: #66773a;
+  --color-navy-200: #4c6074;
+  --color-navy-300: #334060;
+  --color-navy-400: #19334c;
+  --color-navy-500: #001c38;
+  --color-navy-600: #01192e;
+  --color-navy-700: #00101f;
+  --color-navy-800: #00080f;
+
+  --color-neutral-0: #ffffff;
+  --color-neutral-100: #e3deed;
+  --color-neutral-200: #dce4ee;
+  --color-neutral-300: #d7e0ec;
+  --color-neutral-400: #d3dde4;
+  --color-neutral-500: #c1ccda;
+  --color-neutral-600: #99a9b8;
+  --color-neutral-700: #8c8e9c;
+
+  --color-success-100: #f8fff9;
+  --color-success-200: #ecf5fb;
+  --color-success-300: #0f9918;
+  --color-success-400: #0ab011;
+
+  --color-warning-100: #fff5ec;
+  --color-warning-200: #f03697;
+  --color-warning-300: #edb445;
+  --color-warning-400: #a47611;
+
+  --color-error-100: #fefefb;
+  --color-error-200: #f0cfce;
+  --color-error-300: #e54545;
+  --color-error-400: #b82828;
+
+  --color-info-100: #f5f9ff;
+  --color-info-200: #ce3def0;
+  --color-info-300: #3f9cad;
+  --color-info-400: #2a5e75;
+
+  --font-sans: "Montserrat", system-ui, -apple-system, sans-serif;
+  --font-display: "Montserrat", system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  --background: #ffffff;
+  --foreground: #001c38;
+
+  --card: #ffffff;
+  --card-foreground: #001c38;
+
+  --popover: #ffffff;
+  --popover-foreground: #001c38;
+
+  --primary: #001c38;
+  --primary-foreground: #ffffff;
+
+  --secondary: #c7a800;
+  --secondary-foreground: #001c38;
+
+  --muted: #f4eccc;
+  --muted-foreground: #4c6074;
+
+  --accent: #c7a800;
+  --accent-foreground: #001c38;
+
+  --destructive: #b82828;
+  --destructive-foreground: #ffffff;
+
+  --border: #dce4ee;
+  --input: #dce4ee;
+  --ring: #c7a800;
+}
+
+.dark {
+  --background: #001c38;
+  --foreground: #ffffff;
+
+  --card: #00101f;
+  --card-foreground: #ffffff;
+
+  --popover: #00101f;
+  --popover-foreground: #ffffff;
+
+  --primary: #c7a800;
+  --primary-foreground: #001c38;
+
+  --secondary: #19334c;
+  --secondary-foreground: #ffffff;
+
+  --muted: #19334c;
+  --muted-foreground: #99a9b8;
+
+  --accent: #c7a800;
+  --accent-foreground: #001c38;
+
+  --destructive: #e54545;
+  --destructive-foreground: #ffffff;
+
+  --border: #19334c;
+  --input: #19334c;
+  --ring: #c7a800;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-navy-500);
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Geometric pattern backgrounds — Aztec-inspired */
+.bg-pattern-gold {
+  background-color: #f4eccc;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 14px,
+      rgba(199, 168, 0, 0.18) 14px,
+      rgba(199, 168, 0, 0.18) 16px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 14px,
+      rgba(199, 168, 0, 0.18) 14px,
+      rgba(199, 168, 0, 0.18) 16px
+    );
+}
+
+.bg-pattern-navy {
+  background-color: #001c38;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 18px,
+      rgba(199, 168, 0, 0.1) 18px,
+      rgba(199, 168, 0, 0.1) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent 18px,
+      rgba(199, 168, 0, 0.1) 18px,
+      rgba(199, 168, 0, 0.1) 20px
+    );
+}
+
+.bg-pattern-aztec {
+  background-color: #001c38;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(199, 168, 0, 0.18) 0, transparent 35%),
+    radial-gradient(circle at 80% 90%, rgba(199, 168, 0, 0.12) 0, transparent 35%),
+    repeating-linear-gradient(
+      30deg,
+      transparent 0,
+      transparent 24px,
+      rgba(199, 168, 0, 0.06) 24px,
+      rgba(199, 168, 0, 0.06) 26px
+    );
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1ccda;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #99a9b8;
+}
