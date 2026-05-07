@@ -42,14 +42,6 @@ export default function Login() {
 
   return (
     <section className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-pattern-gold">
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-50"
-        style={{
-          backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
-        }}
-        aria-hidden
-      />
-      <div className="absolute inset-0 bg-gold-100/40" aria-hidden />
       <div className="relative mx-auto flex min-h-[calc(100vh-80px)] max-w-[1100px] items-center px-4 py-12 md:px-8">
         <div className="grid w-full grid-cols-1 overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
           <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-pattern-aztec p-10 text-center md:flex">

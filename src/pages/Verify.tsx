@@ -351,16 +351,13 @@ function ProcessSteps() {
         <h2 className="mt-2 text-center text-2xl font-extrabold text-navy-500 md:text-3xl">
           Proceso de verificación
         </h2>
-        <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-4">
-          {steps.map((s, i) => (
+        <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-6">
+          {steps.map((s) => (
             <div
               key={s.num}
-              className="relative flex flex-col items-center text-center"
+              className="flex flex-col items-center text-center"
             >
-              {i < steps.length - 1 && (
-                <span className="absolute left-1/2 top-7 hidden h-px w-full bg-gold-500/40 md:block" />
-              )}
-              <span className="relative z-10 text-3xl font-extrabold text-navy-500">
+              <span className="text-3xl font-extrabold text-navy-500">
                 {s.num}.
               </span>
               <p className="mt-3 font-bold text-navy-500">{s.title}</p>

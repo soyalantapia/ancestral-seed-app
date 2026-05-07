@@ -164,19 +164,33 @@
   }
 }
 
-/* Geometric mesoamerican pattern (asterisco/grecas) — inline SVG for portability */
+/* Subtle geometric backgrounds (very low contrast, decorative only) */
 .bg-pattern-gold {
-  background-color: #f4eccc;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'><g stroke='%23EAD999' stroke-width='14' fill='none'><line x1='0' y1='0' x2='200' y2='200'/><line x1='200' y1='0' x2='0' y2='200'/><line x1='0' y1='100' x2='200' y2='100'/><line x1='100' y1='0' x2='100' y2='200'/><line x1='100' y1='0' x2='0' y2='100'/><line x1='100' y1='0' x2='200' y2='100'/><line x1='0' y1='100' x2='100' y2='200'/><line x1='200' y1='100' x2='100' y2='200'/></g></svg>");
-  background-size: 220px 220px;
-  background-repeat: repeat;
+  background-color: #faf6e8;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(199, 168, 0, 0.04) 0, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(199, 168, 0, 0.04) 0, transparent 40%);
+  background-size: 100% 100%;
 }
 
-.bg-pattern-navy,
 .bg-pattern-aztec {
   background-color: #001c38;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'><g stroke='%23C7A800' stroke-opacity='0.18' stroke-width='14' fill='none'><line x1='0' y1='0' x2='200' y2='200'/><line x1='200' y1='0' x2='0' y2='200'/><line x1='0' y1='100' x2='200' y2='100'/><line x1='100' y1='0' x2='100' y2='200'/><line x1='100' y1='0' x2='0' y2='100'/><line x1='100' y1='0' x2='200' y2='100'/><line x1='0' y1='100' x2='100' y2='200'/><line x1='200' y1='100' x2='100' y2='200'/></g></svg>");
-  background-size: 240px 240px;
+  background-image:
+    radial-gradient(circle at 15% 15%, rgba(199, 168, 0, 0.08) 0, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(199, 168, 0, 0.06) 0, transparent 35%),
+    radial-gradient(circle at 50% 100%, rgba(199, 168, 0, 0.05) 0, transparent 50%);
+  background-size: 100% 100%;
+}
+
+.bg-pattern-navy {
+  background-color: #001c38;
+}
+
+/* Optional decorative greca strip — only used in specific places (hero edges) */
+.bg-greca-gold {
+  background-color: #f4eccc;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><g stroke='%23EAD999' stroke-width='1.5' fill='none' opacity='0.6'><path d='M0 40 L40 0 L80 40 L40 80 Z'/><path d='M20 40 L40 20 L60 40 L40 60 Z'/></g></svg>");
+  background-size: 80px 80px;
   background-repeat: repeat;
 }
 
