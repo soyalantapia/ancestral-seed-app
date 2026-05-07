@@ -72,48 +72,77 @@ export function Header() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-neutral-200 bg-white lg:hidden"
+            className="fixed inset-x-0 top-16 z-30 bg-navy-500/40 backdrop-blur-sm lg:hidden"
+            style={{ height: 'calc(100vh - 64px)' }}
+            onClick={closeMobileMenu}
           >
-            <div className="flex flex-col gap-1 p-4">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  end={item.to === '/'}
-                  onClick={closeMobileMenu}
-                  className={({ isActive }) =>
-                    cn(
-                      'rounded-lg px-4 py-3 text-base font-medium transition-colors',
-                      isActive
-                        ? 'bg-gold-100 text-navy-500'
-                        : 'text-navy-300 hover:bg-neutral-200',
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-              <div className="mt-3 flex flex-col gap-2 border-t border-neutral-200 pt-3">
-                <Link
-                  to="/login"
-                  onClick={closeMobileMenu}
-                  className={cn(buttonVariants({ variant: 'gold', size: 'lg' }))}
-                >
-                  Certificar Producto
-                </Link>
-                <Link
-                  to="/verificar"
-                  onClick={closeMobileMenu}
-                  className={cn(buttonVariants({ variant: 'navy', size: 'lg' }))}
-                >
-                  Verificar Certificado
-                </Link>
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="overflow-y-auto rounded-b-3xl border-t border-neutral-200 bg-white shadow-2xl"
+            >
+              <div className="flex flex-col gap-1 p-5">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    end={item.to === '/'}
+                    onClick={closeMobileMenu}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center justify-between rounded-xl px-4 py-3.5 text-base font-medium transition-colors',
+                        isActive
+                          ? 'bg-gold-100 text-navy-500'
+                          : 'text-navy-300 hover:bg-neutral-100',
+                      )
+                    }
+                  >
+                    {item.label}
+                    <span className="text-navy-300">→</span>
+                  </NavLink>
+                ))}
+                <div className="mt-4 flex flex-col gap-2 border-t border-neutral-200 pt-4">
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      buttonVariants({ variant: 'gold', size: 'lg' }),
+                      'w-full',
+                    )}
+                  >
+                    Certificar Producto
+                  </Link>
+                  <Link
+                    to="/verificar"
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      buttonVariants({ variant: 'navy', size: 'lg' }),
+                      'w-full',
+                    )}
+                  >
+                    Verificar Certificado
+                  </Link>
+                </div>
+                <div className="mt-6 border-t border-neutral-200 pt-4 text-center">
+                  <p className="text-xs text-navy-300">
+                    ¿Tenés dudas?{' '}
+                    <a
+                      href="mailto:ancestralseed@email.com"
+                      className="font-semibold text-gold-700 hover:underline"
+                    >
+                      Contactanos
+                    </a>
+                  </p>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -190,26 +190,47 @@ function HashModal({
       )}
 
       {result.state === 'valid' && (
-        <div className="mt-5 rounded-2xl border border-success-400/40 bg-success-200 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success-400 text-white">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-bold text-success-400">Certificado verificado</p>
-              <p className="text-xs text-navy-300">{result.cert.title}</p>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+          className="relative mt-5 overflow-hidden rounded-3xl border border-success-400/40 bg-gradient-to-br from-success-200 via-white to-gold-100 p-5 text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-400 text-white shadow-lg"
+          >
+            <ShieldCheck className="h-8 w-8" />
+          </motion.div>
+          <p className="mt-3 text-base font-extrabold text-success-400">
+            ¡Certificado verificado!
+          </p>
+          <p className="mt-1 text-xs text-navy-300">
+            Esta certificación es auténtica y está registrada en blockchain.
+          </p>
+          <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-3 text-left">
+            <p className="text-[10px] uppercase tracking-widest text-navy-300">
+              {result.cert.category}
+            </p>
+            <p className="mt-1 text-sm font-bold text-navy-500">
+              {result.cert.title}
+            </p>
+            <p className="text-xs text-navy-300">
+              Por {result.cert.authorName}
+            </p>
           </div>
           <button
             onClick={() => navigate(`/certificado/${result.cert.slug}`)}
             className={cn(
-              buttonVariants({ variant: 'navy', size: 'sm' }),
+              buttonVariants({ variant: 'navy', size: 'md' }),
               'mt-4 w-full',
             )}
           >
-            Ver detalle del certificado
+            Ver ficha pública
           </button>
-        </div>
+        </motion.div>
       )}
     </ModalShell>
   )
