@@ -35,7 +35,7 @@ function Hero() {
       <div className="mx-auto max-w-[1320px] px-4 md:px-8">
         <div className="grid grid-cols-1 items-center gap-8 rounded-[32px] bg-white p-8 shadow-md md:min-h-[480px] md:p-14 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
-            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
+            <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
               Autenticidad ancestral,<br className="hidden md:inline" />{' '}
               certificada digitalmente
             </h1>
@@ -87,7 +87,7 @@ function Pillars() {
         {pillars.map((p, i) => (
           <div key={i} className="flex flex-col items-center text-center">
             <p.icon className="h-7 w-7 text-navy-500" strokeWidth={1.5} />
-            <h3 className="mt-4 text-sm font-bold text-navy-500">{p.title}</h3>
+            <h3 className="mt-4 text-base font-medium text-navy-500">{p.title}</h3>
             <p className="mt-2 text-xs leading-relaxed text-navy-300">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
               eiusmod tempor incididunt
@@ -108,7 +108,7 @@ function AncestralVision() {
             <Sparkles className="h-3.5 w-3.5 text-gold-500" />
             Sobre nosotros
           </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             La mirada ancestral que nos guía
           </h2>
         </div>
@@ -177,7 +177,7 @@ function BlockchainSection() {
             <Sparkles className="h-3.5 w-3.5 text-gold-500" />
             ¿Cómo cuidamos la autenticidad?
           </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             Blockchain para certificaciones confiables y transparentes
           </h2>
         </div>
@@ -243,7 +243,7 @@ function ProcessSection() {
             <Sparkles className="h-3.5 w-3.5 text-gold-500" />
             ¿Cómo funciona?
           </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             Proceso de Verificación
           </h2>
         </div>
@@ -257,7 +257,7 @@ function ProcessSection() {
                   i > 0 && 'md:border-l md:border-navy-300/40',
                 )}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-base font-extrabold text-navy-500">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-base font-bold text-navy-500">
                   {s.num}
                 </div>
                 <p className="mt-4 text-base font-bold text-white">
@@ -285,7 +285,7 @@ function FeaturedCertifications() {
             <FileText className="h-3.5 w-3.5 text-gold-500" />
             Directorio de Certificaciones
           </p>
-          <h2 className="mt-2 text-2xl font-extrabold text-navy-500 md:text-3xl">
+          <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             Productos y servicios certificados
           </h2>
         </div>
@@ -343,7 +343,7 @@ function CTASection() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/65 to-navy-500/85" />
         <div className="relative z-10 px-6 py-12 text-center text-white md:px-12 md:py-16">
-          <h3 className="text-2xl font-extrabold md:text-3xl">
+          <h3 className="text-2xl font-bold md:text-3xl">
             Comienza tu certificación ancestral
           </h3>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-200 md:text-base">

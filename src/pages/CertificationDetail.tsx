@@ -63,7 +63,7 @@ export default function CertificationDetail() {
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 py-8 md:px-8 md:py-10">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <h1 className="text-2xl font-extrabold leading-tight text-navy-500 md:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-4xl">
               {cert.title}
             </h1>
             <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export default function CertificationDetail() {
                     <p className="text-xs uppercase tracking-widest text-navy-300">
                       Score
                     </p>
-                    <p className="text-base font-extrabold text-navy-500">
+                    <p className="text-base font-bold text-navy-500">
                       100/100
                     </p>
                   </div>
@@ -319,7 +319,7 @@ export default function CertificationDetail() {
 
       <section className="bg-pattern-aztec">
         <div className="mx-auto max-w-[1320px] px-4 py-12 text-center text-white md:px-8 md:py-16">
-          <h2 className="text-2xl font-extrabold md:text-3xl">
+          <h2 className="text-2xl font-bold md:text-3xl">
             Nuestra metodología de certificación
           </h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm text-neutral-300">
@@ -532,11 +532,11 @@ function SectionHeading({
   return (
     <h2
       className={cn(
-        'flex items-center gap-3 text-xl font-extrabold text-navy-500 md:text-2xl',
+        'flex items-center gap-3 text-xl font-bold text-navy-500 md:text-2xl',
         className,
       )}
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-100 text-sm font-extrabold text-gold-700">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-100 text-sm font-bold text-gold-700">
         {num}
       </span>
       {children}
@@ -616,7 +616,7 @@ function DetailSkeleton() {
 function DetailError({ message }: { message: string }) {
   return (
     <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-      <h1 className="text-2xl font-extrabold text-navy-500">
+      <h1 className="text-2xl font-bold text-navy-500">
         Certificado no encontrado
       </h1>
       <p className="mt-2 text-sm text-navy-300">{message}</p>

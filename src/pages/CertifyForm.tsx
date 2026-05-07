@@ -167,7 +167,7 @@ export default function CertifyForm() {
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Volver al inicio
             </Link>
-            <h1 className="mt-3 text-2xl font-extrabold md:text-3xl">
+            <h1 className="mt-3 text-2xl font-bold md:text-3xl">
               Certificar Producto
             </h1>
             <p className="mt-1 max-w-xl text-sm text-neutral-300">
@@ -320,7 +320,7 @@ function StepHeader({
 }) {
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-extrabold text-navy-500 md:text-2xl">
+      <h2 className="text-xl font-bold text-navy-500 md:text-2xl">
         {title}
       </h2>
       <p className="mt-1 text-sm text-navy-300">{description}</p>
@@ -743,7 +743,7 @@ function SuccessState({ onReset }: { onReset: () => void }) {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-400 text-white shadow-lg">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h1 className="mt-6 text-2xl font-extrabold text-navy-500 md:text-3xl">
+          <h1 className="mt-6 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             Solicitud recibida
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-navy-300 md:text-base">

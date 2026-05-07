@@ -38,7 +38,7 @@ export default function AuthorProfile() {
   if (!author) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="text-2xl font-extrabold text-navy-500">
+        <h1 className="text-2xl font-bold text-navy-500">
           Autor no encontrado
         </h1>
         <Link
@@ -73,7 +73,7 @@ export default function AuthorProfile() {
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-extrabold text-navy-500 md:text-3xl">
+                  <h1 className="text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
                     {author.name}
                   </h1>
                   <CheckCircle2 className="h-5 w-5 text-gold-500" />
@@ -288,7 +288,7 @@ function DestacadosTab({
             Destacados
           </span>
         </div>
-        <h2 className="mt-3 text-xl font-extrabold md:text-2xl">
+        <h2 className="mt-3 text-xl font-bold md:text-2xl">
           Las certificaciones más visitadas de este autor
         </h2>
       </div>

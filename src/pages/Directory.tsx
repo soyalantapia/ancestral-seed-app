@@ -74,7 +74,7 @@ export default function Directory() {
       <section className="bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
           <div className="rounded-3xl bg-white px-8 py-10 text-center shadow-sm md:px-16 md:py-12">
-            <h1 className="text-2xl font-extrabold leading-tight text-navy-500 md:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-4xl">
               Directorio de certificaciones auténticas
             </h1>
             <p className="mt-2 text-sm text-navy-300 md:text-base">
@@ -369,7 +369,7 @@ export default function Directory() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/70 to-navy-500/85" />
           <div className="relative z-10 px-6 py-12 text-center text-white md:px-12 md:py-16">
-            <h2 className="text-2xl font-extrabold md:text-3xl">
+            <h2 className="text-2xl font-bold md:text-3xl">
               Verificá la autenticidad de un certificado ancestral
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-200 md:text-base">

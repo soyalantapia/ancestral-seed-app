@@ -50,7 +50,7 @@ export default function Verify() {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-navy-600 text-gold-400">
               <FileCheck2 className="h-6 w-6" />
             </div>
-            <h1 className="mt-5 text-2xl font-extrabold md:text-3xl">
+            <h1 className="mt-5 text-2xl font-bold md:text-3xl">
               Verificar certificado
             </h1>
             <p className="mt-2 text-sm text-neutral-300 md:text-base">
@@ -138,7 +138,7 @@ function HashModal({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
           <KeyRound className="h-6 w-6" />
         </div>
-        <h2 className="mt-4 text-xl font-extrabold text-navy-500">
+        <h2 className="mt-4 text-xl font-bold text-navy-500">
           Ingresa el ID o Hash
         </h2>
         <p className="mt-1 text-sm text-navy-300">
@@ -204,7 +204,7 @@ function HashModal({
           >
             <ShieldCheck className="h-8 w-8" />
           </motion.div>
-          <p className="mt-3 text-base font-extrabold text-success-400">
+          <p className="mt-3 text-base font-bold text-success-400">
             ¡Certificado verificado!
           </p>
           <p className="mt-1 text-xs text-navy-300">
@@ -243,7 +243,7 @@ function QrModal({ onClose }: { onClose: () => void }) {
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
           <QrCode className="h-6 w-6" />
         </div>
-        <h2 className="mt-4 text-xl font-extrabold text-navy-500">
+        <h2 className="mt-4 text-xl font-bold text-navy-500">
           Escaneá el código QR
         </h2>
         <p className="mt-1 text-sm text-navy-300">
@@ -348,7 +348,7 @@ function ProcessSteps() {
         <p className="text-center text-xs uppercase tracking-[0.18em] text-navy-300">
           Paso a paso
         </p>
-        <h2 className="mt-2 text-center text-2xl font-extrabold text-navy-500 md:text-3xl">
+        <h2 className="mt-2 text-center text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
           Proceso de verificación
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-2">
@@ -363,7 +363,7 @@ function ProcessSteps() {
                     <span className="block h-px w-full bg-gold-500" />
                   )}
                 </div>
-                <span className="text-3xl font-extrabold text-navy-500 leading-none">
+                <span className="text-3xl font-bold text-navy-500 leading-none">
                   {s.num}.
                 </span>
                 <div className="hidden flex-1 md:block">

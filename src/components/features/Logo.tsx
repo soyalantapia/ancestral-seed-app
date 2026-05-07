@@ -46,7 +46,7 @@ export function Logo({
           <span
             className={cn(
               isVertical ? 'text-xl' : 'text-base',
-              'font-extrabold tracking-[0.18em]',
+              'font-bold tracking-[0.18em]',
               wordmarkColor,
             )}
           >

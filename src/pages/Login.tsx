@@ -52,7 +52,7 @@ export default function Login() {
             <div className="md:hidden">
               <Logo layout="vertical" markClassName="h-16 w-16" className="mx-auto" />
             </div>
-            <h1 className="mt-6 text-2xl font-extrabold text-navy-500 md:mt-0 md:text-3xl">
+            <h1 className="mt-6 text-2xl font-bold text-navy-500 md:mt-0 md:text-3xl">
               Iniciar sesión
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-navy-300">
