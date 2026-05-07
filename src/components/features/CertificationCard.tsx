@@ -5,16 +5,33 @@ import type { Certification } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { PLACEHOLDER_TOKEN } from '@/services/mocks/data'
 
 interface CertificationCardProps {
   certification: Certification
+  /** When true, replaces text labels with the Figma placeholder copy
+   * but keeps the cover image. Used in the Home featured grid. */
+  placeholderText?: boolean
 }
+
+const isPlaceholder = (v: string) => v === PLACEHOLDER_TOKEN || !v
 
 export function CertificationCard({
   certification: c,
+  placeholderText = false,
 }: CertificationCardProps) {
-  const region = inferRegion(c)
-  const score = inferScore(c)
+  const region = placeholderText
+    ? 'País - Región'
+    : isPlaceholder(c.category)
+      ? 'País - Región'
+      : c.category
+  const author = placeholderText
+    ? 'Autor'
+    : isPlaceholder(c.authorName)
+      ? 'Autor'
+      : c.authorName
+  const score = placeholderText ? 'Puntaje' : '100/100'
+  const title = placeholderText ? 'Título producto/servicio' : c.title
 
   return (
     <motion.article
@@ -24,19 +41,27 @@ export function CertificationCard({
     >
       <Link
         to={`/certificado/${c.slug}`}
-        className="relative aspect-[4/3] overflow-hidden"
+        className="relative aspect-[4/3] overflow-hidden bg-neutral-100"
       >
-        <img
-          src={c.coverUrl}
-          alt={c.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <StatusBadge status={c.status} className="absolute right-3 top-3" />
+        {c.coverUrl && (
+          <img
+            src={
+              c.coverUrl.startsWith('http')
+                ? c.coverUrl
+                : `${import.meta.env.BASE_URL}${c.coverUrl.replace(/^\//, '')}`
+            }
+            alt={title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
+        <Badge variant="success" className="absolute right-3 top-3">
+          Estado
+        </Badge>
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <Link to={`/certificado/${c.slug}`}>
           <h3 className="line-clamp-2 text-base font-bold leading-snug text-navy-500 transition-colors hover:text-gold-700">
-            {c.title}
+            {title}
           </h3>
         </Link>
         <ul className="mt-3 flex flex-col gap-1.5 text-xs text-navy-300">
@@ -46,11 +71,11 @@ export function CertificationCard({
           </li>
           <li className="flex items-center gap-2">
             <User className="h-3.5 w-3.5 text-navy-300" />
-            <span>{c.authorName}</span>
+            <span>{author}</span>
           </li>
           <li className="flex items-center gap-2">
             <Star className="h-3.5 w-3.5 text-navy-300" />
-            <span>{score}/100</span>
+            <span>{score}</span>
           </li>
         </ul>
         <Link
@@ -65,49 +90,4 @@ export function CertificationCard({
       </div>
     </motion.article>
   )
-}
-
-function StatusBadge({
-  status,
-  className,
-}: {
-  status: Certification['status']
-  className?: string
-}) {
-  const config: Record<
-    Certification['status'],
-    { label: string; variant: 'success' | 'warning' | 'danger' | 'muted' }
-  > = {
-    verified: { label: 'Activo', variant: 'success' },
-    pending: { label: 'En revisión', variant: 'warning' },
-    expired: { label: 'Vencido', variant: 'danger' },
-    revoked: { label: 'Revocado', variant: 'danger' },
-  }
-  const c = config[status]
-  return (
-    <Badge variant={c.variant} className={className}>
-      {c.label}
-    </Badge>
-  )
-}
-
-function inferRegion(c: Certification): string {
-  // Mock: derive region from category and author for visual variety.
-  const map: Record<string, string> = {
-    'Cereales andinos': 'Argentina · Quebrada de Humahuaca',
-    'Pseudocereales': 'Argentina · NOA',
-    'Tubérculos': 'Argentina · Jujuy',
-    'Frutos del monte': 'Argentina · Chaco árido',
-    Hortalizas: 'Argentina · Valle de Uco',
-    Aromáticas: 'Argentina · Sierras de Córdoba',
-  }
-  return map[c.category] ?? 'Argentina · NOA'
-}
-
-function inferScore(c: Certification): number {
-  // Mock score 75–100 based on slug hash for stability.
-  const hash = c.slug
-    .split('')
-    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
-  return 75 + (hash % 26)
 }

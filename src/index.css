@@ -164,57 +164,20 @@
   }
 }
 
-/* Geometric pattern backgrounds — Aztec-inspired */
+/* Geometric mesoamerican pattern (asterisco/grecas) — inline SVG for portability */
 .bg-pattern-gold {
   background-color: #f4eccc;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0,
-      transparent 14px,
-      rgba(199, 168, 0, 0.18) 14px,
-      rgba(199, 168, 0, 0.18) 16px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0,
-      transparent 14px,
-      rgba(199, 168, 0, 0.18) 14px,
-      rgba(199, 168, 0, 0.18) 16px
-    );
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'><g stroke='%23EAD999' stroke-width='14' fill='none'><line x1='0' y1='0' x2='200' y2='200'/><line x1='200' y1='0' x2='0' y2='200'/><line x1='0' y1='100' x2='200' y2='100'/><line x1='100' y1='0' x2='100' y2='200'/><line x1='100' y1='0' x2='0' y2='100'/><line x1='100' y1='0' x2='200' y2='100'/><line x1='0' y1='100' x2='100' y2='200'/><line x1='200' y1='100' x2='100' y2='200'/></g></svg>");
+  background-size: 220px 220px;
+  background-repeat: repeat;
 }
 
-.bg-pattern-navy {
-  background-color: #001c38;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0,
-      transparent 18px,
-      rgba(199, 168, 0, 0.1) 18px,
-      rgba(199, 168, 0, 0.1) 20px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0,
-      transparent 18px,
-      rgba(199, 168, 0, 0.1) 18px,
-      rgba(199, 168, 0, 0.1) 20px
-    );
-}
-
+.bg-pattern-navy,
 .bg-pattern-aztec {
   background-color: #001c38;
-  background-image:
-    radial-gradient(circle at 20% 10%, rgba(199, 168, 0, 0.18) 0, transparent 35%),
-    radial-gradient(circle at 80% 90%, rgba(199, 168, 0, 0.12) 0, transparent 35%),
-    repeating-linear-gradient(
-      30deg,
-      transparent 0,
-      transparent 24px,
-      rgba(199, 168, 0, 0.06) 24px,
-      rgba(199, 168, 0, 0.06) 26px
-    );
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' preserveAspectRatio='none'><g stroke='%23C7A800' stroke-opacity='0.18' stroke-width='14' fill='none'><line x1='0' y1='0' x2='200' y2='200'/><line x1='200' y1='0' x2='0' y2='200'/><line x1='0' y1='100' x2='200' y2='100'/><line x1='100' y1='0' x2='100' y2='200'/><line x1='100' y1='0' x2='0' y2='100'/><line x1='100' y1='0' x2='200' y2='100'/><line x1='0' y1='100' x2='100' y2='200'/><line x1='200' y1='100' x2='100' y2='200'/></g></svg>");
+  background-size: 240px 240px;
+  background-repeat: repeat;
 }
 
 /* Smooth scrollbar */

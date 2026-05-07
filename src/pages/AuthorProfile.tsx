@@ -55,11 +55,11 @@ export default function AuthorProfile() {
     <>
       <div className="relative h-56 overflow-hidden md:h-72">
         <img
-          src="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1600&q=80"
+          src={`${import.meta.env.BASE_URL}perfil-cover.png`}
           alt=""
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-500/70 via-navy-500/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-500/40 via-navy-500/10 to-transparent" />
       </div>
 
       <section className="bg-white">
@@ -198,71 +198,77 @@ function CertificationsTab({
 
 function InfoTab({ author }: { author: import('@/types').Author }) {
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
-      <div className="lg:col-span-2 space-y-6">
-        <section>
-          <h2 className="text-lg font-bold text-navy-500">Sobre mí</h2>
-          <div className="mt-3 flex flex-wrap gap-4 text-sm text-navy-300">
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gold-700" /> {author.location}
+    <div className="max-w-4xl space-y-10">
+      <section>
+        <h2 className="text-lg font-bold text-navy-500">Sobre mí</h2>
+        <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-navy-300">
+          <span className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-navy-300" />
+            <span className="font-semibold text-navy-500">
+              {author.name}
             </span>
-            <span className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-gold-700" />
-              contacto@ancestralseed.org
-            </span>
-            <span className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-gold-700" /> +54 387 555 0123
-            </span>
-          </div>
-          <p className="mt-4 text-sm leading-relaxed text-navy-300">
-            Soy guardiana de prácticas culturales que sostienen el patrimonio de
-            mi territorio. Mi trabajo se enfoca en réplica, preservación y
-            transmisión de saberes ancestrales, respetando los procesos, los
-            tiempos y las formas tradicionales.
+            <span>· {author.location}</span>
+          </span>
+          <span className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-navy-300" />
+            email_usuario@email.com
+          </span>
+          <span className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-navy-300" /> +56 1234 5678
+          </span>
+        </div>
+        <div className="mt-5 space-y-3 text-sm leading-relaxed text-navy-300">
+          <p>{author.bio}</p>
+          <p>
+            A través de mi trabajo ancestral, desarrollo piezas realizadas a
+            mano con hilos de plata, explorando la filigrana como un lenguaje
+            que conecta memoria, territorio e identidad. Cada creación es el
+            resultado de un proceso paciente y consciente, donde la
+            práctica busca honrar la tradición mientras la reinterpreta con
+            sensibilidad contemporánea.
           </p>
-        </section>
-
-        <section>
-          <h2 className="text-lg font-bold text-navy-500">Comunidad</h2>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-gold-100 px-3 py-1 font-semibold text-gold-700">
-              Quebrada de Humahuaca
-            </span>
-            <span className="rounded-full bg-gold-100 px-3 py-1 font-semibold text-gold-700">
-              Comunidad cultural
-            </span>
-            <span className="rounded-full bg-gold-100 px-3 py-1 font-semibold text-gold-700">
-              Patrimonio biocultural
-            </span>
-          </div>
-          <p className="mt-4 text-sm leading-relaxed text-navy-300">
-            El proyecto colectivo se inscribe en una herencia cultural familiar
-            de larga data, conectada con territorios y prácticas que se
-            transmiten de generación en generación.
-          </p>
-        </section>
-      </div>
-
-      <aside className="space-y-3 rounded-3xl border border-neutral-200 bg-gold-100/30 p-6">
-        <p className="text-xs uppercase tracking-widest text-gold-700">
-          Trayectoria
-        </p>
-        <p className="text-3xl font-extrabold text-navy-500">
-          {author.certificationsCount}
-        </p>
-        <p className="text-sm text-navy-300">certificaciones activas</p>
-        <div className="mt-4 border-t border-neutral-300 pt-4">
-          <p className="text-xs uppercase tracking-widest text-gold-700">
-            Miembro desde
-          </p>
-          <p className="mt-1 text-sm font-semibold text-navy-500">
-            {new Date(author.joinedAt).toLocaleDateString('es-AR', {
-              month: 'long',
-              year: 'numeric',
-            })}
+          <p>
+            En la transmisión de mi conocimiento que ha perdurado por
+            generaciones, he sabido buscar la manera de seguir la herencia
+            ancestral, manteniendo viva en mí la presencia de saberes con su
+            esencia.
           </p>
         </div>
-      </aside>
+      </section>
+
+      <hr className="border-neutral-200" />
+
+      <section>
+        <h2 className="text-lg font-bold text-navy-500">Comunidad</h2>
+        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <span className="flex items-center gap-2 text-navy-300">
+            <MapPin className="h-4 w-4 text-navy-300" />
+            <span className="font-semibold text-navy-500">
+              Sierra Nevada de Santa Marta
+            </span>
+          </span>
+          <span className="flex items-center gap-2 text-navy-300">
+            <span className="text-navy-300">·</span> Artesana
+          </span>
+        </div>
+        <div className="mt-5 space-y-3 text-sm leading-relaxed text-navy-300">
+          <p>
+            Mi práctica artesanal se enmarca en una herencia cultural familiar
+            de largo trayecto, conectada con territorios y tradiciones de la
+            Sierra Nevada de Santa Marta. Es bien mi vínculo de descendencia
+            indígena lo que ha mantenido la genuinidad en generación en
+            generación, con respeto por el oficio y la valoración del trabajo
+            manual.
+          </p>
+          <p>
+            La filigrana, como técnica ancestral, representa para mí un puente
+            entre el pasado y el presente, a través del cual mantengo viva un
+            legado que pierde a paciencia, la precisión y un sentido simbólico
+            de cada pieza, manteniendo viva una tradición que forma parte de
+            la identidad cultural del territorio.
+          </p>
+        </div>
+      </section>
     </div>
   )
 }

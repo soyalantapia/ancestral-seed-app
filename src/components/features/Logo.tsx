@@ -28,7 +28,7 @@ export function Logo({
       )}
     >
       <img
-        src="/logo-mark.png"
+        src={`${import.meta.env.BASE_URL}logo-mark.png`}
         alt=""
         className={cn(
           isVertical ? 'h-16 w-16' : 'h-9 w-9',

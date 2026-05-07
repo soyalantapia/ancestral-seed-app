@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react'
-import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import {
+  ArrowUpDown,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  SlidersHorizontal,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Sheet } from '@/components/ui/sheet'
 import { CertificationCard } from '@/components/features/CertificationCard'
 import { useCategories, useCertifications } from '@/hooks/useCertifications'
 import type { CertificationStatus, DirectoryFilters } from '@/types'
@@ -37,6 +45,8 @@ export default function Directory() {
     sortBy: 'recent',
   })
   const [page, setPage] = useState(1)
+  const [showFiltersSheet, setShowFiltersSheet] = useState(false)
+  const [showSortSheet, setShowSortSheet] = useState(false)
   const { data: categories } = useCategories()
   const { data: certs, isLoading, error, refetch } = useCertifications(filters)
 
@@ -93,7 +103,35 @@ export default function Directory() {
             />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          {/* Mobile: 2 buttons that open sheets */}
+          <div className="mt-4 flex items-center gap-2 md:hidden">
+            <Button
+              variant="outlineNavy"
+              size="sm"
+              onClick={() => setShowFiltersSheet(true)}
+              className="flex-1"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtros
+              {(filters.category || filters.status) && (
+                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold-500 text-[10px] font-bold text-navy-500">
+                  {[filters.category, filters.status].filter(Boolean).length}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="outlineNavy"
+              size="sm"
+              onClick={() => setShowSortSheet(true)}
+              className="flex-1"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              Ordenar
+            </Button>
+          </div>
+
+          {/* Desktop: filter chips inline */}
+          <div className="mt-5 hidden flex-wrap items-center gap-2 md:flex">
             <FilterChip
               label="Categorías"
               value={filters.category}
@@ -161,6 +199,123 @@ export default function Directory() {
             </div>
           </div>
 
+          <Sheet
+            open={showFiltersSheet}
+            onClose={() => setShowFiltersSheet(false)}
+            title="Filtros"
+            description="Refiná tu búsqueda en el directorio"
+          >
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-navy-300">
+                  Categoría
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(categories ?? []).map((cat) => {
+                    const active = filters.category === cat
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() =>
+                          updateFilter(
+                            'category',
+                            active ? undefined : cat,
+                          )
+                        }
+                        className={cn(
+                          'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all',
+                          active
+                            ? 'border-gold-500 bg-gold-500 text-navy-500'
+                            : 'border-neutral-300 bg-white text-navy-300',
+                        )}
+                      >
+                        {cat}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-navy-300">
+                  Estado
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {statusOptions.map((opt) => {
+                    const active = filters.status === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() =>
+                          updateFilter(
+                            'status',
+                            active ? undefined : opt.value,
+                          )
+                        }
+                        className={cn(
+                          'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all',
+                          active
+                            ? 'border-navy-500 bg-navy-500 text-white'
+                            : 'border-neutral-300 bg-white text-navy-300',
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="flex gap-2 pt-3">
+                <Button
+                  variant="outlineNavy"
+                  size="md"
+                  className="flex-1"
+                  onClick={clearFilters}
+                >
+                  Limpiar
+                </Button>
+                <Button
+                  variant="navy"
+                  size="md"
+                  className="flex-1"
+                  onClick={() => setShowFiltersSheet(false)}
+                >
+                  Aplicar
+                </Button>
+              </div>
+            </div>
+          </Sheet>
+
+          <Sheet
+            open={showSortSheet}
+            onClose={() => setShowSortSheet(false)}
+            title="Ordenar por"
+          >
+            <ul className="flex flex-col">
+              {sortOptions.map((s) => {
+                const active = filters.sortBy === s.value
+                return (
+                  <li key={s.value}>
+                    <button
+                      onClick={() => {
+                        updateFilter('sortBy', s.value)
+                        setShowSortSheet(false)
+                      }}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors',
+                        active
+                          ? 'bg-gold-100 text-navy-500'
+                          : 'text-navy-300 hover:bg-neutral-100',
+                      )}
+                    >
+                      <span>{s.label}</span>
+                      {active && <Check className="h-4 w-4 text-gold-700" />}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </Sheet>
+
           <div className="mt-8">
             {isLoading && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -209,8 +364,7 @@ export default function Directory() {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&q=80')",
+              backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/70 to-navy-500/85" />

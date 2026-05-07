@@ -31,20 +31,20 @@ export default function Home() {
 function Hero() {
   const navigate = useNavigate()
   return (
-    <section className="relative overflow-hidden bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
+    <section className="relative overflow-hidden bg-pattern-gold pb-16 pt-10 md:pb-24 md:pt-16">
       <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-        <div className="grid grid-cols-1 items-center gap-6 rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-1 items-center gap-8 rounded-[32px] bg-white p-8 shadow-md md:min-h-[480px] md:p-14 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
-            <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-navy-500 md:text-4xl lg:text-5xl">
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
               Autenticidad ancestral,<br className="hidden md:inline" />{' '}
               certificada digitalmente
             </h1>
-            <p className="mt-5 max-w-xl text-sm leading-relaxed text-navy-300 md:text-base">
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-300 md:text-lg">
               Validamos la autenticidad de productos y saberes originarios
               mediante un sistema de certificación cultural, auditoría y
               tecnología blockchain.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button
                 variant="gold"
                 size="lg"
@@ -63,9 +63,9 @@ function Hero() {
           </div>
           <div className="flex justify-center lg:col-span-5">
             <img
-              src="/logo-large.png"
+              src={`${import.meta.env.BASE_URL}logo-large.png`}
               alt="Ancestral Seed"
-              className="h-48 w-48 object-contain md:h-64 md:w-64"
+              className="h-64 w-64 object-contain md:h-80 md:w-80 lg:h-96 lg:w-96"
             />
           </div>
         </div>
@@ -115,8 +115,8 @@ function AncestralVision() {
         <div className="mt-10 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="overflow-hidden rounded-3xl">
             <img
-              src="https://images.unsplash.com/photo-1519055548599-6d4d129508c4?w=1200&q=80"
-              alt="Ceremonia ancestral con humo de copal"
+              src={`${import.meta.env.BASE_URL}hero-image.png`}
+              alt="Ceremonia ancestral"
               className="h-full w-full object-cover"
             />
           </div>
@@ -184,16 +184,16 @@ function BlockchainSection() {
         <div className="mt-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <Accordion items={items} />
           <div className="relative h-[420px] hidden lg:block">
-            <div className="absolute left-0 top-2 h-72 w-80 overflow-hidden rounded-3xl shadow-xl">
+            <div className="absolute left-0 top-0 h-64 w-80 overflow-hidden rounded-3xl shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=900&q=80"
+                src={`${import.meta.env.BASE_URL}blockchain-1.png`}
                 alt="Comunidad ancestral compartiendo saberes"
                 className="h-full w-full object-cover"
               />
             </div>
-            <div className="absolute right-0 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
+            <div className="absolute right-4 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1623652366060-f4dccf3b9da3?w=900&q=80"
+                src={`${import.meta.env.BASE_URL}blockchain-2.png`}
                 alt="Producto ancestral certificado"
                 className="h-full w-full object-cover"
               />
@@ -201,12 +201,12 @@ function BlockchainSection() {
           </div>
           <div className="grid grid-cols-2 gap-3 lg:hidden">
             <img
-              src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=600&q=80"
+              src={`${import.meta.env.BASE_URL}blockchain-1.png`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
             <img
-              src="https://images.unsplash.com/photo-1623652366060-f4dccf3b9da3?w=600&q=80"
+              src={`${import.meta.env.BASE_URL}blockchain-2.png`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
@@ -313,7 +313,7 @@ function FeaturedCertifications() {
         {data && (
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {data.map((c) => (
-              <CertificationCard key={c.id} certification={c} />
+              <CertificationCard key={c.id} certification={c} placeholderText />
             ))}
           </div>
         )}
@@ -338,8 +338,7 @@ function CTASection() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1490718720478-364a07a997cd?w=1600&q=80')",
+            backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/65 to-navy-500/85" />

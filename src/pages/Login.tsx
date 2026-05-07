@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -42,119 +41,115 @@ export default function Login() {
   }
 
   return (
-    <section className="relative min-h-[80vh] overflow-hidden bg-pattern-gold py-12">
-      <div className="relative mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-4 md:px-8 lg:grid-cols-12 lg:items-center">
-        <motion.aside
-          initial={false}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hidden flex-col justify-center gap-6 lg:col-span-5 lg:flex"
-        >
-          <Logo />
-          <h2 className="text-3xl font-extrabold leading-tight text-navy-500">
-            Tu panel para gestionar certificaciones ancestrales
-          </h2>
-          <ul className="space-y-3 text-sm text-navy-300">
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gold-500" />
-              Visualizá el estado de cada certificado.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gold-500" />
-              Compartí enlaces y QR auténticos.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-gold-500" />
-              Cargá nuevas solicitudes de certificación.
-            </li>
-          </ul>
-        </motion.aside>
+    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-pattern-gold">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-50"
+        style={{
+          backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
+        }}
+        aria-hidden
+      />
+      <div className="absolute inset-0 bg-gold-100/40" aria-hidden />
+      <div className="relative mx-auto flex min-h-[calc(100vh-80px)] max-w-[1100px] items-center px-4 py-12 md:px-8">
+        <div className="grid w-full grid-cols-1 overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
+          <aside className="relative hidden flex-col items-center justify-center overflow-hidden bg-pattern-aztec p-10 text-center md:flex">
+            <Logo variant="light" layout="vertical" markClassName="h-24 w-24" />
+          </aside>
 
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-xl md:p-12 lg:col-span-7"
-        >
-          <div className="text-center">
-            <div className="mx-auto lg:hidden">
-              <Logo />
+          <div className="p-8 md:p-12">
+            <div className="md:hidden">
+              <Logo layout="vertical" markClassName="h-16 w-16" className="mx-auto" />
             </div>
-            <h1 className="mt-4 text-2xl font-extrabold text-navy-500 md:text-3xl">
+            <h1 className="mt-6 text-2xl font-extrabold text-navy-500 md:mt-0 md:text-3xl">
               Iniciar sesión
             </h1>
-            <p className="mt-2 text-sm text-navy-300">
-              Ingresá a tu cuenta para gestionar tu perfil público y seguir el
+            <p className="mt-2 text-sm leading-relaxed text-navy-300">
+              Ingresa a tu cuenta para gestionar tu perfil público y seguir el
               estado de tus certificaciones.
             </p>
-          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="tu@email.com"
-                className="mt-2"
-                autoComplete="email"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="mt-1 text-xs font-medium text-error-400">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <div className="relative mt-2">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  {...register('password')}
+                  id="email"
+                  type="email"
+                  placeholder=""
+                  className="mt-2"
+                  autoComplete="email"
+                  {...register('email')}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-200"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                {errors.email && (
+                  <p className="mt-1 text-xs font-medium text-error-400">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-              {errors.password && (
-                <p className="mt-1 text-xs font-medium text-error-400">
-                  {errors.password.message}
-                </p>
-              )}
-              <Link
-                to="/"
-                className="mt-2 block text-right text-xs font-semibold text-gold-700 hover:underline"
+              <div>
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative mt-2">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder=""
+                    autoComplete="current-password"
+                    {...register('password')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-200"
+                    aria-label={
+                      showPassword
+                        ? 'Ocultar contraseña'
+                        : 'Mostrar contraseña'
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-xs font-medium text-error-400">
+                    {errors.password.message}
+                  </p>
+                )}
+                <Link
+                  to="/"
+                  className="mt-2 block text-right text-xs text-navy-300 hover:text-gold-700"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+              <Button
+                type="submit"
+                variant="navy"
+                size="lg"
+                className="w-full"
+                disabled={isSubmitting}
               >
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-            <Button
-              type="submit"
-              variant="navy"
-              size="lg"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
-            </Button>
-          </form>
+                {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
 
-          <p className="mt-6 text-center text-xs text-navy-300">
-            ¿Todavía no tenés cuenta?{' '}
-            <Link to="/" className="font-semibold text-gold-700 hover:underline">
-              Solicitá una invitación
-            </Link>
-          </p>
-        </motion.div>
+      <div className="bg-white">
+        <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-10 md:grid-cols-4 md:px-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="text-xs leading-relaxed text-navy-300">
+              <p className="font-semibold text-navy-500">Lorem ipsum</p>
+              <p className="mt-2">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

@@ -20,7 +20,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-      <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-6 px-4 md:h-18 md:px-8">
+      <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-6 px-4 md:h-20 md:px-8">
         <Link to="/" className="shrink-0">
           <Logo />
         </Link>
