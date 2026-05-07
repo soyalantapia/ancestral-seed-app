@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-export default defineConfig({
-  base: '/ancestral-seed-app/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/ancestral-seed-app/' : '/',
   plugins: [react(), tailwindcss()],
   server: {
     port: 5175,
@@ -15,4 +15,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-})
+}))

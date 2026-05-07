@@ -18,7 +18,7 @@
     "framer-motion": "^12.38.0",
     "lightningcss": "^1.32.0",
     "lightningcss-darwin-arm64": "^1.32.0",
-    "lucide-react": "^0.471.0",
+    "lucide-react": "^1.14.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.75.0",
@@ -45,7 +45,7 @@
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.11"
   },
   "msw": {
     "workerDirectory": [

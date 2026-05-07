@@ -240,8 +240,8 @@ export default function CertifyForm() {
 
 function Stepper({ current }: { current: number }) {
   return (
-    <div className="border-b border-neutral-200 bg-white px-4 py-5 md:px-10">
-      <ol className="flex items-center gap-2 overflow-x-auto md:gap-4">
+    <div className="border-b border-neutral-200 bg-white px-4 py-6 md:px-10 md:py-7">
+      <ol className="flex items-start gap-1 md:gap-2">
         {steps.map((s, i) => {
           const active = i === current
           const done = i < current
@@ -249,39 +249,45 @@ function Stepper({ current }: { current: number }) {
             <li
               key={s.id}
               className={cn(
-                'flex shrink-0 items-center gap-2',
+                'flex flex-col items-center',
                 i < steps.length - 1 && 'flex-1',
               )}
             >
-              <div
-                className={cn(
-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 font-bold transition-all',
-                  active &&
-                    'border-gold-500 bg-gold-500 text-navy-500 shadow-md',
-                  done && 'border-gold-500 bg-gold-500 text-navy-500',
-                  !active && !done && 'border-neutral-300 text-neutral-400',
-                )}
-              >
-                {done ? <Check className="h-4 w-4" /> : i + 1}
-              </div>
-              <div className="hidden min-w-0 flex-1 md:block">
-                <p
-                  className={cn(
-                    'truncate text-xs font-bold uppercase tracking-widest',
-                    active || done ? 'text-navy-500' : 'text-navy-300',
-                  )}
-                >
-                  {s.title}
-                </p>
-              </div>
-              {i < steps.length - 1 && (
+              <div className="flex w-full items-center">
+                <div className="flex-1 md:hidden" />
                 <div
                   className={cn(
-                    'hidden h-px flex-1 transition-colors md:block',
-                    done ? 'bg-gold-500' : 'bg-neutral-300',
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-all',
+                    active &&
+                      'border-gold-500 bg-gold-500 text-navy-500 shadow-md',
+                    done && 'border-gold-500 bg-gold-500 text-navy-500',
+                    !active && !done && 'border-neutral-300 text-neutral-400',
                   )}
-                />
-              )}
+                >
+                  {done ? <Check className="h-4 w-4" /> : i + 1}
+                </div>
+                {i < steps.length - 1 && (
+                  <div
+                    className={cn(
+                      'mx-1 h-px flex-1 transition-colors md:mx-2',
+                      done ? 'bg-gold-500' : 'bg-neutral-300',
+                    )}
+                  />
+                )}
+              </div>
+              <p
+                className={cn(
+                  'mt-2 hidden text-center text-[10px] font-bold uppercase tracking-widest md:block',
+                  active || done ? 'text-navy-500' : 'text-navy-300',
+                )}
+                style={
+                  i < steps.length - 1
+                    ? { marginRight: 'calc(50% - 18px - 8px)' }
+                    : undefined
+                }
+              >
+                {s.title}
+              </p>
             </li>
           )
         })}
