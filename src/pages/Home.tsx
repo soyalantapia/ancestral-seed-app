@@ -48,7 +48,7 @@ function Hero() {
               <Button
                 variant="gold"
                 size="lg"
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/certificar')}
               >
                 Certificar Producto
               </Button>
@@ -351,7 +351,7 @@ function CTASection() {
             personalizado.
           </p>
           <Link
-            to="/login"
+            to="/certificar"
             className={cn(
               buttonVariants({ variant: 'gold', size: 'lg' }),
               'mt-7',

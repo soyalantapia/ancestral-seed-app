@@ -46,7 +46,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto hidden items-center gap-3 lg:flex">
-          <Button variant="gold" size="md" onClick={() => navigate('/login')}>
+          <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
             Certificar Producto
           </Button>
           <Button
@@ -110,7 +110,7 @@ export function Header() {
                 ))}
                 <div className="mt-4 flex flex-col gap-2 border-t border-neutral-200 pt-4">
                   <Link
-                    to="/login"
+                    to="/certificar"
                     onClick={closeMobileMenu}
                     className={cn(
                       buttonVariants({ variant: 'gold', size: 'lg' }),
