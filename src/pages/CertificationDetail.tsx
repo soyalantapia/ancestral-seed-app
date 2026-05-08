@@ -8,14 +8,16 @@ import {
   ChevronRight as ArrowRight,
   Download,
   ExternalLink,
+  FileCheck2,
   Flag,
-  Leaf,
   Mail,
-  MapPin,
+  Network,
+  Search as SearchIcon,
   Share2,
   ShieldCheck,
   Sprout,
   Star,
+  Users,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -191,7 +193,7 @@ export default function CertificationDetail() {
         <div className="mx-auto max-w-[1320px] px-4 pb-10 md:px-8 md:pb-12">
           <div className="rounded-3xl border border-neutral-200 bg-white p-8 md:p-10">
             <h2 className="flex items-center gap-2 text-base font-bold text-navy-500">
-              <Leaf className="h-4 w-4 text-gold-700" />
+              <Users className="h-4 w-4 text-gold-700" />
               Comunidad y región
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-navy-300">
@@ -308,17 +310,17 @@ function Gallery({
         type="button"
         aria-label="Anterior"
         onClick={() => setIndex(Math.max(0, index - 1))}
-        className="absolute -left-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-300 bg-white text-navy-500 shadow-md transition-colors hover:bg-neutral-100 md:flex"
+        className="absolute -left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-lg transition-all hover:scale-110 hover:bg-gold-400 md:flex"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-5 w-5" />
       </button>
       <button
         type="button"
         aria-label="Siguiente"
         onClick={() => setIndex(Math.min(items.length - 1, index + 1))}
-        className="absolute -right-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-300 bg-white text-navy-500 shadow-md transition-colors hover:bg-neutral-100 md:flex"
+        className="absolute -right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-lg transition-all hover:scale-110 hover:bg-gold-400 md:flex"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-5 w-5" />
       </button>
     </div>
   )
@@ -327,58 +329,21 @@ function Gallery({
 function MapPreview({ region }: { region: string }) {
   return (
     <div className="mt-10 overflow-hidden rounded-3xl border border-neutral-200">
-      <div className="relative aspect-[16/7] bg-gradient-to-br from-emerald-50 via-amber-50 to-emerald-100">
-        <svg
-          viewBox="0 0 1600 700"
-          preserveAspectRatio="xMidYMid slice"
-          className="absolute inset-0 h-full w-full"
-          aria-hidden
-        >
-          <defs>
-            <pattern id="m-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(0,28,56,0.04)" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="1600" height="700" fill="url(#m-grid)" />
-          <path
-            d="M100 200 Q280 240 380 220 T620 280 Q780 320 880 300 T1180 360 Q1320 380 1420 350"
-            stroke="#65a83a"
-            strokeWidth="2"
-            strokeOpacity="0.25"
-            fill="none"
-          />
-          <path
-            d="M450 250 L520 190 L600 230 L680 200 L760 260 Z M780 320 L880 290 L920 360 L820 400 Z M180 420 L300 380 L360 450 L240 480 Z"
-            fill="rgba(101, 168, 58, 0.18)"
-            stroke="rgba(101, 168, 58, 0.4)"
-            strokeWidth="1"
-          />
-          <text x="320" y="180" fontSize="14" fill="rgba(0,28,56,0.5)">
-            Tumaco
-          </text>
-          <text x="540" y="160" fontSize="14" fill="rgba(0,28,56,0.5)">
-            Popayán
-          </text>
-          <text x="900" y="240" fontSize="14" fill="rgba(0,28,56,0.5)">
-            La Plata
-          </text>
-          <text x="1100" y="380" fontSize="14" fill="rgba(0,28,56,0.5)">
-            Florencia
-          </text>
-        </svg>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="relative">
-            <span className="absolute -inset-2 animate-ping rounded-full bg-error-400/30" />
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-error-400 text-white shadow-xl">
-              <MapPin className="h-5 w-5" />
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-navy-500 shadow">
-          Alunawa · {region}
+      <div className="relative aspect-[16/7] bg-neutral-100">
+        <iframe
+          title="Mapa de origen"
+          src="https://www.google.com/maps?q=Sierra+Nevada+de+Santa+Marta,+Colombia&t=m&z=7&ie=UTF8&output=embed"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          className="absolute inset-0 h-full w-full border-0"
+        />
+        <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-navy-500 shadow">
+          {region}
           <a
-            href="#"
-            className="ml-2 inline-flex items-center gap-1 text-gold-700 hover:underline"
+            href="https://www.google.com/maps/search/Sierra+Nevada+de+Santa+Marta"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto ml-2 inline-flex items-center gap-1 text-gold-700 hover:underline"
           >
             <ExternalLink className="h-3 w-3" />
           </a>
@@ -390,10 +355,10 @@ function MapPreview({ region }: { region: string }) {
 
 function MethodologySection() {
   const items = [
-    { label: 'Auditoría Personalizada', icon: ShieldCheck },
-    { label: 'Verificación Comunitaria', icon: Leaf },
-    { label: 'Integridad Blockchain', icon: ShieldCheck },
-    { label: 'Criterios Ponderados', icon: Award },
+    { label: 'Auditoría\nPersonalizada', icon: SearchIcon },
+    { label: 'Verificación\nComunitaria', icon: Users },
+    { label: 'Integridad\nBlockchain', icon: Network },
+    { label: 'Criterios\nPonderados', icon: FileCheck2 },
   ]
   return (
     <section className="relative overflow-hidden">
@@ -415,14 +380,16 @@ function MethodologySection() {
           ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
           aliquip ex ea commodo consequat.
         </p>
-        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {items.map(({ label, icon: Icon }) => (
             <button
               key={label}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gold-500 px-4 text-sm font-semibold text-navy-500 shadow-md transition-all hover:bg-gold-400 hover:scale-[1.02]"
+              className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-gold-500 px-5 text-sm font-semibold text-navy-500 shadow-md transition-all hover:bg-gold-400 hover:scale-[1.02]"
             >
-              <Icon className="h-4 w-4" />
-              <span className="text-left leading-tight">{label}</span>
+              <Icon className="h-5 w-5 shrink-0" />
+              <span className="whitespace-pre-line text-left leading-tight">
+                {label}
+              </span>
             </button>
           ))}
         </div>
