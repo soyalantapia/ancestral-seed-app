@@ -334,16 +334,16 @@ function FeaturedCertifications() {
 function CTASection() {
   return (
     <section className="px-4 pb-16 md:px-8 md:pb-20">
-      <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-3xl">
+      <div className="relative mx-auto max-w-[1320px] overflow-hidden rounded-3xl shadow-xl">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/65 to-navy-500/85" />
-        <div className="relative z-10 px-6 py-12 text-center text-white md:px-12 md:py-16">
-          <h3 className="text-2xl font-bold md:text-3xl">
+        <div className="absolute inset-0 bg-navy-500/70" />
+        <div className="relative z-10 flex flex-col items-center px-6 py-14 text-center text-white md:px-12 md:py-20">
+          <h3 className="text-2xl font-bold md:text-3xl lg:text-[32px]">
             Comienza tu certificación ancestral
           </h3>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-200 md:text-base">
