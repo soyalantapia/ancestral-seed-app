@@ -175,11 +175,9 @@
 
 .bg-pattern-aztec {
   background-color: #001c38;
-  background-image:
-    radial-gradient(circle at 15% 15%, rgba(199, 168, 0, 0.08) 0, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(199, 168, 0, 0.06) 0, transparent 35%),
-    radial-gradient(circle at 50% 100%, rgba(199, 168, 0, 0.05) 0, transparent 50%);
-  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' preserveAspectRatio='none'><g fill='none' stroke='%23193456' stroke-width='1.2'><path d='M0 60 L60 0 L120 60 L60 120 Z'/><path d='M30 60 L60 30 L90 60 L60 90 Z'/><path d='M0 0 L20 20 M120 0 L100 20 M0 120 L20 100 M120 120 L100 100'/></g><g fill='%23193456' opacity='0.5'><circle cx='60' cy='60' r='1.5'/><circle cx='0' cy='60' r='1.5'/><circle cx='120' cy='60' r='1.5'/><circle cx='60' cy='0' r='1.5'/><circle cx='60' cy='120' r='1.5'/></g></svg>");
+  background-size: 120px 120px;
+  background-repeat: repeat;
 }
 
 .bg-pattern-navy {
