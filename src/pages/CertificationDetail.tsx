@@ -101,16 +101,16 @@ export default function CertificationDetail() {
                 </button>
               </div>
 
-              <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm">
                 <div className="flex items-center gap-4">
                   <img
                     src={cert.authorAvatarUrl || 'https://i.pravatar.cc/200?img=47'}
                     alt={authorName}
-                    className="h-12 w-12 rounded-full border border-neutral-200 object-cover"
+                    className="h-14 w-14 rounded-full border border-neutral-200 object-cover"
                   />
                   <div className="flex-1">
-                    <p className="text-xs text-navy-300">Autor</p>
-                    <div className="flex items-center gap-2">
+                    <p className="text-xs font-medium text-navy-300">Autor</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <p className="text-base font-bold text-navy-500">
                         {authorName}
                       </p>
@@ -160,8 +160,8 @@ export default function CertificationDetail() {
                   />
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-200 pt-4">
-                  <button className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100">
+                <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-200 pt-5">
+                  <button className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200">
                     <Mail className="h-3.5 w-3.5" />
                     Contactar
                   </button>
@@ -170,14 +170,14 @@ export default function CertificationDetail() {
                       navigator.clipboard.writeText(window.location.href)
                       toast.success('Link copiado')
                     }}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
                   >
                     <Share2 className="h-3.5 w-3.5" />
                     Compartir
                   </button>
                   <button
                     onClick={() => setShowReport(true)}
-                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
                   >
                     <Flag className="h-3.5 w-3.5" />
                     Reportar
@@ -191,7 +191,7 @@ export default function CertificationDetail() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 pb-10 md:px-8 md:pb-12">
-          <div className="rounded-3xl border border-neutral-200 bg-white p-8 md:p-10">
+          <div className="bg-white px-1 md:px-2">
             <h2 className="flex items-center gap-2 text-base font-bold text-navy-500">
               <Users className="h-4 w-4 text-gold-700" />
               Comunidad y región

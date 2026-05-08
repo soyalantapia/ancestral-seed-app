@@ -183,8 +183,8 @@
 /* Strip pattern band (used between header and content) */
 .bg-pattern-strip {
   background-color: #001c38;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60' preserveAspectRatio='none'><g fill='none' stroke='%23173053' stroke-width='1.5'><path d='M0 0 L15 15 L0 30 L15 45 L0 60'/><path d='M15 0 L30 15 L15 30 L30 45 L15 60'/><path d='M30 0 L45 15 L30 30 L45 45 L30 60'/><path d='M45 0 L60 15 L45 30 L60 45 L45 60'/></g></svg>");
-  background-size: 60px 60px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' preserveAspectRatio='none'><g fill='none' stroke='%23193456' stroke-width='1.25'><path d='M0 0 L10 10 L0 20 L10 30 L0 40'/><path d='M10 0 L20 10 L10 20 L20 30 L10 40'/><path d='M20 0 L30 10 L20 20 L30 30 L20 40'/><path d='M30 0 L40 10 L30 20 L40 30 L30 40'/></g></svg>");
+  background-size: 40px 40px;
   background-repeat: repeat;
 }
 
