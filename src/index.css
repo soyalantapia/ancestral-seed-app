@@ -175,8 +175,16 @@
 
 .bg-pattern-aztec {
   background-color: #001c38;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' preserveAspectRatio='none'><g fill='none' stroke='%23193456' stroke-width='1.2'><path d='M0 60 L60 0 L120 60 L60 120 Z'/><path d='M30 60 L60 30 L90 60 L60 90 Z'/><path d='M0 0 L20 20 M120 0 L100 20 M0 120 L20 100 M120 120 L100 100'/></g><g fill='%23193456' opacity='0.5'><circle cx='60' cy='60' r='1.5'/><circle cx='0' cy='60' r='1.5'/><circle cx='120' cy='60' r='1.5'/><circle cx='60' cy='0' r='1.5'/><circle cx='60' cy='120' r='1.5'/></g></svg>");
-  background-size: 120px 120px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' preserveAspectRatio='none'><g fill='none' stroke='%23193456' stroke-width='2'><path d='M0 0 L20 20 L0 40 M20 20 L40 0 M40 0 L60 20 L40 40 M60 20 L80 0 M0 40 L20 60 L0 80 M20 60 L40 40 M40 40 L60 60 L40 80 M60 60 L80 40'/></g></svg>");
+  background-size: 80px 80px;
+  background-repeat: repeat;
+}
+
+/* Strip pattern band (used between header and content) */
+.bg-pattern-strip {
+  background-color: #001c38;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60' preserveAspectRatio='none'><g fill='none' stroke='%23173053' stroke-width='1.5'><path d='M0 0 L15 15 L0 30 L15 45 L0 60'/><path d='M15 0 L30 15 L15 30 L30 45 L15 60'/><path d='M30 0 L45 15 L30 30 L45 45 L30 60'/><path d='M45 0 L60 15 L45 30 L60 45 L45 60'/></g></svg>");
+  background-size: 60px 60px;
   background-repeat: repeat;
 }
 
