@@ -15,6 +15,7 @@ import {
 import { Header } from './Header'
 import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
+import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
@@ -48,6 +49,9 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
     setConfirmLogout(false)
     navigate('/')
   }
+
+  useEscape(confirmLogout, () => setConfirmLogout(false))
+  useEscape(drawerOpen, () => setDrawerOpen(false))
 
   // Close drawer on route change
   const closeOnNav = () => setDrawerOpen(false)

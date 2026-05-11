@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -21,7 +21,9 @@ type FormData = z.infer<typeof schema>
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const setSession = useAuthStore((s) => s.setSession)
+  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/inicio'
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,
@@ -34,7 +36,7 @@ export default function Login() {
       const res = await api.login(data)
       setSession(res.user, res.token)
       toast.success('¡Bienvenida de vuelta!')
-      navigate('/inicio')
+      navigate(redirectTo, { replace: true })
     } catch (e) {
       toast.error((e as Error).message)
     }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Sparkles, X } from 'lucide-react'
 import { useUiStore } from '@/store/ui'
+import { useEscape } from '@/hooks/useEscape'
 
 const STEPS = [
   {
@@ -44,6 +45,8 @@ export function OnboardingTour() {
     dismiss('onboarding-tour')
     setShow(false)
   }
+
+  useEscape(show, close)
 
   if (!show) return null
 

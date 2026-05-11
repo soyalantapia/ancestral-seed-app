@@ -45,7 +45,7 @@ export default function DashboardHome() {
             <FileText className="h-8 w-8" />
           </div>
           <h1 className="mt-6 text-2xl font-bold md:text-[32px]">
-            Bienvenido {name} 👋
+            Hola {name} 👋
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-neutral-300 md:text-base">
             Tu cuenta está lista. Cuando inicies tu primera certificación,
@@ -86,7 +86,7 @@ export default function DashboardHome() {
       <OnboardingTour />
       <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">Inicio</h1>
       <p className="mt-2 max-w-3xl text-sm text-navy-300 md:text-base">
-        Bienvenido {name}. Desde aquí podrás ver el avance de tus certificaciones,
+        Hola {name}. Desde aquí podés ver el avance de tus certificaciones,
         armar tu perfil público y administrar tu información.
       </p>
 
@@ -242,7 +242,7 @@ export default function DashboardHome() {
               .flatMap((r) => r.pendingItems.map((p) => ({ req: r, label: p })))
               .map((t, i) => (
                 <li
-                  key={i}
+                  key={`${t.req.id}-${t.label}-${i}`}
                   className="flex items-start gap-3 rounded-2xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-100"
                 >
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-warning-300" />

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useEscape } from '@/hooks/useEscape'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -49,18 +50,30 @@ const tabs = [
 
 type Tab = (typeof tabs)[number]
 
+function tabFromParam(p: string | null): Tab {
+  if (p === 'evaluacion') return 'Evaluación'
+  if (p === 'evidencias') return 'Evidencias'
+  if (p === 'datos') return 'Datos de la solicitud'
+  if (p === 'pagos') return 'Pagos'
+  if (p === 'historial') return 'Historial'
+  return 'Seguimiento'
+}
+
 export default function CertificationRequest() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
-  const tabParam = params.get('tab')
-  const initialTab: Tab =
-    tabParam === 'evaluacion' ? 'Evaluación'
-    : tabParam === 'evidencias' ? 'Evidencias'
-    : tabParam === 'datos' ? 'Datos de la solicitud'
-    : tabParam === 'pagos' ? 'Pagos'
-    : tabParam === 'historial' ? 'Historial'
-    : 'Seguimiento'
-  const [tab, setTab] = useState<Tab>(initialTab)
+  const tab = tabFromParam(params.get('tab'))
+  const setTab = (t: Tab) => {
+    const slug =
+      t === 'Evaluación' ? 'evaluacion'
+      : t === 'Evidencias' ? 'evidencias'
+      : t === 'Datos de la solicitud' ? 'datos'
+      : t === 'Pagos' ? 'pagos'
+      : t === 'Historial' ? 'historial'
+      : ''
+    if (slug) setParams({ tab: slug }, { replace: true })
+    else setParams({}, { replace: true })
+  }
   const [reschedule, setReschedule] = useState<AuditMeeting | null>(null)
   const [confirmReject, setConfirmReject] = useState<AuditMeeting | null>(null)
   const [meetings, setMeetings] = useState<AuditMeeting[]>(
@@ -107,22 +120,11 @@ export default function CertificationRequest() {
       <div className="mt-6 overflow-x-auto">
         <div className="flex gap-2">
           {tabs.map((t) => {
-            const slug =
-              t === 'Evaluación' ? 'evaluacion'
-              : t === 'Evidencias' ? 'evidencias'
-              : t === 'Datos de la solicitud' ? 'datos'
-              : t === 'Pagos' ? 'pagos'
-              : t === 'Historial' ? 'historial'
-              : ''
             return (
               <button
                 key={t}
                 type="button"
-                onClick={() => {
-                  setTab(t)
-                  if (slug) setParams({ tab: slug }, { replace: true })
-                  else setParams({}, { replace: true })
-                }}
+                onClick={() => setTab(t)}
                 className={cn(
                   'whitespace-nowrap rounded-full px-5 py-2 text-sm font-bold transition-colors',
                   tab === t
@@ -219,6 +221,7 @@ function ConfirmRejectDialog({
   onClose: () => void
   onConfirm: (id: string) => void
 }) {
+  useEscape(Boolean(meeting), onClose)
   if (!meeting) return null
   return (
     <div
@@ -949,6 +952,7 @@ function ChangeRequestDialog({
   const [reason, setReason] = useState('')
   const [proposed, setProposed] = useState('')
 
+  useEscape(open, onClose)
   if (!open) return null
 
   const fieldOptions = [
@@ -1109,6 +1113,7 @@ function DiagnosticDialog({
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
 
+  useEscape(open, onClose)
   if (!open) return null
 
   const q = diagnosticQuestions[step]
@@ -1279,6 +1284,7 @@ function TutorSheet({
   onClose: () => void
   onMessage: () => void
 }) {
+  useEscape(Boolean(name), onClose)
   if (!name) return null
   const profile =
     tutorProfiles[name] ??
@@ -1400,10 +1406,11 @@ function MessageThreadSheet({
   const [draft, setDraft] = useState('')
 
   // Reset when meeting changes
-  useState(() => {
+  useEffect(() => {
     setMessages(thread)
-  })
+  }, [thread, meeting?.id])
 
+  useEscape(Boolean(meeting), onClose)
   if (!meeting) return null
 
   const handleSend = () => {
@@ -1544,6 +1551,7 @@ function RescheduleSheet({
   onClose: () => void
   onSubmit: (meeting: AuditMeeting, formatted: string) => void
 }) {
+  useEscape(Boolean(meeting), onClose)
   const today = new Date()
   const [month, setMonth] = useState(today.getMonth())
   const [year, setYear] = useState(today.getFullYear())

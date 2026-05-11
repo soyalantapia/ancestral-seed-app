@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/features/Layout'
-import { DashboardLayout } from '@/components/features/DashboardLayout'
+import { RequireAuth } from '@/components/features/RequireAuth'
 import Home from '@/pages/Home'
 import Directory from '@/pages/Directory'
 import CertificationDetail from '@/pages/CertificationDetail'
@@ -39,7 +39,7 @@ export const router = createBrowserRouter(
     },
     {
       path: '/',
-      element: <DashboardLayout />,
+      element: <RequireAuth />,
       children: [
         { path: 'inicio', element: <DashboardHome /> },
         { path: 'mis-certificaciones', element: <MyCertifications /> },

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useEscape } from '@/hooks/useEscape'
 import { Camera, CheckCircle2, Circle, Eye, Filter, MoreVertical, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
@@ -399,6 +400,20 @@ type HighlightTab = (typeof highlightTabs)[number]
 function Highlights() {
   const [tab, setTab] = useState<HighlightTab>('Todas')
   const [menuFor, setMenuFor] = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEscape(Boolean(menuFor), () => setMenuFor(null))
+
+  useEffect(() => {
+    if (!menuFor) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuFor(null)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuFor])
   const [items, setItems] = useState<HighlightItem[]>(() =>
     mockCertifications.slice(0, 3).map((c, i) => ({
       id: c.id,
@@ -530,8 +545,8 @@ function Highlights() {
               </button>
               {menuFor === it.id && (
                 <div
+                  ref={menuRef}
                   className="absolute right-0 top-12 z-20 w-44 rounded-2xl border border-neutral-200 bg-white py-2 shadow-lg"
-                  onMouseLeave={() => setMenuFor(null)}
                 >
                   <MenuButton icon={Pencil} label="Editar" onClick={() => { toast.info('Editar'); setMenuFor(null) }} />
                   <MenuButton icon={Eye} label="Vista previa" onClick={() => { toast.info('Vista previa'); setMenuFor(null) }} />

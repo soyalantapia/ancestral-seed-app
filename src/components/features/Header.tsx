@@ -5,19 +5,19 @@ import {
   CheckCheck,
   ChevronDown,
   ExternalLink,
+  Eye,
   FileText,
   LogIn,
   LogOut,
   Menu,
-  Search,
   Settings as SettingsIcon,
   UserRound,
   X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from './Logo'
-import { GlobalSearch } from './GlobalSearch'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { useEscape } from '@/hooks/useEscape'
 import { useUiStore } from '@/store/ui'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
@@ -45,7 +45,6 @@ export function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLDivElement>(null)
 
@@ -55,22 +54,6 @@ export function Header() {
     /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda)/.test(
       location.pathname,
     )
-
-  // Global keyboard shortcut for search (⌘K / Ctrl+K)
-  useEffect(() => {
-    if (!isAuthenticated) return
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        setSearchOpen((v) => !v)
-      }
-      if (e.key === 'Escape' && searchOpen) {
-        setSearchOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [isAuthenticated, searchOpen])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -91,6 +74,11 @@ export function Header() {
     setMenuOpen(false)
     setBellOpen(false)
   }, [location.pathname])
+
+  useEscape(menuOpen || bellOpen, () => {
+    setMenuOpen(false)
+    setBellOpen(false)
+  })
 
   const handleLogout = () => {
     clearSession()
@@ -138,21 +126,6 @@ export function Header() {
           </nav>
         )}
 
-        {/* Global search trigger (dashboard only) */}
-        {isDashboardRoute && (
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            className="ml-auto hidden h-10 max-w-md flex-1 items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 text-left text-sm text-navy-300 transition-colors hover:bg-neutral-200 md:flex md:ml-6"
-            aria-label="Buscar"
-          >
-            <Search className="h-4 w-4 shrink-0" />
-            <span className="flex-1 truncate">Buscar certificaciones, páginas…</span>
-            <kbd className="rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[10px] font-bold text-navy-300">
-              ⌘K
-            </kbd>
-          </button>
-        )}
 
         <div className={cn('hidden items-center gap-2 lg:flex', !isDashboardRoute && 'ml-auto')}>
           {!isAuthenticated && (
@@ -168,6 +141,17 @@ export function Header() {
                 Acceder
               </Button>
             </>
+          )}
+
+          {isAuthenticated && user?.authorSlug && (
+            <Link
+              to={`/perfil/${user.authorSlug}`}
+              title="Ver mi perfil público"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2 border-neutral-300 bg-white text-navy-500 transition-all hover:border-navy-500 hover:bg-neutral-100"
+              aria-label="Ver perfil público"
+            >
+              <Eye className="h-4 w-4" />
+            </Link>
           )}
 
           {isAuthenticated && (
@@ -335,24 +319,10 @@ export function Header() {
           )}
         </div>
 
-        {isDashboardRoute && (
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
-            aria-label="Buscar"
-          >
-            <Search className="h-5 w-5" />
-          </button>
-        )}
-
         <button
           type="button"
           onClick={toggleMobileMenu}
-          className={cn(
-            'flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden',
-            !isDashboardRoute && 'ml-auto',
-          )}
+          className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
           aria-label="Abrir menú"
           aria-expanded={isMobileMenuOpen}
         >
@@ -465,7 +435,6 @@ export function Header() {
         )}
       </AnimatePresence>
 
-      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   )
 }

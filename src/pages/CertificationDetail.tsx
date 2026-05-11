@@ -18,12 +18,14 @@ import {
   Sprout,
   Star,
   Users,
+  X,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { useCertification } from '@/hooks/useCertifications'
+import { useEscape } from '@/hooks/useEscape'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet } from '@/components/ui/sheet'
@@ -536,6 +538,7 @@ function ShareModal({
   url: string
   hash: string
 }) {
+  useEscape(open, onClose)
   if (!open) return null
 
   const text = `Conocé "${title}" — certificación cultural ancestral por ${author}. Ficha verificable en Ancestral Seed.`
@@ -587,7 +590,7 @@ function ShareModal({
             className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
             aria-label="Cerrar"
           >
-            <ExternalLink className="h-4 w-4 rotate-45" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 

@@ -29,12 +29,12 @@ export function Footer() {
           <div className="md:col-span-3">
             <ul className="flex flex-col gap-4 text-base text-white">
               <li>
-                <Link to="/" className="transition-colors hover:text-gold-400">
+                <Link to="/#beneficios" className="transition-colors hover:text-gold-400">
                   Beneficios
                 </Link>
               </li>
               <li>
-                <Link to="/" className="transition-colors hover:text-gold-400">
+                <Link to="/#como-funciona" className="transition-colors hover:text-gold-400">
                   ¿Cómo funciona?
                 </Link>
               </li>
@@ -47,7 +47,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/" className="transition-colors hover:text-gold-400">
+                <Link to="/ayuda" className="transition-colors hover:text-gold-400">
                   Q&amp;A
                 </Link>
               </li>

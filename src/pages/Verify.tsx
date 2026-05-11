@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api } from '@/services/api'
+import { useEscape } from '@/hooks/useEscape'
 import { cn } from '@/lib/utils'
 import type { Certification } from '@/types'
 
@@ -294,6 +295,7 @@ function ModalShell({
   children: React.ReactNode
   onClose: () => void
 }) {
+  useEscape(true, onClose)
   return (
     <motion.div
       initial={{ opacity: 0 }}

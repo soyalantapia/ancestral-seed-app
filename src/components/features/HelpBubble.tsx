@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, BookOpen, Headphones, HelpCircle, Mail, MessageSquare, X } from 'lucide-react'
+import { useEscape } from '@/hooks/useEscape'
 
 export function HelpBubble() {
   const [open, setOpen] = useState(false)
+  useEscape(open, () => setOpen(false))
 
   return (
     <>
