@@ -60,3 +60,55 @@ export interface LoginCredentials {
   email: string
   password: string
 }
+
+// ─── Dashboard / Certification Request lifecycle ─────────────────────────────
+export type RequestStage =
+  | 'prediagnostico'
+  | 'inicio'
+  | 'diagnostico'
+  | 'auditoria'
+  | 'evaluacion'
+  | 'certificacion'
+
+export type RequestStageStatus = 'completed' | 'in_progress' | 'pending'
+
+export type RequestTab =
+  | 'tab'
+  | 'En curso'
+  | 'En emisión'
+
+export interface RequestStageItem {
+  stage: RequestStage
+  label: string
+  status: RequestStageStatus
+  date?: string
+  description?: string
+}
+
+export type AuditMeetingStatus = 'pending' | 'accepted' | 'rejected' | 'rescheduled'
+
+export interface AuditMeeting {
+  id: string
+  auditorName: string
+  type: 'Videollamada' | 'Presencial'
+  scheduledAt: string
+  timezone: string
+  message: string
+  status: AuditMeetingStatus
+}
+
+export interface CertificationRequest {
+  id: string
+  number: string                // "#001"
+  productName: string
+  createdAt: string
+  currentStage: RequestStage
+  stages: RequestStageItem[]
+  pendingItems: string[]
+  meetings: AuditMeeting[]
+  scheduledMeetings: AuditMeeting[]
+  status: 'En curso' | 'En emisión' | 'Certificado'
+  progressLabel: string
+  diagnosticDeadline?: string
+  diagnosticCompleted?: boolean
+}

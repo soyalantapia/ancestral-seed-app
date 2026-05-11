@@ -1,9 +1,20 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import {
+  ChevronDown,
+  FileText,
+  LogIn,
+  LogOut,
+  Menu,
+  Settings as SettingsIcon,
+  UserRound,
+  X,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from './Logo'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useUiStore } from '@/store/ui'
+import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -14,48 +25,156 @@ const navItems = [
 
 export function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
   const isMobileMenuOpen = useUiStore((s) => s.isMobileMenuOpen)
   const toggleMobileMenu = useUiStore((s) => s.toggleMobileMenu)
   const closeMobileMenu = useUiStore((s) => s.closeMobileMenu)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const user = useAuthStore((s) => s.user)
+  const clearSession = useAuthStore((s) => s.clearSession)
+
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  const handleLogout = () => {
+    clearSession()
+    setMenuOpen(false)
+    navigate('/')
+  }
+
+  const homeLink = isAuthenticated ? '/inicio' : '/'
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-6 px-4 md:h-20 md:px-8">
-        <Link to="/" className="shrink-0">
+        <Link to={homeLink} className="shrink-0">
           <Logo />
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-7 lg:flex">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'text-sm font-medium transition-colors',
-                  isActive
-                    ? 'text-navy-500'
-                    : 'text-navy-300 hover:text-navy-500',
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        {!isAuthenticated && (
+          <nav className="hidden flex-1 items-center gap-7 lg:flex">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  cn(
+                    'text-sm font-medium transition-colors',
+                    isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        )}
 
-        <div className="ml-auto hidden items-center gap-3 lg:flex">
-          <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
-            Certificar Producto
-          </Button>
-          <Button
-            variant="navy"
-            size="md"
-            onClick={() => navigate('/verificar')}
-          >
-            Verificar Certificado
-          </Button>
+        <div className={cn('ml-auto hidden items-center gap-3 lg:flex', !isAuthenticated && 'flex-none')}>
+          {!isAuthenticated && (
+            <>
+              <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
+                Certificar Producto
+              </Button>
+              <Button variant="navy" size="md" onClick={() => navigate('/verificar')}>
+                Verificar Certificado
+              </Button>
+              <Button variant="outlineNavy" size="md" onClick={() => navigate('/login')}>
+                <LogIn className="h-4 w-4" />
+                Acceder
+              </Button>
+            </>
+          )}
+
+          {isAuthenticated && (
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-full border-2 px-3 py-1.5 text-sm font-semibold transition-all',
+                  menuOpen
+                    ? 'border-navy-500 bg-navy-500 text-white'
+                    : 'border-navy-500 bg-white text-navy-500 hover:bg-neutral-100',
+                )}
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+              >
+                <img
+                  src={user?.avatarUrl ?? 'https://i.pravatar.cc/100?img=47'}
+                  alt={user?.name ?? 'Avatar'}
+                  className="h-7 w-7 rounded-full border-2 border-white object-cover"
+                />
+                <span className="max-w-[140px] truncate">
+                  {user?.name?.split(' ')[0] ?? 'Mi cuenta'}
+                </span>
+                <ChevronDown className={cn('h-4 w-4 transition-transform', menuOpen && 'rotate-180')} />
+              </button>
+
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl"
+                    role="menu"
+                  >
+                    {/* Identity header */}
+                    <div className="flex items-center gap-3 border-b border-neutral-200 px-4 py-4">
+                      <img
+                        src={user?.avatarUrl ?? 'https://i.pravatar.cc/100?img=47'}
+                        alt={user?.name ?? 'Avatar'}
+                        className="h-11 w-11 rounded-full object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-navy-500">
+                          {user?.name ?? 'Camila Montes'}
+                        </p>
+                        <p className="truncate text-xs text-navy-300">
+                          {user?.email ?? 'usuario@email.com'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Items */}
+                    <div className="py-2">
+                      <MenuItem to="/inicio" icon={UserRound} label="Mi cuenta" />
+                      <MenuItem to="/mis-certificaciones" icon={FileText} label="Mis certificaciones" />
+                      <MenuItem to="/configuracion" icon={SettingsIcon} label="Configuración" />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 border-t border-neutral-200 px-4 py-3 text-sm font-semibold text-error-400 transition-colors hover:bg-error-100"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Cerrar sesión
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
 
         <button
@@ -86,10 +205,20 @@ export function Header() {
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.25 }}
               onClick={(e) => e.stopPropagation()}
-              className="overflow-y-auto rounded-b-3xl border-t border-neutral-200 bg-white shadow-2xl"
+              className="max-h-[calc(100vh-64px)] overflow-y-auto rounded-b-3xl border-t border-neutral-200 bg-white shadow-2xl"
             >
               <div className="flex flex-col gap-1 p-5">
-                {navItems.map((item) => (
+                {isAuthenticated && user && (
+                  <div className="mb-2 flex items-center gap-3 rounded-2xl bg-neutral-200 px-4 py-3">
+                    <img src={user.avatarUrl ?? 'https://i.pravatar.cc/100?img=47'} alt="" className="h-10 w-10 rounded-full object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-navy-500">{user.name}</p>
+                      <p className="truncate text-xs text-navy-300">{user.email}</p>
+                    </div>
+                  </div>
+                )}
+
+                {!isAuthenticated && navItems.map((item) => (
                   <NavLink
                     key={item.label}
                     to={item.to}
@@ -98,9 +227,7 @@ export function Header() {
                     className={({ isActive }) =>
                       cn(
                         'flex items-center justify-between rounded-xl px-4 py-3.5 text-base font-medium transition-colors',
-                        isActive
-                          ? 'bg-gold-100 text-navy-500'
-                          : 'text-navy-300 hover:bg-neutral-100',
+                        isActive ? 'bg-gold-100 text-navy-500' : 'text-navy-300 hover:bg-neutral-100',
                       )
                     }
                   >
@@ -108,38 +235,57 @@ export function Header() {
                     <span className="text-navy-300">→</span>
                   </NavLink>
                 ))}
+
+                {isAuthenticated && (
+                  <>
+                    <MobileNavLink to="/inicio" icon={UserRound} label="Inicio" onClose={closeMobileMenu} />
+                    <MobileNavLink to="/mis-certificaciones" icon={FileText} label="Mis certificaciones" onClose={closeMobileMenu} />
+                    <MobileNavLink to="/mi-perfil" icon={UserRound} label="Mi perfil" onClose={closeMobileMenu} />
+                    <MobileNavLink to="/configuracion" icon={SettingsIcon} label="Configuración" onClose={closeMobileMenu} />
+                  </>
+                )}
+
                 <div className="mt-4 flex flex-col gap-2 border-t border-neutral-200 pt-4">
-                  <Link
-                    to="/certificar"
-                    onClick={closeMobileMenu}
-                    className={cn(
-                      buttonVariants({ variant: 'gold', size: 'lg' }),
-                      'w-full',
-                    )}
-                  >
-                    Certificar Producto
-                  </Link>
-                  <Link
-                    to="/verificar"
-                    onClick={closeMobileMenu}
-                    className={cn(
-                      buttonVariants({ variant: 'navy', size: 'lg' }),
-                      'w-full',
-                    )}
-                  >
-                    Verificar Certificado
-                  </Link>
-                </div>
-                <div className="mt-6 border-t border-neutral-200 pt-4 text-center">
-                  <p className="text-xs text-navy-300">
-                    ¿Tenés dudas?{' '}
-                    <a
-                      href="mailto:ancestralseed@email.com"
-                      className="font-semibold text-gold-700 hover:underline"
+                  {!isAuthenticated && (
+                    <>
+                      <Link
+                        to="/login"
+                        onClick={closeMobileMenu}
+                        className={cn(buttonVariants({ variant: 'outlineNavy', size: 'lg' }), 'w-full')}
+                      >
+                        <LogIn className="h-4 w-4" />
+                        Acceder
+                      </Link>
+                      <Link
+                        to="/certificar"
+                        onClick={closeMobileMenu}
+                        className={cn(buttonVariants({ variant: 'gold', size: 'lg' }), 'w-full')}
+                      >
+                        Certificar Producto
+                      </Link>
+                      <Link
+                        to="/verificar"
+                        onClick={closeMobileMenu}
+                        className={cn(buttonVariants({ variant: 'navy', size: 'lg' }), 'w-full')}
+                      >
+                        Verificar Certificado
+                      </Link>
+                    </>
+                  )}
+                  {isAuthenticated && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearSession()
+                        closeMobileMenu()
+                        navigate('/')
+                      }}
+                      className="flex items-center justify-center gap-2 rounded-full bg-error-100 px-5 py-3 text-sm font-semibold text-error-400 transition-colors hover:bg-error-200"
                     >
-                      Contactanos
-                    </a>
-                  </p>
+                      <LogOut className="h-4 w-4" />
+                      Cerrar sesión
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -147,5 +293,46 @@ export function Header() {
         )}
       </AnimatePresence>
     </header>
+  )
+}
+
+function MenuItem({ to, icon: Icon, label }: { to: string; icon: typeof UserRound; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy-500 transition-colors hover:bg-neutral-100"
+      role="menuitem"
+    >
+      <Icon className="h-4 w-4 text-navy-300" />
+      {label}
+    </Link>
+  )
+}
+
+function MobileNavLink({
+  to,
+  icon: Icon,
+  label,
+  onClose,
+}: {
+  to: string
+  icon: typeof UserRound
+  label: string
+  onClose: () => void
+}) {
+  return (
+    <NavLink
+      to={to}
+      onClick={onClose}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-colors',
+          isActive ? 'bg-gold-100 text-navy-500' : 'text-navy-300 hover:bg-neutral-100',
+        )
+      }
+    >
+      <Icon className="h-5 w-5" />
+      {label}
+    </NavLink>
   )
 }

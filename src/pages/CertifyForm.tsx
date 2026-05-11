@@ -17,11 +17,12 @@ import { useForm, FormProvider, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Logo } from '@/components/features/Logo'
 import { useCertifyFormStore, type CertifyFormData } from '@/store/certifyForm'
+import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
 
 // Per-step zod schemas
@@ -101,6 +102,7 @@ const benefits = [
 export default function CertifyForm() {
   const navigate = useNavigate()
   const { data, step, setStep, updateData, reset } = useCertifyFormStore()
+  const setSession = useAuthStore((s) => s.setSession)
   const [submitted, setSubmitted] = useState(false)
 
   const schema = stepSchemas[step]
@@ -139,10 +141,35 @@ export default function CertifyForm() {
     toast.success('Solicitud enviada · Recibirás novedades en tu email')
     setSubmitted(true)
     updateData(final)
+    // Auto-login del solicitante con los datos del form para que pueda
+    // entrar al área de seguimiento.
+    setSession(
+      {
+        id: 'u-001',
+        email: final.email ?? 'usuario@email.com',
+        name: final.applicantName ?? 'Solicitante',
+        avatarUrl: 'https://i.pravatar.cc/300?img=47',
+        authorSlug: 'camila-montes',
+      },
+      'demo-token',
+    )
   }
 
   if (submitted) {
-    return <SuccessState onReset={() => { reset(); setSubmitted(false); navigate('/') }} />
+    return (
+      <SuccessState
+        onGoDashboard={() => {
+          reset()
+          setSubmitted(false)
+          navigate('/inicio')
+        }}
+        onReset={() => {
+          reset()
+          setSubmitted(false)
+          navigate('/')
+        }}
+      />
+    )
   }
 
   return (
@@ -1097,7 +1124,13 @@ function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
 // SUCCESS
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SuccessState({ onReset }: { onReset: () => void }) {
+function SuccessState({
+  onReset,
+  onGoDashboard,
+}: {
+  onReset: () => void
+  onGoDashboard: () => void
+}) {
   return (
     <section className="bg-pattern-gold py-16 md:py-24">
       <div className="mx-auto max-w-2xl px-4 md:px-8">
@@ -1127,11 +1160,11 @@ function SuccessState({ onReset }: { onReset: () => void }) {
             <ul className="flex flex-col gap-2 text-navy-300">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
-                Revisamos la documentación enviada.
+                Te creamos tu panel de seguimiento donde vas a ver el avance.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
-                Coordinamos una entrevista con curadores culturales.
+                Un curador te contacta para coordinar la auditoría.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
@@ -1141,12 +1174,13 @@ function SuccessState({ onReset }: { onReset: () => void }) {
             </ul>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              to="/directorio"
+            <button
+              type="button"
+              onClick={onGoDashboard}
               className={cn(buttonVariants({ variant: 'gold', size: 'lg' }))}
             >
-              Ver directorio
-            </Link>
+              Ir a mi panel
+            </button>
             <button
               type="button"
               onClick={onReset}

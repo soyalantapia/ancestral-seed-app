@@ -34,7 +34,7 @@ export default function Login() {
       const res = await api.login(data)
       setSession(res.user, res.token)
       toast.success('¡Bienvenida de vuelta!')
-      navigate(`/perfil/${res.user.authorSlug ?? ''}`)
+      navigate('/inicio')
     } catch (e) {
       toast.error((e as Error).message)
     }
@@ -126,6 +126,16 @@ export default function Login() {
                 {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
             </form>
+
+            <p className="mt-6 text-center text-sm text-navy-300">
+              ¿No tenés cuenta?{' '}
+              <Link
+                to="/certificar"
+                className="font-semibold text-gold-700 hover:underline"
+              >
+                Iniciá tu certificación
+              </Link>
+            </p>
           </div>
         </div>
       </div>

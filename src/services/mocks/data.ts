@@ -1,4 +1,8 @@
-import type { Author, Certification } from '@/types'
+import type {
+  Author,
+  Certification,
+  CertificationRequest,
+} from '@/types'
 
 const PLACEHOLDER = '__placeholder__'
 
@@ -216,3 +220,67 @@ export const mockUser = {
 }
 
 export const PLACEHOLDER_TOKEN = PLACEHOLDER
+
+// ─── Dashboard mocks ─────────────────────────────────────────────────────────
+
+export const mockCertificationRequests: CertificationRequest[] = [
+  {
+    id: 'req-001',
+    number: '#001',
+    productName: 'Filigrana ancestral',
+    createdAt: '2026-02-01',
+    currentStage: 'prediagnostico',
+    status: 'En curso',
+    progressLabel: 'Revisión inicial por auditor',
+    diagnosticDeadline: '15/03',
+    diagnosticCompleted: false,
+    pendingItems: ['Diagnóstico inicial', 'Auditoría pendiente'],
+    stages: [
+      {
+        stage: 'prediagnostico',
+        label: 'Prediagnóstico',
+        status: 'in_progress',
+        date: 'Fecha - Hora',
+        description: 'Descripcion breve',
+      },
+      {
+        stage: 'inicio',
+        label: 'Inicio del proceso',
+        status: 'pending',
+      },
+      {
+        stage: 'diagnostico',
+        label: 'Diagnóstico',
+        status: 'pending',
+      },
+      {
+        stage: 'auditoria',
+        label: 'Auditoría',
+        status: 'pending',
+      },
+      {
+        stage: 'evaluacion',
+        label: 'Evaluación',
+        status: 'pending',
+      },
+      {
+        stage: 'certificacion',
+        label: 'Certificación',
+        status: 'pending',
+      },
+    ],
+    meetings: [
+      {
+        id: 'm-001',
+        auditorName: 'Lic. Juan Pérez',
+        type: 'Videollamada',
+        scheduledAt: '2026-02-12T10:00:00-03:00',
+        timezone: 'GMT-3',
+        message:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et.',
+        status: 'pending',
+      },
+    ],
+    scheduledMeetings: [],
+  },
+]
