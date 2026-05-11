@@ -13,12 +13,14 @@ import {
   X,
 } from 'lucide-react'
 import { Header } from './Header'
+import { Footer } from './Footer'
 import { useAuthStore } from '@/store/auth'
+import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
 const generalItems = [
   { to: '/inicio', icon: Home, label: 'Inicio' },
-  { to: '/notificaciones', icon: Bell, label: 'Notificaciones' },
+  { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: true },
   { to: '/mis-certificaciones', icon: FileText, label: 'Mis certificaciones' },
 ]
 
@@ -33,11 +35,16 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const clearSession = useAuthStore((s) => s.clearSession)
+  const unread = useNotificationsStore((s) =>
+    s.items.filter((n) => !n.read).length,
+  )
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
 
   const handleLogout = () => {
     clearSession()
     setDrawerOpen(false)
+    setConfirmLogout(false)
     navigate('/')
   }
 
@@ -74,7 +81,12 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           General
         </p>
         {generalItems.map((item) => (
-          <SidebarLink key={item.to} {...item} onClose={closeOnNav} />
+          <SidebarLink
+            key={item.to}
+            {...item}
+            badge={item.badge && unread > 0 ? unread : undefined}
+            onClose={closeOnNav}
+          />
         ))}
         <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
           Mi cuenta
@@ -85,7 +97,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
       </nav>
       <button
         type="button"
-        onClick={handleLogout}
+        onClick={() => setConfirmLogout(true)}
         className="m-4 inline-flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-neutral-300 transition-colors hover:bg-navy-400 hover:text-white"
       >
         <LogOut className="h-5 w-5" />
@@ -159,8 +171,59 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         {/* Main */}
         <main className="flex-1 bg-white">
           {children ?? <Outlet />}
+          <Footer />
         </main>
       </div>
+
+      {/* Logout confirm */}
+      <AnimatePresence>
+        {confirmLogout && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+            onClick={() => setConfirmLogout(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-warning-100 text-warning-400">
+                <LogOut className="h-6 w-6" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-navy-500">
+                ¿Cerrar sesión?
+              </h3>
+              <p className="mt-2 text-sm text-navy-300">
+                Vas a salir de tu cuenta. Tus cambios sin guardar se van a perder.
+              </p>
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setConfirmLogout(false)}
+                  className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Cerrar sesión
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -169,11 +232,13 @@ function SidebarLink({
   to,
   icon: Icon,
   label,
+  badge,
   onClose,
 }: {
   to: string
   icon: typeof Home
   label: string
+  badge?: number
   onClose?: () => void
 }) {
   return (
@@ -191,7 +256,12 @@ function SidebarLink({
       }
     >
       <Icon className="h-5 w-5" strokeWidth={1.75} />
-      {label}
+      <span className="flex-1">{label}</span>
+      {badge ? (
+        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold-500 px-1.5 text-xs font-bold text-navy-500">
+          {badge > 9 ? '9+' : badge}
+        </span>
+      ) : null}
     </NavLink>
   )
 }

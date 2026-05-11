@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Camera, Eye, Filter, MoreVertical, Pencil, Plus, Save, Trash2 } from 'lucide-react'
+import { Camera, CheckCircle2, Circle, Eye, Filter, MoreVertical, Pencil, Plus, Save, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/auth'
@@ -87,12 +87,65 @@ export default function MyProfile() {
     toast.info('Cambios descartados')
   }
 
+  // Profile completion calculation
+  const fields: Array<[string, boolean]> = [
+    ['Nombre completo', Boolean(data.name)],
+    ['Email', Boolean(data.email)],
+    ['Teléfono', Boolean(data.phone)],
+    ['País y región', Boolean(data.country && data.region)],
+    ['Biografía', data.bio.length > 50],
+    ['Comunidad y rol', Boolean(data.community && data.role)],
+    ['Historia', data.history.length > 50],
+    ['Foto de portada', Boolean(data.coverUrl)],
+    ['Avatar personalizado', Boolean(data.avatarUrl)],
+  ]
+  const completedCount = fields.filter(([, ok]) => ok).length
+  const completionPct = Math.round((completedCount / fields.length) * 100)
+
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
       <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">Mi perfil</h1>
       <p className="mt-1 text-sm text-navy-300 md:text-base">
         Administrá tu perfil y tus destacados, y visualizá tus certificaciones públicas.
       </p>
+
+      {/* Profile completion */}
+      {completionPct < 100 && tab === 'Mi perfil' && (
+        <div className="mt-6 overflow-hidden rounded-3xl border border-gold-300 bg-gold-100/50 p-5 md:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-navy-500">
+                Completá tu perfil para destacar tu trabajo
+              </p>
+              <p className="mt-1 text-xs text-navy-300 md:text-sm">
+                {completedCount} de {fields.length} secciones completadas. Un
+                perfil completo aumenta tus chances de ser destacado.
+              </p>
+            </div>
+            <span className="rounded-full bg-gold-500 px-3 py-1 text-sm font-bold text-navy-500">
+              {completionPct}%
+            </span>
+          </div>
+          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/60">
+            <div
+              className="h-full rounded-full bg-gold-500 transition-all"
+              style={{ width: `${completionPct}%` }}
+            />
+          </div>
+          <ul className="mt-4 grid grid-cols-1 gap-1.5 text-xs md:grid-cols-3">
+            {fields.map(([label, ok]) => (
+              <li key={label} className="flex items-center gap-2">
+                {ok ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success-300" />
+                ) : (
+                  <Circle className="h-3.5 w-3.5 shrink-0 text-navy-300" />
+                )}
+                <span className={ok ? 'text-navy-500' : 'text-navy-300'}>{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">

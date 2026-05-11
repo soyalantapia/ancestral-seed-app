@@ -2,6 +2,7 @@ import type {
   Author,
   Certification,
   CertificationRequest,
+  Notification,
 } from '@/types'
 
 const PLACEHOLDER = '__placeholder__'
@@ -243,31 +244,11 @@ export const mockCertificationRequests: CertificationRequest[] = [
         date: 'Fecha - Hora',
         description: 'Descripcion breve',
       },
-      {
-        stage: 'inicio',
-        label: 'Inicio del proceso',
-        status: 'pending',
-      },
-      {
-        stage: 'diagnostico',
-        label: 'Diagnóstico',
-        status: 'pending',
-      },
-      {
-        stage: 'auditoria',
-        label: 'Auditoría',
-        status: 'pending',
-      },
-      {
-        stage: 'evaluacion',
-        label: 'Evaluación',
-        status: 'pending',
-      },
-      {
-        stage: 'certificacion',
-        label: 'Certificación',
-        status: 'pending',
-      },
+      { stage: 'inicio', label: 'Inicio del proceso', status: 'pending' },
+      { stage: 'diagnostico', label: 'Diagnóstico', status: 'pending' },
+      { stage: 'auditoria', label: 'Auditoría', status: 'pending' },
+      { stage: 'evaluacion', label: 'Evaluación', status: 'pending' },
+      { stage: 'certificacion', label: 'Certificación', status: 'pending' },
     ],
     meetings: [
       {
@@ -277,10 +258,89 @@ export const mockCertificationRequests: CertificationRequest[] = [
         scheduledAt: '2026-02-12T10:00:00-03:00',
         timezone: 'GMT-3',
         message:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et.',
+          'Hola Camila, te propongo una primera reunión para revisar la documentación que enviaste. Confirmame si te queda cómodo el horario.',
         status: 'pending',
       },
     ],
     scheduledMeetings: [],
+  },
+  {
+    id: 'req-002',
+    number: '#002',
+    productName: 'Tejido en telar ancestral',
+    createdAt: '2025-11-08',
+    currentStage: 'evaluacion',
+    status: 'En emisión',
+    progressLabel: 'Revisión final · firma del hash blockchain',
+    diagnosticDeadline: undefined,
+    diagnosticCompleted: true,
+    pendingItems: ['Firma del hash'],
+    stages: [
+      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '08/11/2025' },
+      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '15/11/2025' },
+      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '02/12/2025' },
+      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '18/01/2026' },
+      { stage: 'evaluacion', label: 'Evaluación', status: 'in_progress', date: 'En curso' },
+      { stage: 'certificacion', label: 'Certificación', status: 'pending' },
+    ],
+    meetings: [],
+    scheduledMeetings: [
+      {
+        id: 'm-002',
+        auditorName: 'Mtra. Sofía Quispe',
+        type: 'Videollamada',
+        scheduledAt: '2026-05-20T14:00:00-03:00',
+        timezone: 'GMT-3',
+        message: 'Cierre de evaluación y revisión final.',
+        status: 'accepted',
+      },
+    ],
+  },
+]
+
+export const mockNotifications: Notification[] = [
+  {
+    id: 'n-001',
+    kind: 'audit_proposed',
+    title: 'Nueva propuesta de auditoría',
+    body: 'Lic. Juan Pérez propuso una videollamada el 12/02 a las 10:00 (GMT-3) para Filigrana ancestral.',
+    createdAt: '2026-05-10T15:30:00-03:00',
+    read: false,
+    link: '/mis-certificaciones/req-001?tab=evaluacion',
+  },
+  {
+    id: 'n-002',
+    kind: 'evidence_request',
+    title: 'Pedido de evidencias adicionales',
+    body: 'Para avanzar con el diagnóstico necesitamos 2 fotos más del proceso de hilado.',
+    createdAt: '2026-05-09T11:00:00-03:00',
+    read: false,
+    link: '/mis-certificaciones/req-001?tab=evidencias',
+  },
+  {
+    id: 'n-003',
+    kind: 'stage_changed',
+    title: 'Cambio de etapa',
+    body: 'Tejido en telar ancestral pasó a la etapa Evaluación.',
+    createdAt: '2026-04-28T09:15:00-03:00',
+    read: true,
+    link: '/mis-certificaciones/req-002',
+  },
+  {
+    id: 'n-004',
+    kind: 'message_received',
+    title: 'Mensaje de Mtra. Sofía Quispe',
+    body: 'Hola Camila, te confirmo la reunión del cierre de evaluación para el 20/05.',
+    createdAt: '2026-04-22T18:42:00-03:00',
+    read: true,
+    link: '/mis-certificaciones/req-002',
+  },
+  {
+    id: 'n-005',
+    kind: 'document_uploaded',
+    title: 'Documento subido correctamente',
+    body: 'Recibimos el archivo Aval-comunidad.pdf y lo asociamos a tu solicitud #001.',
+    createdAt: '2026-04-18T10:00:00-03:00',
+    read: true,
   },
 ]

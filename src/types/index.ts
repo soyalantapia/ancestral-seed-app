@@ -97,6 +97,25 @@ export interface AuditMeeting {
   status: AuditMeetingStatus
 }
 
+export type NotificationKind =
+  | 'audit_proposed'
+  | 'audit_accepted'
+  | 'evidence_request'
+  | 'stage_changed'
+  | 'message_received'
+  | 'document_uploaded'
+  | 'cert_published'
+
+export interface Notification {
+  id: string
+  kind: NotificationKind
+  title: string
+  body: string
+  createdAt: string // ISO
+  read: boolean
+  link?: string
+}
+
 export interface CertificationRequest {
   id: string
   number: string                // "#001"

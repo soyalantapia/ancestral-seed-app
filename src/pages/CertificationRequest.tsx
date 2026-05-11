@@ -50,8 +50,8 @@ export default function CertificationRequest() {
     mockCertificationRequests[0].meetings,
   )
 
-  const request = mockCertificationRequests.find((r) => r.id === id) ?? mockCertificationRequests[0]
-  if (!request) return <NotFound />
+  const request = mockCertificationRequests.find((r) => r.id === id)
+  if (!request) return <RequestNotFound />
 
   const updateMeeting = (id: string, status: AuditMeetingStatus) => {
     setMeetings((ms) => ms.map((m) => (m.id === id ? { ...m, status } : m)))
@@ -507,10 +507,23 @@ function HistorialTab() {
   )
 }
 
-function NotFound() {
+function RequestNotFound() {
   return (
-    <div className="px-10 py-20 text-center">
-      <p className="text-sm text-navy-300">Solicitud no encontrada.</p>
+    <div className="mx-auto max-w-xl px-6 py-20 text-center md:px-10">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-warning-100 text-warning-400">
+        <AlertTriangle className="h-8 w-8" />
+      </div>
+      <h2 className="mt-6 text-xl font-bold text-navy-500">Solicitud no encontrada</h2>
+      <p className="mt-2 text-sm text-navy-300">
+        El ID de solicitud que estás buscando no existe o no pertenece a tu cuenta.
+      </p>
+      <Link
+        to="/mis-certificaciones"
+        className="mt-6 inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Volver a Mis certificaciones
+      </Link>
     </div>
   )
 }
