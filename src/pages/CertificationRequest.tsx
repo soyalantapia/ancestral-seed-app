@@ -542,6 +542,7 @@ function formatHour(iso: string) {
 // ─── Tab: Datos de la solicitud ──────────────────────────────────────────────
 
 function DatosTab({ request }: { request: CertificationRequestType }) {
+  const [changeOpen, setChangeOpen] = useState(false)
   const d = request.submittedData
   if (!d) {
     return (
@@ -599,12 +600,18 @@ function DatosTab({ request }: { request: CertificationRequestType }) {
         </div>
         <button
           type="button"
-          onClick={() => toast.info('La edición de datos se habilita antes de la auditoría')}
+          onClick={() => setChangeOpen(true)}
           className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
         >
           Solicitar cambio
         </button>
       </div>
+
+      <ChangeRequestDialog
+        open={changeOpen}
+        onClose={() => setChangeOpen(false)}
+        request={request}
+      />
 
       {groups.map((g) => (
         <section key={g.title} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -923,6 +930,134 @@ function HistorialTab({ request }: { request: CertificationRequestType }) {
           <li className="ml-6 text-sm text-navy-300">No hay eventos aún.</li>
         )}
       </ol>
+    </div>
+  )
+}
+
+// ─── Change request dialog ───────────────────────────────────────────────────
+
+function ChangeRequestDialog({
+  open,
+  onClose,
+  request,
+}: {
+  open: boolean
+  onClose: () => void
+  request: CertificationRequestType
+}) {
+  const [field, setField] = useState('')
+  const [reason, setReason] = useState('')
+  const [proposed, setProposed] = useState('')
+
+  if (!open) return null
+
+  const fieldOptions = [
+    'Nombre del producto',
+    'Descripción del proceso',
+    'Comunidad / territorio',
+    'Tipo / sector',
+    'Subcategoría',
+    'Datos de contacto',
+    'Otro',
+  ]
+
+  const handleSubmit = () => {
+    if (!field) return toast.error('Elegí qué campo querés cambiar')
+    if (!reason.trim()) return toast.error('Contanos brevemente el motivo')
+    toast.success(`Solicitud de cambio enviada · El tutor te responderá en 24-48hs`)
+    setField('')
+    setReason('')
+    setProposed('')
+    onClose()
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <div>
+            <h2 className="text-lg font-bold text-navy-500">Solicitar cambio</h2>
+            <p className="mt-0.5 text-xs text-navy-300">
+              Solicitud {request.number} · {request.productName}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-6 py-6">
+          <p className="rounded-2xl bg-info-100 px-4 py-3 text-xs text-navy-500 ring-1 ring-info-200">
+            La edición directa de campos se habilita antes de la auditoría. Por
+            ahora, escribinos qué necesitás cambiar y el tutor lo revisa con vos.
+          </p>
+
+          <div>
+            <label className="text-sm font-bold text-navy-500">Campo a cambiar</label>
+            <select
+              value={field}
+              onChange={(e) => setField(e.target.value)}
+              className="mt-2 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            >
+              <option value="">Seleccionar…</option>
+              {fieldOptions.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-navy-500">Valor propuesto</label>
+            <input
+              type="text"
+              value={proposed}
+              onChange={(e) => setProposed(e.target.value)}
+              placeholder="¿Qué querés que diga ahora?"
+              className="mt-2 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-navy-500">Motivo del cambio</label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={4}
+              placeholder="Contanos por qué necesitás este cambio…"
+              className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-neutral-200 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+          >
+            <Send className="h-4 w-4" />
+            Enviar solicitud
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

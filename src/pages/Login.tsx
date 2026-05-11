@@ -110,7 +110,7 @@ export default function Login() {
                   </p>
                 )}
                 <Link
-                  to="/"
+                  to="/recuperar"
                   className="mt-2 block text-right text-xs text-navy-300 hover:text-gold-700"
                 >
                   ¿Olvidaste tu contraseña?

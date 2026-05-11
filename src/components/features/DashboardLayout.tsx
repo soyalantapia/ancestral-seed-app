@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { HelpBubble } from './HelpBubble'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
@@ -174,6 +175,8 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           <Footer />
         </main>
       </div>
+
+      <HelpBubble />
 
       {/* Logout confirm */}
       <AnimatePresence>

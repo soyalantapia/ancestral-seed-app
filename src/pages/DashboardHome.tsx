@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import {
+  Activity,
   AlertCircle,
   ArrowRight,
   CalendarClock,
@@ -33,6 +34,52 @@ export default function DashboardHome() {
   )
   const totalPending = requests.reduce((a, r) => a + r.pendingItems.length, 0)
   const name = user?.name?.split(' ')[0] ?? 'Camila'
+
+  // Empty welcome state for first-time users
+  if (requests.length === 0) {
+    return (
+      <div className="mx-auto max-w-[1100px] px-6 py-12 md:px-10 md:py-20">
+        <OnboardingTour />
+        <div className="relative overflow-hidden rounded-3xl bg-pattern-aztec p-10 text-center text-white shadow-xl md:p-16">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-500 text-navy-500 shadow-lg">
+            <FileText className="h-8 w-8" />
+          </div>
+          <h1 className="mt-6 text-2xl font-bold md:text-[32px]">
+            Bienvenido {name} 👋
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-neutral-300 md:text-base">
+            Tu cuenta está lista. Cuando inicies tu primera certificación,
+            vas a ver el avance, las tareas y las reuniones acá.
+          </p>
+          <Link
+            to="/certificar"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold-500 px-6 py-3 text-sm font-bold text-navy-500 shadow-md transition-colors hover:bg-gold-400"
+          >
+            <Plus className="h-4 w-4" />
+            Iniciar mi primera certificación
+          </Link>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <FirstTimeCard
+            icon={FileText}
+            title="Completá el formulario"
+            body="7 pasos guiados con preguntas sobre tu producto, comunidad y proceso."
+          />
+          <FirstTimeCard
+            icon={CalendarClock}
+            title="Auditoría con tutor"
+            body="Un curador cultural revisa tu solicitud y agenda una videollamada."
+          />
+          <FirstTimeCard
+            icon={CheckCircle2}
+            title="Certificado blockchain"
+            body="Si todo OK, generamos el hash y publicamos tu ficha pública."
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
@@ -131,6 +178,53 @@ export default function DashboardHome() {
         </section>
       )}
 
+      {/* Recent activity feed */}
+      <section className="mt-6 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-navy-500" />
+            <h3 className="text-lg font-bold text-navy-500">Actividad reciente</h3>
+          </div>
+          <Link
+            to={`/mis-certificaciones/${inProgress?.id ?? requests[0]?.id}?tab=historial`}
+            className="text-sm font-semibold text-gold-700 hover:underline"
+          >
+            Ver historial →
+          </Link>
+        </div>
+        {(() => {
+          const allEvents = requests
+            .flatMap((r) => (r.history ?? []).map((ev) => ({ ...ev, req: r })))
+            .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+            .slice(0, 4)
+          if (allEvents.length === 0) {
+            return (
+              <p className="mt-4 text-sm text-navy-300">
+                Cuando avance tu solicitud, vas a ver actividad acá.
+              </p>
+            )
+          }
+          return (
+            <ul className="mt-4 divide-y divide-neutral-200">
+              {allEvents.map((ev) => (
+                <li key={ev.id} className="flex items-start gap-3 py-3">
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-gold-500" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-navy-500">{ev.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-navy-300">
+                      Solicitud {ev.req.number} · {ev.req.productName}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs text-navy-300">
+                    {new Date(ev.at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        })()}
+      </section>
+
       {/* Pending tasks */}
       <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
@@ -212,6 +306,26 @@ export default function DashboardHome() {
           )}
         </div>
       </section>
+    </div>
+  )
+}
+
+function FirstTimeCard({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: typeof Info
+  title: string
+  body: string
+}) {
+  return (
+    <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+        <Icon className="h-5 w-5" />
+      </div>
+      <p className="mt-3 text-sm font-bold text-navy-500">{title}</p>
+      <p className="mt-1 text-xs leading-relaxed text-navy-300">{body}</p>
     </div>
   )
 }
