@@ -68,6 +68,7 @@ export default function CertificationRequest() {
   )
   const [diagnosticOpen, setDiagnosticOpen] = useState(false)
   const [threadFor, setThreadFor] = useState<AuditMeeting | null>(null)
+  const [tutorFor, setTutorFor] = useState<string | null>(null)
 
   const request = mockCertificationRequests.find((r) => r.id === id)
   if (!request) return <RequestNotFound />
@@ -150,6 +151,7 @@ export default function CertificationRequest() {
             onReschedule={(m) => setReschedule(m)}
             onOpenDiagnostic={() => setDiagnosticOpen(true)}
             onOpenThread={(m) => setThreadFor(m)}
+            onOpenTutor={(name) => setTutorFor(name)}
             threads={request.threads ?? {}}
           />
         )}
@@ -189,6 +191,20 @@ export default function CertificationRequest() {
         meeting={threadFor}
         thread={threadFor ? request.threads?.[threadFor.id] ?? [] : []}
         onClose={() => setThreadFor(null)}
+      />
+
+      <TutorSheet
+        name={tutorFor}
+        onClose={() => setTutorFor(null)}
+        onMessage={() => {
+          const meeting =
+            meetings.find((m) => m.auditorName === tutorFor) ??
+            request.scheduledMeetings.find((m) => m.auditorName === tutorFor)
+          if (meeting) {
+            setTutorFor(null)
+            setThreadFor(meeting)
+          }
+        }}
       />
     </div>
   )
@@ -364,6 +380,7 @@ function EvaluacionTab({
   onReschedule,
   onOpenDiagnostic,
   onOpenThread,
+  onOpenTutor,
   threads,
 }: {
   deadline: string
@@ -373,6 +390,7 @@ function EvaluacionTab({
   onReschedule: (m: AuditMeeting) => void
   onOpenDiagnostic: () => void
   onOpenThread: (m: AuditMeeting) => void
+  onOpenTutor: (name: string) => void
   threads: Record<string, TutorMessage[]>
 }) {
   return (
@@ -424,7 +442,16 @@ function EvaluacionTab({
             return (
             <article key={m.id} className="rounded-2xl border border-neutral-200 bg-white p-5">
               <dl className="space-y-1.5 text-sm">
-                <Field label="Auditor:" value={m.auditorName} />
+                <div>
+                  <span className="font-bold text-navy-500">Auditor:</span>{' '}
+                  <button
+                    type="button"
+                    onClick={() => onOpenTutor(m.auditorName)}
+                    className="font-medium text-navy-500 underline-offset-2 hover:text-gold-700 hover:underline"
+                  >
+                    {m.auditorName}
+                  </button>
+                </div>
                 <Field label="Tipo de reunión:" value={m.type} />
                 <Field
                   label="Fecha y hora:"
@@ -1070,6 +1097,155 @@ function DiagnosticDialog({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─── Tutor profile sheet ─────────────────────────────────────────────────────
+
+const tutorProfiles: Record<string, {
+  name: string
+  role: string
+  bio: string
+  avatarUrl: string
+  signedCount: number
+  yearsExperience: number
+  specialties: string[]
+  speaks: string[]
+}> = {
+  'Lic. Juan Pérez': {
+    name: 'Lic. Juan Pérez',
+    role: 'Auditor cultural · Orfebrería andina',
+    bio: 'Especialista en técnicas ancestrales de orfebrería con foco en filigrana y trabajo en plata. Ha auditado más de 200 piezas en la región andina colombiana y peruana.',
+    avatarUrl: 'https://i.pravatar.cc/200?img=33',
+    signedCount: 212,
+    yearsExperience: 14,
+    specialties: ['Filigrana', 'Plata 925', 'Orfebrería andina'],
+    speaks: ['Español', 'Quechua'],
+  },
+  'Mtra. Sofía Quispe': {
+    name: 'Mtra. Sofía Quispe',
+    role: 'Auditora cultural · Textiles ancestrales',
+    bio: 'Investigadora en tejidos en telar y técnicas ancestrales de hilado. Trabaja con comunidades del altiplano y el Caribe colombiano.',
+    avatarUrl: 'https://i.pravatar.cc/200?img=44',
+    signedCount: 156,
+    yearsExperience: 11,
+    specialties: ['Telar vertical', 'Tintes naturales', 'Hilado a mano'],
+    speaks: ['Español', 'Aymara'],
+  },
+}
+
+function TutorSheet({
+  name,
+  onClose,
+  onMessage,
+}: {
+  name: string | null
+  onClose: () => void
+  onMessage: () => void
+}) {
+  if (!name) return null
+  const profile =
+    tutorProfiles[name] ??
+    {
+      name,
+      role: 'Auditor cultural',
+      bio: 'Perfil de auditor próximamente disponible.',
+      avatarUrl: 'https://i.pravatar.cc/200?img=12',
+      signedCount: 0,
+      yearsExperience: 0,
+      specialties: [],
+      speaks: [],
+    }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-navy-500/30 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <aside
+        className="ml-auto flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-navy-500"
+            aria-label="Volver"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <p className="text-sm font-bold text-navy-500">Perfil del auditor</p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="flex items-center gap-4">
+            <img
+              src={profile.avatarUrl}
+              alt={profile.name}
+              className="h-20 w-20 rounded-full object-cover ring-2 ring-gold-500"
+            />
+            <div className="min-w-0">
+              <h3 className="text-lg font-bold text-navy-500">{profile.name}</h3>
+              <p className="mt-0.5 text-sm text-navy-300">{profile.role}</p>
+            </div>
+          </div>
+
+          <p className="mt-5 text-sm leading-relaxed text-navy-500">{profile.bio}</p>
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4">
+              <p className="text-2xl font-bold text-navy-500">{profile.signedCount}</p>
+              <p className="mt-0.5 text-xs text-navy-300">Certificados firmados</p>
+            </div>
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4">
+              <p className="text-2xl font-bold text-navy-500">{profile.yearsExperience}</p>
+              <p className="mt-0.5 text-xs text-navy-300">Años de experiencia</p>
+            </div>
+          </div>
+
+          {profile.specialties.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
+                Especialidades
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {profile.specialties.map((s) => (
+                  <li
+                    key={s}
+                    className="rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold text-gold-700"
+                  >
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {profile.speaks.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
+                Idiomas
+              </p>
+              <p className="mt-1 text-sm text-navy-500">
+                {profile.speaks.join(' · ')}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-neutral-200 bg-white px-6 py-4">
+          <button
+            type="button"
+            onClick={onMessage}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Enviar mensaje
+          </button>
+        </div>
+      </aside>
     </div>
   )
 }

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
+  Bell,
+  CheckCheck,
   ChevronDown,
   FileText,
   LogIn,
@@ -15,6 +17,7 @@ import { Logo } from './Logo'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useUiStore } from '@/store/ui'
 import { useAuthStore } from '@/store/auth'
+import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -32,9 +35,15 @@ export function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
   const clearSession = useAuthStore((s) => s.clearSession)
+  const notifs = useNotificationsStore((s) => s.items)
+  const markRead = useNotificationsStore((s) => s.markRead)
+  const markAllRead = useNotificationsStore((s) => s.markAllRead)
+  const unread = notifs.filter((n) => !n.read).length
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [bellOpen, setBellOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const bellRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -42,14 +51,18 @@ export function Header() {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
       }
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false)
+      }
     }
-    if (menuOpen) document.addEventListener('mousedown', handler)
+    if (menuOpen || bellOpen) document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [menuOpen])
+  }, [menuOpen, bellOpen])
 
   // Close dropdown on route change
   useEffect(() => {
     setMenuOpen(false)
+    setBellOpen(false)
   }, [location.pathname])
 
   const handleLogout = () => {
@@ -101,6 +114,97 @@ export function Header() {
                 Acceder
               </Button>
             </>
+          )}
+
+          {isAuthenticated && (
+            <div ref={bellRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setBellOpen((v) => !v)}
+                className={cn(
+                  'relative inline-flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all',
+                  bellOpen
+                    ? 'border-navy-500 bg-navy-500 text-white'
+                    : 'border-neutral-300 bg-white text-navy-500 hover:border-navy-500',
+                )}
+                aria-label="Notificaciones"
+                aria-expanded={bellOpen}
+              >
+                <Bell className="h-4 w-4" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold-500 px-1 text-[10px] font-bold text-navy-500 ring-2 ring-white">
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {bellOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-96 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl"
+                  >
+                    <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+                      <p className="text-sm font-bold text-navy-500">Notificaciones</p>
+                      {unread > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => markAllRead()}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
+                        >
+                          <CheckCheck className="h-3.5 w-3.5" />
+                          Marcar todas
+                        </button>
+                      )}
+                    </div>
+                    {notifs.length === 0 ? (
+                      <p className="px-4 py-8 text-center text-sm text-navy-300">
+                        No tenés notificaciones
+                      </p>
+                    ) : (
+                      <ul className="max-h-96 overflow-y-auto">
+                        {notifs.slice(0, 5).map((n) => (
+                          <li key={n.id}>
+                            <Link
+                              to={n.link ?? '/notificaciones'}
+                              onClick={() => markRead(n.id)}
+                              className={cn(
+                                'flex items-start gap-3 border-b border-neutral-100 px-4 py-3 text-sm transition-colors hover:bg-neutral-100',
+                                !n.read && 'bg-gold-100/30',
+                              )}
+                            >
+                              <span
+                                className={cn(
+                                  'mt-1 h-2 w-2 shrink-0 rounded-full',
+                                  n.read ? 'bg-transparent' : 'bg-gold-500',
+                                )}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p className="font-bold text-navy-500">{n.title}</p>
+                                <p className="mt-0.5 line-clamp-2 text-xs text-navy-300">{n.body}</p>
+                                <p className="mt-1 text-[10px] text-navy-300">
+                                  {formatRelativeShort(n.createdAt)}
+                                </p>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Link
+                      to="/notificaciones"
+                      onClick={() => setBellOpen(false)}
+                      className="flex items-center justify-center gap-1 border-t border-neutral-200 px-4 py-3 text-xs font-semibold text-gold-700 hover:bg-neutral-100"
+                    >
+                      Ver todas →
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
 
           {isAuthenticated && (
@@ -307,6 +411,17 @@ function MenuItem({ to, icon: Icon, label }: { to: string; icon: typeof UserRoun
       {label}
     </Link>
   )
+}
+
+function formatRelativeShort(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.round(diff / 60000)
+  if (mins < 1) return 'recién'
+  if (mins < 60) return `hace ${mins}min`
+  const hrs = Math.round(mins / 60)
+  if (hrs < 24) return `hace ${hrs}h`
+  const days = Math.round(hrs / 24)
+  return `hace ${days}d`
 }
 
 function MobileNavLink({

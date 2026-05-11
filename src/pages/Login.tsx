@@ -130,10 +130,10 @@ export default function Login() {
             <p className="mt-6 text-center text-sm text-navy-300">
               ¿No tenés cuenta?{' '}
               <Link
-                to="/certificar"
+                to="/registro"
                 className="font-semibold text-gold-700 hover:underline"
               >
-                Iniciá tu certificación
+                Crear cuenta
               </Link>
             </p>
           </div>

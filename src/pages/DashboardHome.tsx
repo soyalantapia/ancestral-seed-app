@@ -16,6 +16,7 @@ import {
   mockCertificationRequests,
 } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
+import { OnboardingTour } from '@/components/features/OnboardingTour'
 
 export default function DashboardHome() {
   const user = useAuthStore((s) => s.user)
@@ -35,6 +36,7 @@ export default function DashboardHome() {
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+      <OnboardingTour />
       <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">Inicio</h1>
       <p className="mt-2 max-w-3xl text-sm text-navy-300 md:text-base">
         Bienvenido {name}. Desde aquí podrás ver el avance de tus certificaciones,

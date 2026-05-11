@@ -7,6 +7,7 @@ import CertificationDetail from '@/pages/CertificationDetail'
 import AuthorProfile from '@/pages/AuthorProfile'
 import Verify from '@/pages/Verify'
 import Login from '@/pages/Login'
+import Signup from '@/pages/Signup'
 import CertifyForm from '@/pages/CertifyForm'
 import DashboardHome from '@/pages/DashboardHome'
 import MyCertifications from '@/pages/MyCertifications'
@@ -30,6 +31,7 @@ export const router = createBrowserRouter(
         { path: 'perfil/:slug', element: <AuthorProfile /> },
         { path: 'verificar', element: <Verify /> },
         { path: 'login', element: <Login /> },
+        { path: 'registro', element: <Signup /> },
         { path: 'certificar', element: <CertifyForm /> },
       ],
     },

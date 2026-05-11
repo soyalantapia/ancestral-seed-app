@@ -50,6 +50,7 @@ export default function CertificationDetail() {
   const { slug } = useParams()
   const { data: cert, isLoading, error } = useCertification(slug)
   const [showReport, setShowReport] = useState(false)
+  const [showShare, setShowShare] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState(0)
 
   if (isLoading) return <DetailSkeleton />
@@ -165,10 +166,7 @@ export default function CertificationDetail() {
                     Contactar
                   </button>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href)
-                      toast.success('Link copiado')
-                    }}
+                    onClick={() => setShowShare(true)}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
                   >
                     <Share2 className="h-3.5 w-3.5" />
@@ -246,6 +244,15 @@ export default function CertificationDetail() {
         open={showReport}
         onClose={() => setShowReport(false)}
         certificationId={cert.id}
+      />
+
+      <ShareModal
+        open={showShare}
+        onClose={() => setShowShare(false)}
+        title={cert.title}
+        author={authorName}
+        url={typeof window !== 'undefined' ? window.location.href : ''}
+        hash={cert.hash}
       />
     </>
   )
@@ -508,6 +515,164 @@ function DetailError({ message }: { message: string }) {
       >
         Volver al directorio
       </Link>
+    </div>
+  )
+}
+
+// ─── Share Modal ──────────────────────────────────────────────────────────────
+
+function ShareModal({
+  open,
+  onClose,
+  title,
+  author,
+  url,
+  hash,
+}: {
+  open: boolean
+  onClose: () => void
+  title: string
+  author: string
+  url: string
+  hash: string
+}) {
+  if (!open) return null
+
+  const text = `Conocé "${title}" — certificación cultural ancestral por ${author}. Ficha verificable en Ancestral Seed.`
+  const encoded = encodeURIComponent(url)
+  const encodedText = encodeURIComponent(text)
+
+  const links = [
+    {
+      name: 'WhatsApp',
+      href: `https://wa.me/?text=${encodedText}%20${encoded}`,
+      color: 'bg-success-300 hover:bg-success-400 text-white',
+    },
+    {
+      name: 'X / Twitter',
+      href: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encoded}`,
+      color: 'bg-navy-500 hover:bg-navy-400 text-white',
+    },
+    {
+      name: 'Facebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encoded}`,
+      color: 'bg-info-400 hover:bg-info-300 text-white',
+    },
+    {
+      name: 'LinkedIn',
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`,
+      color: 'bg-info-300 hover:bg-info-400 text-white',
+    },
+    {
+      name: 'Email',
+      href: `mailto:?subject=${encodeURIComponent(title)}&body=${encodedText}%20${encoded}`,
+      color: 'bg-neutral-200 hover:bg-neutral-300 text-navy-500',
+    },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <h2 className="text-lg font-bold text-navy-500">Compartir ficha</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            aria-label="Cerrar"
+          >
+            <ExternalLink className="h-4 w-4 rotate-45" />
+          </button>
+        </div>
+
+        <div className="px-6 py-6">
+          {/* QR */}
+          <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-2xl border-2 border-neutral-200 bg-white p-3">
+            <img
+              alt={`QR code para ${title}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}&margin=4`}
+              className="h-full w-full"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = 'none'
+                ;(e.target as HTMLImageElement).insertAdjacentHTML(
+                  'afterend',
+                  '<div class="text-xs text-navy-300 text-center">QR no disponible</div>',
+                )
+              }}
+            />
+          </div>
+
+          <p className="mt-3 text-center text-xs text-navy-300">
+            Escaneá este código para abrir la ficha pública
+          </p>
+
+          {/* URL */}
+          <div className="mt-5">
+            <p className="text-xs font-bold text-navy-500">Link directo</p>
+            <div className="mt-1 flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-100 px-3 py-2">
+              <input
+                readOnly
+                value={url}
+                className="flex-1 truncate bg-transparent text-xs text-navy-500 focus:outline-none"
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(url)
+                  toast.success('Link copiado')
+                }}
+                className="rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-navy-500 transition-colors hover:bg-gold-400"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+
+          {/* Hash */}
+          <div className="mt-3">
+            <p className="text-xs font-bold text-navy-500">Hash blockchain</p>
+            <div className="mt-1 flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-100 px-3 py-2">
+              <code className="flex-1 truncate text-[10px] text-navy-500">{hash}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(hash)
+                  toast.success('Hash copiado')
+                }}
+                className="rounded-full bg-neutral-200 px-3 py-1 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-300"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+
+          {/* Social */}
+          <p className="mt-6 text-xs font-bold text-navy-500">O compartí en</p>
+          <div className="mt-2 grid grid-cols-5 gap-2">
+            {links.map((l) => (
+              <a
+                key={l.name}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'flex flex-col items-center justify-center gap-1 rounded-2xl px-2 py-3 text-[10px] font-bold transition-all',
+                  l.color,
+                )}
+              >
+                {l.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
