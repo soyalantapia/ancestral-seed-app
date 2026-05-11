@@ -116,6 +116,73 @@ export interface Notification {
   link?: string
 }
 
+export interface EvidenceFile {
+  id: string
+  name: string
+  kind: 'image' | 'video' | 'document'
+  sizeKb: number
+  uploadedAt: string
+  thumbUrl?: string
+}
+
+export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'refunded'
+
+export interface PaymentItem {
+  id: string
+  concept: string
+  amount: number
+  currency: string
+  status: PaymentStatus
+  dueDate: string
+  paidAt?: string
+  invoiceUrl?: string
+}
+
+export type HistoryEventKind =
+  | 'request_created'
+  | 'evidence_uploaded'
+  | 'audit_proposed'
+  | 'audit_accepted'
+  | 'audit_rescheduled'
+  | 'audit_rejected'
+  | 'stage_changed'
+  | 'document_uploaded'
+  | 'payment_received'
+  | 'message_sent'
+  | 'cert_published'
+
+export interface HistoryEvent {
+  id: string
+  kind: HistoryEventKind
+  title: string
+  description?: string
+  actor: 'Tú' | 'Auditor' | 'Sistema'
+  at: string // ISO
+}
+
+export interface TutorMessage {
+  id: string
+  author: 'tu' | 'tutor'
+  authorName: string
+  body: string
+  at: string
+}
+
+export interface RequestSubmittedData {
+  applicantName: string
+  email: string
+  phone: string
+  country: string
+  region: string
+  community: string
+  inspirationCommunity?: string
+  productType: string
+  productSector: string
+  productSubcategory: string
+  processDescription: string
+  producerType: string
+}
+
 export interface CertificationRequest {
   id: string
   number: string                // "#001"
@@ -130,4 +197,10 @@ export interface CertificationRequest {
   progressLabel: string
   diagnosticDeadline?: string
   diagnosticCompleted?: boolean
+  // Extended data
+  evidences?: EvidenceFile[]
+  payments?: PaymentItem[]
+  history?: HistoryEvent[]
+  threads?: Record<string, TutorMessage[]> // meetingId -> messages
+  submittedData?: RequestSubmittedData
 }

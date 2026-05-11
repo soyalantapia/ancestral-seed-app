@@ -5,10 +5,20 @@ import {
   ArrowLeft,
   Calendar as CalendarIcon,
   Check,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Download,
+  File as FileIcon,
+  Film,
+  Image as ImageIcon,
+  MessageSquare,
   Plus,
+  Receipt,
+  Send,
+  Trash2,
+  Upload,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -17,7 +27,14 @@ import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipe
 import type {
   AuditMeeting,
   AuditMeetingStatus,
+  CertificationRequest as CertificationRequestType,
+  EvidenceFile,
+  HistoryEvent,
+  HistoryEventKind,
+  PaymentItem,
+  PaymentStatus,
   RequestStageItem,
+  TutorMessage,
 } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -49,6 +66,8 @@ export default function CertificationRequest() {
   const [meetings, setMeetings] = useState<AuditMeeting[]>(
     mockCertificationRequests[0].meetings,
   )
+  const [diagnosticOpen, setDiagnosticOpen] = useState(false)
+  const [threadFor, setThreadFor] = useState<AuditMeeting | null>(null)
 
   const request = mockCertificationRequests.find((r) => r.id === id)
   if (!request) return <RequestNotFound />
@@ -129,12 +148,15 @@ export default function CertificationRequest() {
             }}
             onReject={(m) => setConfirmReject(m)}
             onReschedule={(m) => setReschedule(m)}
+            onOpenDiagnostic={() => setDiagnosticOpen(true)}
+            onOpenThread={(m) => setThreadFor(m)}
+            threads={request.threads ?? {}}
           />
         )}
-        {tab === 'Datos de la solicitud' && <DatosTab />}
-        {tab === 'Evidencias' && <EvidenciasTab />}
-        {tab === 'Pagos' && <PagosTab />}
-        {tab === 'Historial' && <HistorialTab />}
+        {tab === 'Datos de la solicitud' && <DatosTab request={request} />}
+        {tab === 'Evidencias' && <EvidenciasTab request={request} />}
+        {tab === 'Pagos' && <PagosTab request={request} />}
+        {tab === 'Historial' && <HistorialTab request={request} /> }
       </div>
 
       <RescheduleSheet
@@ -155,6 +177,18 @@ export default function CertificationRequest() {
           setConfirmReject(null)
           toast.success('Reunión rechazada · El tutor será notificado')
         }}
+      />
+
+      <DiagnosticDialog
+        open={diagnosticOpen}
+        onClose={() => setDiagnosticOpen(false)}
+        deadline={request.diagnosticDeadline ?? '15/03'}
+      />
+
+      <MessageThreadSheet
+        meeting={threadFor}
+        thread={threadFor ? request.threads?.[threadFor.id] ?? [] : []}
+        onClose={() => setThreadFor(null)}
       />
     </div>
   )
@@ -328,12 +362,18 @@ function EvaluacionTab({
   onAccept,
   onReject,
   onReschedule,
+  onOpenDiagnostic,
+  onOpenThread,
+  threads,
 }: {
   deadline: string
   meetings: AuditMeeting[]
   onAccept: (id: string) => void
   onReject: (m: AuditMeeting) => void
   onReschedule: (m: AuditMeeting) => void
+  onOpenDiagnostic: () => void
+  onOpenThread: (m: AuditMeeting) => void
+  threads: Record<string, TutorMessage[]>
 }) {
   return (
     <div className="space-y-6">
@@ -362,7 +402,7 @@ function EvaluacionTab({
           </p>
           <button
             type="button"
-            onClick={() => toast.info('Abriendo cuestionario de diagnóstico…')}
+            onClick={onOpenDiagnostic}
             className="mt-4 inline-flex items-center rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
           >
             Completar diagnóstico
@@ -379,7 +419,9 @@ function EvaluacionTab({
           {meetings.length === 0 && (
             <p className="text-sm text-navy-300">No hay auditorías pendientes.</p>
           )}
-          {meetings.map((m) => (
+          {meetings.map((m) => {
+            const thread = threads[m.id] ?? []
+            return (
             <article key={m.id} className="rounded-2xl border border-neutral-200 bg-white p-5">
               <dl className="space-y-1.5 text-sm">
                 <Field label="Auditor:" value={m.auditorName} />
@@ -389,7 +431,17 @@ function EvaluacionTab({
                   value={`${formatDM(m.scheduledAt)}— ${formatHour(m.scheduledAt)} (${m.timezone})`}
                 />
                 <div className="pt-2">
-                  <p className="font-bold text-navy-500">Mensaje</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-navy-500">Mensaje</p>
+                    <button
+                      type="button"
+                      onClick={() => onOpenThread(m)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-gold-700 hover:underline"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      {thread.length > 0 ? `Ver thread (${thread.length})` : 'Responder'}
+                    </button>
+                  </div>
                   <p className="mt-1 text-navy-300">{m.message}</p>
                 </div>
               </dl>
@@ -422,7 +474,7 @@ function EvaluacionTab({
                 </button>
               </div>
             </article>
-          ))}
+          )})}
         </div>
       </section>
 
@@ -460,49 +512,691 @@ function formatHour(iso: string) {
   return `${((h + 11) % 12) + 1}:${m} ${ampm}`
 }
 
-// ─── Tabs stubs ──────────────────────────────────────────────────────────────
+// ─── Tab: Datos de la solicitud ──────────────────────────────────────────────
 
-function DatosTab() {
+function DatosTab({ request }: { request: CertificationRequestType }) {
+  const d = request.submittedData
+  if (!d) {
+    return (
+      <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
+        <h2 className="text-lg font-bold text-navy-500">Datos de la solicitud</h2>
+        <p className="mt-2 text-sm text-navy-300">No hay datos disponibles.</p>
+      </div>
+    )
+  }
+
+  const groups: Array<{ title: string; items: Array<[string, string | undefined]> }> = [
+    {
+      title: 'Identidad',
+      items: [
+        ['Nombre', d.applicantName],
+        ['Email', d.email],
+        ['Teléfono', d.phone],
+        ['País', d.country],
+        ['Región', d.region],
+      ],
+    },
+    {
+      title: 'Comunidad',
+      items: [
+        ['Comunidad', d.community],
+        ['Inspiración', d.inspirationCommunity],
+      ],
+    },
+    {
+      title: 'Producto',
+      items: [
+        ['Nombre', request.productName],
+        ['Tipo', d.productType],
+        ['Sector', d.productSector],
+        ['Subcategoría', d.productSubcategory],
+      ],
+    },
+    {
+      title: 'Proceso',
+      items: [
+        ['Descripción', d.processDescription],
+        ['Productor principal', d.producerType],
+      ],
+    },
+  ]
+
   return (
-    <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
-      <h2 className="text-lg font-bold text-navy-500">Datos de la solicitud</h2>
-      <p className="mt-2 text-sm text-navy-300">
-        Resumen de los datos que enviaste en el formulario. Próximamente podrás
-        editar campos antes de la auditoría.
-      </p>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-navy-500">Datos de la solicitud</h2>
+          <p className="mt-1 text-sm text-navy-300">
+            Resumen de la información enviada en el formulario.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => toast.info('La edición de datos se habilita antes de la auditoría')}
+          className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+        >
+          Solicitar cambio
+        </button>
+      </div>
+
+      {groups.map((g) => (
+        <section key={g.title} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy-300">
+            {g.title}
+          </p>
+          <dl className="mt-3 grid gap-x-6 gap-y-3 text-sm md:grid-cols-2">
+            {g.items
+              .filter(([, v]) => Boolean(v))
+              .map(([k, v]) => (
+                <div key={k}>
+                  <dt className="text-xs font-medium text-navy-300">{k}</dt>
+                  <dd className="mt-0.5 font-semibold text-navy-500">{v}</dd>
+                </div>
+              ))}
+          </dl>
+        </section>
+      ))}
     </div>
   )
 }
 
-function EvidenciasTab() {
+// ─── Tab: Evidencias ─────────────────────────────────────────────────────────
+
+function EvidenciasTab({ request }: { request: CertificationRequestType }) {
+  const [items, setItems] = useState<EvidenceFile[]>(request.evidences ?? [])
+
+  const groups: Array<{ kind: EvidenceFile['kind']; title: string; icon: typeof ImageIcon }> = [
+    { kind: 'image', title: 'Fotos', icon: ImageIcon },
+    { kind: 'video', title: 'Videos', icon: Film },
+    { kind: 'document', title: 'Documentos', icon: FileIcon },
+  ]
+
+  const handleUpload = (kind: EvidenceFile['kind']) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    const newItems: EvidenceFile[] = files.map((f) => ({
+      id: `e-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: f.name,
+      kind,
+      sizeKb: Math.round(f.size / 1024),
+      uploadedAt: new Date().toISOString(),
+    }))
+    setItems((prev) => [...prev, ...newItems])
+    toast.success(`${files.length} archivo(s) subido(s)`)
+  }
+
   return (
-    <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
-      <h2 className="text-lg font-bold text-navy-500">Evidencias</h2>
-      <p className="mt-2 text-sm text-navy-300">
-        Subí o reemplazá las evidencias asociadas a tu solicitud.
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-navy-500">Evidencias</h2>
+        <p className="mt-1 text-sm text-navy-300">
+          Material que respalda tu solicitud. Podés sumar o reemplazar archivos antes
+          de la auditoría.
+        </p>
+      </div>
+
+      {groups.map((g) => {
+        const groupItems = items.filter((it) => it.kind === g.kind)
+        return (
+          <section
+            key={g.kind}
+            className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-navy-500">
+                <g.icon className="h-4 w-4" />
+                <h3 className="text-sm font-bold">{g.title}</h3>
+                <span className="text-xs text-navy-300">({groupItems.length})</span>
+              </div>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-neutral-200 px-3 py-1.5 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-300">
+                <Upload className="h-3.5 w-3.5" />
+                Subir
+                <input
+                  type="file"
+                  multiple
+                  hidden
+                  accept={
+                    g.kind === 'image' ? 'image/*'
+                    : g.kind === 'video' ? 'video/*'
+                    : '.pdf,.doc,.docx,image/*'
+                  }
+                  onChange={handleUpload(g.kind)}
+                />
+              </label>
+            </div>
+
+            {groupItems.length === 0 ? (
+              <p className="mt-4 rounded-xl border border-dashed border-neutral-300 p-6 text-center text-xs text-navy-300">
+                Sin {g.title.toLowerCase()} aún
+              </p>
+            ) : (
+              <ul className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                {groupItems.map((it) => (
+                  <li
+                    key={it.id}
+                    className="group relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100"
+                  >
+                    {it.kind === 'image' ? (
+                      <div className="aspect-square bg-neutral-200">
+                        {it.thumbUrl ? (
+                          <img
+                            src={`${import.meta.env.BASE_URL}${it.thumbUrl.replace(/^\//, '')}`}
+                            alt={it.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-navy-300">
+                            <ImageIcon className="h-7 w-7" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex aspect-square items-center justify-center text-navy-300">
+                        {it.kind === 'video' ? <Film className="h-8 w-8" /> : <FileIcon className="h-8 w-8" />}
+                      </div>
+                    )}
+                    <div className="p-2">
+                      <p className="truncate text-xs font-semibold text-navy-500">{it.name}</p>
+                      <p className="text-[10px] text-navy-300">
+                        {it.sizeKb < 1024
+                          ? `${it.sizeKb} KB`
+                          : `${(it.sizeKb / 1024).toFixed(1)} MB`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setItems((prev) => prev.filter((x) => x.id !== it.id))
+                        toast.success('Archivo eliminado')
+                      }}
+                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-error-400 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }
 
-function PagosTab() {
+// ─── Tab: Pagos ──────────────────────────────────────────────────────────────
+
+function PagosTab({ request }: { request: CertificationRequestType }) {
+  const payments = request.payments ?? []
+  const totalPaid = payments.filter((p) => p.status === 'paid').reduce((a, p) => a + p.amount, 0)
+  const totalPending = payments.filter((p) => p.status === 'pending' || p.status === 'overdue').reduce((a, p) => a + p.amount, 0)
+
+  const fmt = (amount: number, currency: string) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency }).format(amount)
+
   return (
-    <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
-      <h2 className="text-lg font-bold text-navy-500">Pagos</h2>
-      <p className="mt-2 text-sm text-navy-300">
-        Historial de pagos y comprobantes.
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-navy-500">Pagos</h2>
+        <p className="mt-1 text-sm text-navy-300">
+          Historial de pagos y comprobantes asociados a esta solicitud.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+          <p className="text-xs font-medium text-navy-300">Total abonado</p>
+          <p className="mt-1 text-2xl font-bold text-success-300">
+            {payments.length > 0 ? fmt(totalPaid, payments[0].currency) : '—'}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+          <p className="text-xs font-medium text-navy-300">Saldo pendiente</p>
+          <p className={cn('mt-1 text-2xl font-bold', totalPending > 0 ? 'text-warning-400' : 'text-navy-500')}>
+            {payments.length > 0 ? fmt(totalPending, payments[0].currency) : '—'}
+          </p>
+        </div>
+      </div>
+
+      <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h3 className="text-sm font-bold text-navy-500">Detalle de pagos</h3>
+        {payments.length === 0 ? (
+          <p className="mt-4 text-sm text-navy-300">No hay pagos asociados.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-neutral-200">
+            {payments.map((p) => (
+              <PaymentRow key={p.id} payment={p} />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }
 
-function HistorialTab() {
+function PaymentRow({ payment }: { payment: PaymentItem }) {
+  const tone = paymentToneMap[payment.status]
+  const isPay = payment.status === 'pending' || payment.status === 'overdue'
   return (
-    <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
+    <li className="flex flex-wrap items-center gap-4 py-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-navy-500">
+        <Receipt className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-navy-500">{payment.concept}</p>
+        <p className="mt-0.5 text-xs text-navy-300">
+          {payment.status === 'paid'
+            ? `Pagado el ${formatDate(payment.paidAt ?? '')}`
+            : `Vence el ${formatDate(payment.dueDate)}`}
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-bold text-navy-500">
+          {new Intl.NumberFormat('es-AR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+        </span>
+        <span className={cn('rounded-full px-3 py-1 text-xs font-bold', tone)}>
+          {payment.status === 'paid' && 'Pagado'}
+          {payment.status === 'pending' && 'Pendiente'}
+          {payment.status === 'overdue' && 'Vencido'}
+          {payment.status === 'refunded' && 'Reintegrado'}
+        </span>
+        {isPay && (
+          <button
+            type="button"
+            onClick={() => toast.success('Te llevamos al checkout (demo)')}
+            className="inline-flex items-center rounded-full bg-gold-500 px-4 py-1.5 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
+          >
+            Pagar
+          </button>
+        )}
+        {payment.invoiceUrl && (
+          <a
+            href={payment.invoiceUrl}
+            onClick={(e) => { e.preventDefault(); toast.info('Descarga del comprobante (demo)') }}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Comprobante
+          </a>
+        )}
+      </div>
+    </li>
+  )
+}
+
+const paymentToneMap: Record<PaymentStatus, string> = {
+  paid: 'bg-success-100 text-success-300 ring-1 ring-success-300/30',
+  pending: 'bg-warning-100 text-warning-400 ring-1 ring-warning-300/30',
+  overdue: 'bg-error-100 text-error-400 ring-1 ring-error-300/30',
+  refunded: 'bg-neutral-200 text-navy-500',
+}
+
+function formatDate(iso: string): string {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+// ─── Tab: Historial ──────────────────────────────────────────────────────────
+
+const historyIconMap: Record<HistoryEventKind, { icon: typeof Plus; tone: string }> = {
+  request_created: { icon: Plus, tone: 'bg-info-100 text-info-400' },
+  evidence_uploaded: { icon: ImageIcon, tone: 'bg-gold-100 text-gold-700' },
+  audit_proposed: { icon: CalendarIcon, tone: 'bg-info-100 text-info-400' },
+  audit_accepted: { icon: Check, tone: 'bg-success-100 text-success-300' },
+  audit_rescheduled: { icon: Clock, tone: 'bg-warning-100 text-warning-400' },
+  audit_rejected: { icon: X, tone: 'bg-error-100 text-error-400' },
+  stage_changed: { icon: CheckCircle2, tone: 'bg-success-100 text-success-300' },
+  document_uploaded: { icon: FileIcon, tone: 'bg-neutral-200 text-navy-500' },
+  payment_received: { icon: Receipt, tone: 'bg-success-100 text-success-300' },
+  message_sent: { icon: MessageSquare, tone: 'bg-info-100 text-info-400' },
+  cert_published: { icon: CheckCircle2, tone: 'bg-success-100 text-success-300' },
+}
+
+function HistorialTab({ request }: { request: CertificationRequestType }) {
+  const events: HistoryEvent[] = [...(request.history ?? [])].sort(
+    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
+  )
+
+  return (
+    <div>
       <h2 className="text-lg font-bold text-navy-500">Historial</h2>
-      <p className="mt-2 text-sm text-navy-300">
-        Línea de tiempo de toda la actividad asociada a esta solicitud.
+      <p className="mt-1 text-sm text-navy-300">
+        Línea de tiempo de toda la actividad asociada a la solicitud {request.number}.
       </p>
+
+      <ol className="relative mt-6 ml-4 border-l-2 border-neutral-200">
+        {events.map((ev) => {
+          const meta = historyIconMap[ev.kind]
+          return (
+            <li key={ev.id} className="mb-6 ml-6 last:mb-0">
+              <span
+                className={cn(
+                  'absolute -left-[15px] flex h-7 w-7 items-center justify-center rounded-full ring-4 ring-white',
+                  meta.tone,
+                )}
+              >
+                <meta.icon className="h-3.5 w-3.5" />
+              </span>
+              <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <p className="text-sm font-bold text-navy-500">{ev.title}</p>
+                {ev.description && (
+                  <p className="mt-1 text-sm text-navy-300">{ev.description}</p>
+                )}
+                <p className="mt-2 text-xs text-navy-300">
+                  {ev.actor} · {new Date(ev.at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })} ·{' '}
+                  {new Date(ev.at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </li>
+          )
+        })}
+        {events.length === 0 && (
+          <li className="ml-6 text-sm text-navy-300">No hay eventos aún.</li>
+        )}
+      </ol>
+    </div>
+  )
+}
+
+// ─── Diagnostic dialog ───────────────────────────────────────────────────────
+
+const diagnosticQuestions = [
+  {
+    id: 'q1',
+    label: '¿Cuántos años hace que practicás este oficio?',
+    type: 'text' as const,
+    placeholder: 'Ej. 12 años',
+  },
+  {
+    id: 'q2',
+    label: '¿Quién te enseñó la técnica originalmente?',
+    type: 'text' as const,
+    placeholder: 'Familiar, comunidad, formación formal…',
+  },
+  {
+    id: 'q3',
+    label: '¿Producís en lotes regulares o por encargo?',
+    type: 'choice' as const,
+    options: ['Lotes regulares', 'Por encargo', 'Mixto'],
+  },
+  {
+    id: 'q4',
+    label: '¿Tu producto tiene certificaciones previas o reconocimientos?',
+    type: 'choice' as const,
+    options: ['Sí', 'No', 'No estoy seguro/a'],
+  },
+  {
+    id: 'q5',
+    label: 'Contanos brevemente cómo se transmite este saber en tu comunidad',
+    type: 'textarea' as const,
+    placeholder: 'Describí brevemente el rol generacional, espacios de aprendizaje, etc.',
+  },
+] as const
+
+function DiagnosticDialog({
+  open,
+  onClose,
+  deadline,
+}: {
+  open: boolean
+  onClose: () => void
+  deadline: string
+}) {
+  const [step, setStep] = useState(0)
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+
+  if (!open) return null
+
+  const q = diagnosticQuestions[step]
+  const isLast = step === diagnosticQuestions.length - 1
+  const value = answers[q.id] ?? ''
+  const canContinue = value.trim().length > 0
+
+  const handleNext = () => {
+    if (!canContinue) return
+    if (isLast) {
+      toast.success('Diagnóstico enviado · El tutor te responderá en breve')
+      setStep(0)
+      setAnswers({})
+      onClose()
+    } else {
+      setStep((s) => s + 1)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <div>
+            <h3 className="text-lg font-bold text-navy-500">Diagnóstico inicial</h3>
+            <p className="mt-0.5 text-xs text-navy-300">
+              Pregunta {step + 1} de {diagnosticQuestions.length} · Vence {deadline}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-1 w-full bg-neutral-200">
+          <div
+            className="h-full bg-gold-500 transition-all"
+            style={{ width: `${((step + 1) / diagnosticQuestions.length) * 100}%` }}
+          />
+        </div>
+
+        <div className="px-6 py-6">
+          <p className="text-base font-bold text-navy-500">{q.label}</p>
+
+          <div className="mt-4">
+            {q.type === 'text' && (
+              <input
+                type="text"
+                value={value}
+                placeholder={q.placeholder}
+                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                className="h-12 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              />
+            )}
+            {q.type === 'textarea' && (
+              <textarea
+                rows={5}
+                value={value}
+                placeholder={q.placeholder}
+                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              />
+            )}
+            {q.type === 'choice' && (
+              <div className="space-y-2">
+                {q.options.map((opt) => (
+                  <label
+                    key={opt}
+                    className={cn(
+                      'flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition-colors',
+                      value === opt
+                        ? 'border-gold-500 bg-gold-100/40'
+                        : 'border-neutral-300 bg-white hover:border-gold-300',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name={q.id}
+                      checked={value === opt}
+                      onChange={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
+                      className="h-4 w-4 accent-gold-500"
+                    />
+                    <span className="text-sm font-semibold text-navy-500">{opt}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4">
+          <button
+            type="button"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-navy-500 disabled:opacity-40"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Anterior
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={!canContinue}
+            className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400 disabled:opacity-60"
+          >
+            {isLast ? 'Enviar diagnóstico' : 'Continuar'}
+            {!isLast && <ChevronRight className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Message thread sheet ────────────────────────────────────────────────────
+
+function MessageThreadSheet({
+  meeting,
+  thread,
+  onClose,
+}: {
+  meeting: AuditMeeting | null
+  thread: TutorMessage[]
+  onClose: () => void
+}) {
+  const [messages, setMessages] = useState<TutorMessage[]>(thread)
+  const [draft, setDraft] = useState('')
+
+  // Reset when meeting changes
+  useState(() => {
+    setMessages(thread)
+  })
+
+  if (!meeting) return null
+
+  const handleSend = () => {
+    if (!draft.trim()) return
+    const next: TutorMessage = {
+      id: `msg-${Date.now()}`,
+      author: 'tu',
+      authorName: 'Tú',
+      body: draft.trim(),
+      at: new Date().toISOString(),
+    }
+    setMessages((prev) => [...prev, next])
+    setDraft('')
+    toast.success('Mensaje enviado')
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-navy-500/30 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <aside
+        className="ml-auto flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-navy-500"
+            aria-label="Volver"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-navy-500">Conversación con</p>
+            <p className="truncate text-xs text-navy-300">{meeting.auditorName}</p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto bg-neutral-100 px-5 py-5">
+          {messages.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-navy-300">
+              Aún no hay mensajes. Iniciá la conversación.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {messages.map((m) => {
+                const mine = m.author === 'tu'
+                return (
+                  <li key={m.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
+                    <div
+                      className={cn(
+                        'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
+                        mine
+                          ? 'rounded-br-sm bg-navy-500 text-white'
+                          : 'rounded-bl-sm bg-white text-navy-500',
+                      )}
+                    >
+                      {!mine && (
+                        <p className="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-navy-300">
+                          {m.authorName}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-line leading-relaxed">{m.body}</p>
+                      <p className={cn('mt-1 text-[10px]', mine ? 'text-white/70' : 'text-navy-300')}>
+                        {new Date(m.at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+
+        <div className="border-t border-neutral-200 bg-white px-5 py-3">
+          <div className="flex items-end gap-2">
+            <textarea
+              rows={2}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Escribí un mensaje…"
+              className="flex-1 resize-none rounded-2xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!draft.trim()}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-navy-500 text-white transition-colors hover:bg-navy-400 disabled:opacity-60"
+              aria-label="Enviar"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-1 text-[10px] text-navy-300">Enter para enviar · Shift+Enter para salto</p>
+        </div>
+      </aside>
     </div>
   )
 }

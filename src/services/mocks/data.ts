@@ -263,6 +263,49 @@ export const mockCertificationRequests: CertificationRequest[] = [
       },
     ],
     scheduledMeetings: [],
+    evidences: [
+      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana.png' },
+      { id: 'e-002', name: 'pieza-reverso.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-02-02T10:16:00-03:00' },
+      { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image', sizeKb: 2100, uploadedAt: '2026-02-02T10:18:00-03:00' },
+      { id: 'e-004', name: 'video-proceso.mp4', kind: 'video', sizeKb: 18200, uploadedAt: '2026-02-02T10:20:00-03:00' },
+      { id: 'e-005', name: 'aval-comunidad.pdf', kind: 'document', sizeKb: 320, uploadedAt: '2026-02-03T16:42:00-03:00' },
+    ],
+    payments: [
+      {
+        id: 'p-001',
+        concept: 'Inicio de proceso de certificación',
+        amount: 45000,
+        currency: 'ARS',
+        status: 'pending',
+        dueDate: '2026-02-28',
+      },
+    ],
+    history: [
+      { id: 'h-001', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2026-02-01T18:30:00-03:00' },
+      { id: 'h-002', kind: 'evidence_uploaded', title: 'Evidencias iniciales', description: '4 fotos + 1 video', actor: 'Tú', at: '2026-02-02T10:18:00-03:00' },
+      { id: 'h-003', kind: 'document_uploaded', title: 'Aval de la comunidad', description: 'aval-comunidad.pdf', actor: 'Tú', at: '2026-02-03T16:42:00-03:00' },
+      { id: 'h-004', kind: 'stage_changed', title: 'Etapa Prediagnóstico iniciada', description: 'Auditoría asignada a Lic. Juan Pérez', actor: 'Sistema', at: '2026-02-05T09:00:00-03:00' },
+      { id: 'h-005', kind: 'audit_proposed', title: 'Propuesta de reunión', description: '12/02 a las 10:00 GMT-3', actor: 'Auditor', at: '2026-02-06T11:30:00-03:00' },
+    ],
+    threads: {
+      'm-001': [
+        { id: 'msg-001', author: 'tutor', authorName: 'Lic. Juan Pérez', body: 'Hola Camila, te propongo una primera reunión para revisar la documentación que enviaste. Confirmame si te queda cómodo el horario.', at: '2026-02-06T11:30:00-03:00' },
+      ],
+    },
+    submittedData: {
+      applicantName: 'Camila Montes',
+      email: 'camila@ancestralseed.org',
+      phone: '+57 2345-6789',
+      country: 'Colombia',
+      region: 'Caribe colombiano',
+      community: 'Sierra Nevada de Santa Marta',
+      inspirationCommunity: 'Comunidad Kogi',
+      productType: 'Producto físico',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Filigrana',
+      processDescription: 'Trabajo manual con hilos extremadamente finos de plata, mediante la técnica de enrollado y trenzado, soldadura artesanal y terminación a mano.',
+      producerType: 'Yo misma · con apoyo familiar',
+    },
   },
   {
     id: 'req-002',
@@ -295,6 +338,42 @@ export const mockCertificationRequests: CertificationRequest[] = [
         status: 'accepted',
       },
     ],
+    evidences: [
+      { id: 'e-101', name: 'manto-completo.jpg', kind: 'image', sizeKb: 1500, uploadedAt: '2025-11-09T12:00:00-03:00', thumbUrl: '/cards/card-tejido.png' },
+      { id: 'e-102', name: 'detalle-telar.jpg', kind: 'image', sizeKb: 1100, uploadedAt: '2025-11-09T12:05:00-03:00' },
+    ],
+    payments: [
+      { id: 'p-101', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2025-11-30', paidAt: '2025-11-15', invoiceUrl: '#' },
+      { id: 'p-102', concept: 'Auditoría en territorio', amount: 60000, currency: 'ARS', status: 'paid', dueDate: '2026-01-31', paidAt: '2026-01-12', invoiceUrl: '#' },
+      { id: 'p-103', concept: 'Emisión del certificado en blockchain', amount: 15000, currency: 'ARS', status: 'pending', dueDate: '2026-05-25' },
+    ],
+    history: [
+      { id: 'h-101', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2025-11-08T10:00:00-03:00' },
+      { id: 'h-102', kind: 'stage_changed', title: 'Inicio del proceso', actor: 'Sistema', at: '2025-11-15T09:00:00-03:00' },
+      { id: 'h-103', kind: 'payment_received', title: 'Pago confirmado', description: 'Inicio de proceso · $45.000', actor: 'Sistema', at: '2025-11-15T11:23:00-03:00' },
+      { id: 'h-104', kind: 'stage_changed', title: 'Diagnóstico completado', actor: 'Sistema', at: '2025-12-02T14:00:00-03:00' },
+      { id: 'h-105', kind: 'stage_changed', title: 'Auditoría completada', actor: 'Auditor', at: '2026-01-18T17:00:00-03:00' },
+      { id: 'h-106', kind: 'stage_changed', title: 'Evaluación en curso', actor: 'Sistema', at: '2026-04-28T09:15:00-03:00' },
+      { id: 'h-107', kind: 'audit_accepted', title: 'Reunión de cierre confirmada', description: '20/05 14:00 GMT-3 · Mtra. Sofía Quispe', actor: 'Tú', at: '2026-04-22T18:42:00-03:00' },
+    ],
+    threads: {
+      'm-002': [
+        { id: 'msg-101', author: 'tutor', authorName: 'Mtra. Sofía Quispe', body: 'Hola Camila, te confirmo la reunión del cierre de evaluación para el 20/05.', at: '2026-04-22T18:42:00-03:00' },
+      ],
+    },
+    submittedData: {
+      applicantName: 'Camila Montes',
+      email: 'camila@ancestralseed.org',
+      phone: '+57 2345-6789',
+      country: 'Colombia',
+      region: 'Caribe colombiano',
+      community: 'Sierra Nevada de Santa Marta',
+      productType: 'Producto físico',
+      productSector: 'Tejidos y textiles',
+      productSubcategory: 'Tejido en telar',
+      processDescription: 'Tejido manual en telar vertical con lana hilada a mano, teñida con tintes naturales. Proceso completo desde el hilado hasta el acabado, sin intervención industrial.',
+      producerType: 'Mi familia',
+    },
   },
 ]
 
