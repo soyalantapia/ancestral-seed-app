@@ -4,16 +4,19 @@ import {
   Bell,
   CheckCheck,
   ChevronDown,
+  ExternalLink,
   FileText,
   LogIn,
   LogOut,
   Menu,
+  Search,
   Settings as SettingsIcon,
   UserRound,
   X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from './Logo'
+import { GlobalSearch } from './GlobalSearch'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useUiStore } from '@/store/ui'
 import { useAuthStore } from '@/store/auth'
@@ -42,8 +45,32 @@ export function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLDivElement>(null)
+
+  // Detect if user is on a dashboard route
+  const isDashboardRoute =
+    isAuthenticated &&
+    /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda)/.test(
+      location.pathname,
+    )
+
+  // Global keyboard shortcut for search (⌘K / Ctrl+K)
+  useEffect(() => {
+    if (!isAuthenticated) return
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen((v) => !v)
+      }
+      if (e.key === 'Escape' && searchOpen) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [isAuthenticated, searchOpen])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -75,10 +102,21 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-      <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-6 px-4 md:h-20 md:px-8">
+      <div className="mx-auto flex h-16 max-w-[1320px] items-center gap-4 px-4 md:h-20 md:gap-6 md:px-8">
         <Link to={homeLink} className="shrink-0">
           <Logo />
         </Link>
+
+        {isDashboardRoute && (
+          <Link
+            to="/"
+            className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500 lg:inline-flex"
+            title="Ver sitio público"
+          >
+            <ExternalLink className="h-3 w-3" />
+            Ver sitio público
+          </Link>
+        )}
 
         {!isAuthenticated && (
           <nav className="hidden flex-1 items-center gap-7 lg:flex">
@@ -100,7 +138,23 @@ export function Header() {
           </nav>
         )}
 
-        <div className={cn('ml-auto hidden items-center gap-3 lg:flex', !isAuthenticated && 'flex-none')}>
+        {/* Global search trigger (dashboard only) */}
+        {isDashboardRoute && (
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="ml-auto hidden h-10 max-w-md flex-1 items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 text-left text-sm text-navy-300 transition-colors hover:bg-neutral-200 md:flex md:ml-6"
+            aria-label="Buscar"
+          >
+            <Search className="h-4 w-4 shrink-0" />
+            <span className="flex-1 truncate">Buscar certificaciones, páginas…</span>
+            <kbd className="rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[10px] font-bold text-navy-300">
+              ⌘K
+            </kbd>
+          </button>
+        )}
+
+        <div className={cn('hidden items-center gap-2 lg:flex', !isDashboardRoute && 'ml-auto')}>
           {!isAuthenticated && (
             <>
               <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
@@ -281,10 +335,24 @@ export function Header() {
           )}
         </div>
 
+        {isDashboardRoute && (
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
+            aria-label="Buscar"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+        )}
+
         <button
           type="button"
           onClick={toggleMobileMenu}
-          className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden',
+            !isDashboardRoute && 'ml-auto',
+          )}
           aria-label="Abrir menú"
           aria-expanded={isMobileMenuOpen}
         >
@@ -396,6 +464,8 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   )
 }

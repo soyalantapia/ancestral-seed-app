@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { Header } from './Header'
-import { Footer } from './Footer'
+import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
@@ -172,7 +172,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         {/* Main */}
         <main className="flex-1 bg-white">
           {children ?? <Outlet />}
-          <Footer />
+          <DashboardFooter />
         </main>
       </div>
 
