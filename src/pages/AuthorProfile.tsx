@@ -303,7 +303,6 @@ function DestacadosTab({
             <CertificationCard
               key={c.id}
               certification={c}
-              layout="wide"
             />
           ))}
         </div>

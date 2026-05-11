@@ -35,7 +35,11 @@ function Hero() {
       <div className="mx-auto max-w-[1320px] px-4 md:px-8">
         <div className="grid grid-cols-1 items-center gap-8 rounded-[32px] bg-white p-8 shadow-md md:min-h-[480px] md:p-14 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
-            <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold-700">
+              <Sparkles className="h-3.5 w-3.5" />
+              Certificación cultural blockchain
+            </span>
+            <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
               Autenticidad ancestral,<br className="hidden md:inline" />{' '}
               certificada digitalmente
             </h1>
@@ -49,6 +53,7 @@ function Hero() {
                 variant="gold"
                 size="lg"
                 onClick={() => navigate('/certificar')}
+                className="shadow-lg shadow-gold-500/30"
               >
                 Certificar Producto
               </Button>
@@ -76,21 +81,38 @@ function Hero() {
 
 function Pillars() {
   const pillars = [
-    { icon: Leaf, title: 'Lorem ipsum' },
-    { icon: CheckCircle2, title: 'Lorem ipsum' },
-    { icon: Eye, title: 'Lorem ipsum' },
-    { icon: Users, title: 'Lorem ipsum' },
+    {
+      icon: Leaf,
+      title: 'Saber ancestral',
+      copy: 'Documentamos técnicas y oficios transmitidos por generaciones.',
+    },
+    {
+      icon: CheckCircle2,
+      title: 'Auditoría cultural',
+      copy: 'Validamos con curadores expertos en cada territorio.',
+    },
+    {
+      icon: Eye,
+      title: 'Transparencia total',
+      copy: 'Certificados públicos con trazabilidad completa.',
+    },
+    {
+      icon: Users,
+      title: 'Comunidad protegida',
+      copy: 'Reconocimiento y defensa frente al fraude cultural.',
+    },
   ]
   return (
     <section className="bg-white">
       <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-14 md:grid-cols-4 md:px-8 md:py-16">
         {pillars.map((p, i) => (
           <div key={i} className="flex flex-col items-center text-center">
-            <p.icon className="h-7 w-7 text-navy-500" strokeWidth={1.5} />
-            <h3 className="mt-4 text-base font-medium text-navy-500">{p.title}</h3>
-            <p className="mt-2 text-xs leading-relaxed text-navy-300">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-100">
+              <p.icon className="h-6 w-6 text-gold-700" strokeWidth={1.75} />
+            </div>
+            <h3 className="mt-4 text-base font-bold text-navy-500">{p.title}</h3>
+            <p className="mt-2 text-xs leading-relaxed text-navy-300 md:text-sm">
+              {p.copy}
             </p>
           </div>
         ))}
@@ -354,7 +376,7 @@ function CTASection() {
             to="/certificar"
             className={cn(
               buttonVariants({ variant: 'gold', size: 'lg' }),
-              'mt-7',
+              'mt-7 shadow-lg shadow-black/30',
             )}
           >
             Certificar Producto

@@ -27,7 +27,6 @@ import { useCertification } from '@/hooks/useCertifications'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet } from '@/components/ui/sheet'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { api } from '@/services/api'
 import { cn, formatDate } from '@/lib/utils'
@@ -73,13 +72,13 @@ export default function CertificationDetail() {
           </h1>
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* LEFT: Cover image */}
+            {/* LEFT: Cover image — Figma 587x455 ≈ 1.29:1 */}
             <div className="lg:col-span-6">
               <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100">
                 <img
                   src={resolveAsset(cert.coverUrl)}
                   alt={cert.title}
-                  className="aspect-square w-full object-cover"
+                  className="aspect-[587/455] w-full object-cover"
                 />
               </div>
             </div>
@@ -106,7 +105,7 @@ export default function CertificationDetail() {
                   <img
                     src={cert.authorAvatarUrl || 'https://i.pravatar.cc/200?img=47'}
                     alt={authorName}
-                    className="h-14 w-14 rounded-full border border-neutral-200 object-cover"
+                    className="h-16 w-16 rounded-full border border-neutral-200 object-cover"
                   />
                   <div className="flex-1">
                     <p className="text-xs font-medium text-navy-300">Autor</p>
@@ -125,7 +124,7 @@ export default function CertificationDetail() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-5 border-t border-neutral-200 pt-5">
+                <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-7 border-t border-neutral-200 pt-5">
                   <Stat
                     icon={Star}
                     label="Puntaje"
@@ -139,7 +138,7 @@ export default function CertificationDetail() {
                     </div>
                     <div>
                       <p className="text-xs text-navy-300">Estado</p>
-                      <span className="mt-0.5 inline-block rounded-full bg-success-200 px-2.5 py-0.5 text-xs font-semibold text-success-400">
+                      <span className="mt-0.5 inline-block rounded-full bg-success-100 px-2.5 py-0.5 text-xs font-semibold text-success-300 ring-1 ring-success-300/20">
                         Vigente
                       </span>
                     </div>
@@ -369,24 +368,24 @@ function MethodologySection() {
         }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-navy-500/85" aria-hidden />
-      <div className="relative z-10 mx-auto max-w-[1320px] px-4 py-14 text-center text-white md:px-8 md:py-16">
+      <div className="absolute inset-0 bg-navy-500/90" aria-hidden />
+      <div className="relative z-10 mx-auto max-w-[1320px] px-4 py-12 text-center text-white md:px-8 md:py-14">
         <h2 className="text-2xl font-bold md:text-[32px] md:leading-tight">
           Nuestra metodología de certificación
         </h2>
-        <p className="mx-auto mt-3 max-w-3xl text-sm leading-relaxed text-neutral-200 md:text-base">
+        <p className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-neutral-200 md:text-base">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
           ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
           aliquip ex ea commodo consequat.
         </p>
-        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <div className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 md:grid-cols-4 md:gap-7">
           {items.map(({ label, icon: Icon }) => (
             <button
               key={label}
-              className="inline-flex h-16 items-center justify-center gap-3 rounded-2xl bg-gold-500 px-5 text-sm font-semibold text-navy-500 shadow-md transition-all hover:bg-gold-400 hover:scale-[1.02]"
+              className="inline-flex h-[72px] items-center gap-3 rounded-2xl bg-gold-500 px-3 text-sm font-semibold text-navy-500 transition-all hover:bg-gold-400"
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-7 w-7 shrink-0" strokeWidth={2} />
               <span className="whitespace-pre-line text-left leading-tight">
                 {label}
               </span>

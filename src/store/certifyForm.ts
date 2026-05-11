@@ -2,31 +2,49 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface CertifyFormData {
-  // Step 1 — Producto
-  title: string
-  type: 'producto' | 'servicio' | ''
-  category: string
-  shortDescription: string
-  // Step 2 — Origen
+  // Step 1 — Identidad del solicitante
+  applicantName: string
+  documentType: 'DNI' | 'Pasaporte' | 'CUIT' | ''
+  documentNumber: string
+  email: string
+  phonePrefix: string
+  phoneNumber: string
   country: string
   region: string
-  community: string
-  exactLocation: string
-  // Step 3 — Materia y proceso
-  materials: string
-  technique: string
+  department: string
+  address: string
+
+  // Step 2 — Comunidad
+  communityRole: string
+  communityActivity: string
+  hasKinship: 'si' | 'no' | ''
+  communityName: string
+  territoryName: string
+  inspirationCommunity: string
+
+  // Step 3 — Producto, servicio o práctica
+  productName: string
+  productType: string
+  productSector: string
+  productSubcategory: string
+
+  // Step 4 — Proceso de producción o prestación
   processDescription: string
-  generations: string
-  // Step 4 — Documentación
+  producerType: string
+  productionCapacity: string
+  batchType: 'lotes' | 'partidas' | ''
+  batchIdentifiers: string[]
+
+  // Step 5 — Evidencias
   coverImageName: string
   galleryNames: string[]
   videoUrl: string
   references: string
-  // Step 5 — Contacto
-  applicantName: string
-  email: string
-  phone: string
+
+  // Step 6 — Privacidad
   acceptTerms: boolean
+  acceptDataPolicy: boolean
+  acceptPublic: boolean
 }
 
 interface CertifyFormState {
@@ -38,9 +56,15 @@ interface CertifyFormState {
 }
 
 const initial: Partial<CertifyFormData> = {
-  type: '',
+  documentType: '',
+  phonePrefix: '+54',
+  hasKinship: '',
+  batchType: '',
+  batchIdentifiers: [],
   galleryNames: [],
   acceptTerms: false,
+  acceptDataPolicy: false,
+  acceptPublic: false,
 }
 
 export const useCertifyFormStore = create<CertifyFormState>()(
@@ -53,6 +77,6 @@ export const useCertifyFormStore = create<CertifyFormState>()(
         set((s) => ({ data: { ...s.data, ...patch } })),
       reset: () => set({ data: initial, step: 0 }),
     }),
-    { name: 'ancestral-seed-certify-form' },
+    { name: 'ancestral-seed-certify-form-v2' },
   ),
 )
