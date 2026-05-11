@@ -13,7 +13,7 @@ export default function NotFound() {
         <p className="mt-6 text-sm uppercase tracking-[0.32em] text-gold-700">
           404
         </p>
-        <h1 className="mt-3 text-3xl font-bold text-navy-500 md:text-4xl">
+        <h1 className="mt-3 text-2xl font-bold text-navy-500 md:text-[32px]">
           Esta semilla no germinó
         </h1>
         <p className="mt-3 max-w-md text-sm text-navy-300">

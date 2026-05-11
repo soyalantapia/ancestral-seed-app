@@ -70,7 +70,7 @@ export default function CertificationDetail() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 py-8 md:px-8 md:py-10">
-          <h1 className="text-3xl font-bold leading-tight text-navy-500 md:text-[40px]">
+          <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-[32px]">
             {cert.title}
           </h1>
 

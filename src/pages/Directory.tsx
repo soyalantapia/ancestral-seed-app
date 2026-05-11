@@ -31,15 +31,6 @@ const statusOptions: { value: CertificationStatus; label: string }[] = [
   { value: 'expired', label: 'Vencidos' },
 ]
 
-const regions = [
-  'Argentina · Quebrada de Humahuaca',
-  'Argentina · NOA',
-  'Argentina · Jujuy',
-  'Argentina · Chaco árido',
-  'Argentina · Valle de Uco',
-  'Argentina · Sierras de Córdoba',
-]
-
 export default function Directory() {
   const [filters, setFilters] = useState<DirectoryFilters>({
     sortBy: 'recent',
@@ -74,7 +65,7 @@ export default function Directory() {
       <section className="bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
           <div className="rounded-3xl bg-white px-8 py-10 text-center shadow-sm md:px-16 md:py-12">
-            <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-[32px]">
               Directorio de certificaciones auténticas
             </h1>
             <p className="mt-2 text-sm text-navy-300 md:text-base">
@@ -139,29 +130,6 @@ export default function Directory() {
               onChange={(v) => updateFilter('category', v)}
             />
             <FilterChip
-              label="Nombre"
-              value={undefined}
-              options={[]}
-              onChange={() => {}}
-              disabled
-            />
-            <FilterChip
-              label="País/Región"
-              value={undefined}
-              options={regions.map((r) => ({ value: r, label: r }))}
-              onChange={() => {}}
-            />
-            <FilterChip
-              label="Puntaje"
-              value={undefined}
-              options={[
-                { value: '90-100', label: '90 - 100' },
-                { value: '80-90', label: '80 - 90' },
-                { value: '0-80', label: 'Menos de 80' },
-              ]}
-              onChange={() => {}}
-            />
-            <FilterChip
               label="Estado"
               value={filters.status}
               options={statusOptions.map((s) => ({
@@ -172,13 +140,15 @@ export default function Directory() {
                 updateFilter('status', v as CertificationStatus | undefined)
               }
             />
-            <FilterChip
-              label="Hash/ID"
-              value={undefined}
-              options={[]}
-              onChange={() => {}}
-              disabled
-            />
+            {(filters.category || filters.status) && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs font-semibold text-navy-300 hover:text-navy-500"
+              >
+                Limpiar filtros
+              </button>
+            )}
 
             <div className="ml-auto flex items-center gap-2">
               <select
@@ -397,7 +367,6 @@ interface FilterChipProps<T extends string> {
   value: T | undefined
   options: { value: T; label: string }[]
   onChange: (value: T | undefined) => void
-  disabled?: boolean
 }
 
 function FilterChip<T extends string>({
@@ -405,20 +374,8 @@ function FilterChip<T extends string>({
   value,
   options,
   onChange,
-  disabled,
 }: FilterChipProps<T>) {
-  if (options.length === 0 || disabled) {
-    return (
-      <button
-        type="button"
-        disabled
-        className="inline-flex h-9 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm text-navy-300 disabled:opacity-60"
-      >
-        {label}
-        <ChevronRight className="h-3.5 w-3.5 rotate-90" />
-      </button>
-    )
-  }
+  if (options.length === 0) return null
   return (
     <div className="relative">
       <select

@@ -25,6 +25,27 @@ export const useNotificationsStore = create<NotificationsState>()(
         set((s) => ({ items: s.items.filter((n) => n.id !== id) })),
       unreadCount: () => get().items.filter((n) => !n.read).length,
     }),
-    { name: 'ancestral-seed-notifications' },
+    {
+      name: 'ancestral-seed-notifications',
+      version: 2,
+      // If schema or mocks change, bump version and reseed
+      migrate: () => ({ items: mockNotifications } as Partial<NotificationsState>),
+    },
   ),
 )
+
+// Cross-tab sync: re-hidrate cuando otra pestaña modifica el storage
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'ancestral-seed-notifications' && e.newValue) {
+      try {
+        const data = JSON.parse(e.newValue)
+        if (data?.state?.items) {
+          useNotificationsStore.setState({ items: data.state.items })
+        }
+      } catch {
+        // ignore
+      }
+    }
+  })
+}
