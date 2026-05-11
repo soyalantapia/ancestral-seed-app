@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import { useEscape } from '@/hooks/useEscape'
-import { Camera, CheckCircle2, Circle, Eye, Filter, MoreVertical, Pencil, Plus, Save, Trash2 } from 'lucide-react'
+import {
+  BookOpen,
+  Camera,
+  CheckCircle2,
+  Circle,
+  Eye,
+  Filter,
+  MapPin,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Save,
+  Sparkles,
+  Trash2,
+  User as UserIcon,
+  Users,
+} from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/auth'
@@ -167,24 +183,24 @@ export default function MyProfile() {
       </div>
 
       {tab === 'Mi perfil' && (
-        <div className="mt-8 space-y-8">
-          {/* Cover + avatar */}
-          <div>
-            <div className="relative overflow-hidden rounded-3xl bg-neutral-200">
+        <div className="mt-8 space-y-6">
+          {/* Identity hero card — cover + avatar + name + role */}
+          <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+            <div className="relative">
               {data.coverUrl ? (
-                <img src={data.coverUrl} alt="Portada" className="aspect-[16/6] w-full object-cover" />
+                <img src={data.coverUrl} alt="Portada" className="aspect-[16/5] w-full object-cover md:aspect-[16/4]" />
               ) : (
-                <div className="flex aspect-[16/6] w-full items-center justify-center bg-gradient-to-br from-neutral-300 to-neutral-400 text-sm text-navy-500/60">
+                <div className="flex aspect-[16/5] w-full items-center justify-center bg-gradient-to-br from-neutral-300 via-gold-100 to-neutral-200 text-sm text-navy-500/60 md:aspect-[16/4]">
                   Sin portada
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => coverInputRef.current?.click()}
-                className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-500 shadow-md transition-colors hover:bg-gold-400"
+                className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-navy-500 shadow-md backdrop-blur transition-colors hover:bg-white"
               >
-                Editar portada
-                <Camera className="h-4 w-4" />
+                <Camera className="h-3.5 w-3.5" />
+                Cambiar portada
               </button>
               <input
                 ref={coverInputRef}
@@ -195,17 +211,17 @@ export default function MyProfile() {
               />
             </div>
 
-            <div className="-mt-12 ml-6 flex items-end md:ml-10">
-              <div className="relative">
+            <div className="flex flex-col gap-4 px-6 pb-6 md:flex-row md:items-end md:gap-6 md:px-8 md:pb-8">
+              <div className="relative -mt-14 md:-mt-16">
                 <img
                   src={data.avatarUrl || 'https://i.pravatar.cc/300?img=47'}
                   alt={data.name}
-                  className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-md"
+                  className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-md md:h-32 md:w-32"
                 />
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-md transition-colors hover:bg-gold-400"
+                  className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-md transition-colors hover:bg-gold-400"
                   aria-label="Cambiar avatar"
                 >
                   <Camera className="h-4 w-4" />
@@ -218,25 +234,66 @@ export default function MyProfile() {
                   onChange={(e) => handleFile(e, 'avatarUrl')}
                 />
               </div>
+
+              <div className="flex-1 min-w-0">
+                <h2 className="text-2xl font-bold text-navy-500 md:text-[26px]">
+                  {data.name}
+                </h2>
+                <p className="mt-1 text-sm text-navy-300">
+                  {data.role}
+                  {data.community && (
+                    <>
+                      {' · '}
+                      <span>{data.community}</span>
+                    </>
+                  )}
+                </p>
+                <p className="mt-1 inline-flex items-center gap-1 text-xs text-navy-300">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {data.country}
+                  {data.region && ` · ${data.region}`}
+                </p>
+              </div>
             </div>
-          </div>
+
+            {/* Stats row */}
+            <dl className="grid grid-cols-3 divide-x divide-neutral-200 border-t border-neutral-200 bg-neutral-100/60 text-center">
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">Perfil</dt>
+                <dd className="mt-1 text-xl font-bold text-gold-700">{completionPct}%</dd>
+              </div>
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">Certificaciones</dt>
+                <dd className="mt-1 text-xl font-bold text-navy-500">2</dd>
+              </div>
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">Antigüedad</dt>
+                <dd className="mt-1 text-xl font-bold text-navy-500">8 meses</dd>
+              </div>
+            </dl>
+          </section>
 
           {/* Datos personales */}
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-navy-500">Datos personales</h2>
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+                  <UserIcon className="h-4 w-4" />
+                </span>
+                <h3 className="text-base font-bold text-navy-500">Datos personales</h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setEditingPersonal((v) => !v)}
-                className="inline-flex items-center gap-1 text-sm font-semibold text-gold-700 hover:underline"
+                className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
               >
-                <Pencil className="h-4 w-4" />
-                {editingPersonal ? 'Cerrar edición' : 'Editar'}
+                <Pencil className="h-3.5 w-3.5" />
+                {editingPersonal ? 'Cerrar' : 'Editar'}
               </button>
             </div>
 
             {!editingPersonal ? (
-              <dl className="mt-4 grid gap-x-6 gap-y-4 text-sm md:grid-cols-5">
+              <dl className="mt-5 grid gap-x-6 gap-y-4 text-sm md:grid-cols-3 lg:grid-cols-5">
                 <Stat label="Nombre completo" value={data.name} />
                 <Stat label="Email" value={data.email} />
                 <Stat label="País" value={data.country} />
@@ -244,7 +301,7 @@ export default function MyProfile() {
                 <Stat label="Teléfono" value={data.phone} />
               </dl>
             ) : (
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <Field label="Nombre completo" value={data.name} onChange={(v) => update({ name: v })} />
                 <Field label="Email" value={data.email} onChange={(v) => update({ email: v })} />
                 <Field label="País" value={data.country} onChange={(v) => update({ country: v })} />
@@ -254,9 +311,14 @@ export default function MyProfile() {
             )}
           </section>
 
-          {/* Sobre mí (bio unificada) */}
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
-            <h3 className="text-base font-bold text-navy-500">Sobre mí</h3>
+          {/* Sobre mí */}
+          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+                <BookOpen className="h-4 w-4" />
+              </span>
+              <h3 className="text-base font-bold text-navy-500">Sobre mí</h3>
+            </div>
             <p className="mt-1 text-sm text-navy-300">
               Tu biografía personal. Aparece en tu perfil público y en el header de tus fichas.
             </p>
@@ -266,17 +328,28 @@ export default function MyProfile() {
               value={data.bio}
               onChange={(e) => update({ bio: e.target.value })}
             />
+            <p className="mt-1 text-right text-[11px] text-navy-300">{data.bio.length} caracteres</p>
           </section>
 
           {/* Datos de comunidad */}
-          <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
-            <h3 className="text-base font-bold text-navy-500">Datos de comunidad</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+                <Users className="h-4 w-4" />
+              </span>
+              <h3 className="text-base font-bold text-navy-500">Datos de comunidad</h3>
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
               <Field label="Comunidad" value={data.community} onChange={(v) => update({ community: v })} />
               <Field label="Rol" value={data.role} onChange={(v) => update({ role: v })} />
             </div>
 
-            <p className="mt-6 text-base font-bold text-navy-500">Historia</p>
+            <div className="mt-6 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <h4 className="text-base font-bold text-navy-500">Historia</h4>
+            </div>
             <p className="mt-1 text-sm text-navy-300">
               Podés compartir una breve historia sobre tu comunidad, su origen o lo que representa.
             </p>

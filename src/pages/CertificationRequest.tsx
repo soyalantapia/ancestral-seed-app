@@ -4,6 +4,7 @@ import { useEscape } from '@/hooks/useEscape'
 import {
   AlertTriangle,
   ArrowLeft,
+  Award,
   Calendar as CalendarIcon,
   Check,
   CheckCircle2,
@@ -90,8 +91,22 @@ export default function CertificationRequest() {
     setMeetings((ms) => ms.map((m) => (m.id === id ? { ...m, status } : m)))
   }
 
+  // Compute progress percentage from stages
+  const stagesArr = request.stages
+  const stageProgress = (() => {
+    const total = stagesArr.length
+    const idx = stagesArr.findIndex((s) => s.status === 'in_progress')
+    const done = stagesArr.filter((s) => s.status === 'completed').length
+    if (idx === -1) return Math.round((done / total) * 100)
+    return Math.round(((done + 0.5) / total) * 100)
+  })()
+  const currentStageLabel =
+    stagesArr.find((s) => s.status === 'in_progress')?.label ??
+    stagesArr.filter((s) => s.status === 'completed').slice(-1)[0]?.label ??
+    'Sin avances'
+
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-6 py-6 md:px-10 md:py-8">
       <Link
         to="/mis-certificaciones"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-300 hover:text-navy-500"
@@ -99,26 +114,96 @@ export default function CertificationRequest() {
         <ArrowLeft className="h-4 w-4" />
         Mis certificaciones
       </Link>
-      <h1 className="mt-4 text-2xl font-bold text-navy-500 md:text-[28px]">
-        Solicitud de certificación · <span className="text-navy-300">{request.number}</span>
-      </h1>
 
-      <div className="mt-3 flex flex-col gap-2 text-sm text-navy-500">
-        <div className="flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4 text-navy-300" />
-          <span className="font-bold">Fecha de creación:</span>
-          <span>{request.createdAt}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-navy-300" />
-          <span className="font-bold">Pendientes:</span>
-          <span>{request.pendingItems.join('  /  ')}</span>
-        </div>
-      </div>
+      {/* Hero summary card */}
+      <section className="mt-4 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto]">
+          {/* Left: info */}
+          <div className="p-6 md:p-8">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-[11px] font-bold text-navy-500">
+                {request.number}
+              </span>
+              <StageStatusBadge status={request.status === 'En emisión' ? 'En emisión' : 'Preadiagnóstico'} />
+              {request.pendingItems.length > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-error-100 px-2.5 py-0.5 text-[11px] font-bold text-error-400 ring-1 ring-error-200">
+                  <AlertTriangle className="h-3 w-3" />
+                  {request.pendingItems.length} pendiente{request.pendingItems.length > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
 
-      {/* Tabs */}
-      <div className="mt-6 overflow-x-auto">
-        <div className="flex gap-2">
+            <h1 className="mt-3 text-2xl font-bold text-navy-500 md:text-[28px]">
+              {request.productName}
+            </h1>
+
+            {/* Progress */}
+            <div className="mt-5">
+              <div className="flex items-baseline justify-between text-xs">
+                <span className="font-bold text-navy-500">
+                  Etapa actual: <span className="text-gold-700">{currentStageLabel}</span>
+                </span>
+                <span className="font-bold text-navy-500">{stageProgress}%</span>
+              </div>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                <div
+                  className="h-full rounded-full bg-gold-500 transition-all"
+                  style={{ width: `${stageProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Meta stats */}
+            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
+              <Meta icon={CalendarIcon} label="Creación" value={request.createdAt} />
+              <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
+              <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
+            </dl>
+
+            {/* Quick actions */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setTab('Evidencias')}
+                className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-4 py-2 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+              >
+                <Plus className="h-4 w-4" />
+                Añadir evidencias
+              </button>
+              {!request.diagnosticCompleted && request.diagnosticDeadline && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab('Evaluación')
+                    setDiagnosticOpen(true)
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-navy-500 bg-white px-4 py-2 text-sm font-bold text-navy-500 transition-colors hover:bg-navy-500 hover:text-white"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  Completar diagnóstico
+                </button>
+              )}
+              {request.meetings.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setThreadFor(request.meetings[0])}
+                  className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Mensaje al tutor
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Right: decorative pattern */}
+          <div className="hidden bg-pattern-aztec md:block md:w-48 lg:w-56" aria-hidden />
+        </div>
+      </section>
+
+      {/* Sticky tabs */}
+      <div className="sticky top-16 z-10 -mx-6 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-6 backdrop-blur md:top-20 md:-mx-10 md:px-10">
+        <div className="flex gap-1 py-3">
           {tabs.map((t) => {
             return (
               <button
@@ -126,7 +211,7 @@ export default function CertificationRequest() {
                 type="button"
                 onClick={() => setTab(t)}
                 className={cn(
-                  'whitespace-nowrap rounded-full px-5 py-2 text-sm font-bold transition-colors',
+                  'whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors',
                   tab === t
                     ? 'bg-gold-100 text-gold-700 ring-1 ring-gold-300'
                     : 'text-navy-300 hover:bg-neutral-100 hover:text-navy-500',
@@ -1517,6 +1602,34 @@ function MessageThreadSheet({
       </aside>
     </div>
   )
+}
+
+function Meta({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof CalendarIcon
+  label: string
+  value: string
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-navy-300" />
+      <div>
+        <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">{label}</dt>
+        <dd className="text-sm font-bold text-navy-500">{value}</dd>
+      </div>
+    </div>
+  )
+}
+
+function formatLastActivity(r: CertificationRequestType): string {
+  const events = r.history ?? []
+  const last = events[events.length - 1]
+  if (!last) return r.createdAt
+  const d = new Date(last.at)
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 function RequestNotFound() {

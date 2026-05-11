@@ -174,8 +174,10 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         </AnimatePresence>
 
         {/* Main */}
-        <main className="flex-1 bg-white">
-          {children ?? <Outlet />}
+        <main className="flex flex-1 flex-col bg-white">
+          <div className="flex-1">
+            {children ?? <Outlet />}
+          </div>
           <DashboardFooter />
         </main>
       </div>
