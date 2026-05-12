@@ -19,6 +19,14 @@ import { cn } from '@/lib/utils'
 const tabs = ['Todas', 'No leídas'] as const
 type Tab = (typeof tabs)[number]
 
+const typeFilters: Array<{ id: string; label: string; kinds: NotificationKind[] }> = [
+  { id: 'all', label: 'Todas', kinds: [] },
+  { id: 'audit', label: 'Auditoría', kinds: ['audit_proposed', 'audit_accepted'] },
+  { id: 'evidence', label: 'Evidencias', kinds: ['evidence_request', 'document_uploaded'] },
+  { id: 'message', label: 'Mensajes', kinds: ['message_received'] },
+  { id: 'stage', label: 'Estado', kinds: ['stage_changed', 'cert_published'] },
+]
+
 const iconMap: Record<NotificationKind, typeof Bell> = {
   audit_proposed: Calendar,
   audit_accepted: CheckCheck,
@@ -45,8 +53,13 @@ export default function Notifications() {
   const markAllRead = useNotificationsStore((s) => s.markAllRead)
   const remove = useNotificationsStore((s) => s.remove)
   const [tab, setTab] = useState<Tab>('Todas')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
 
-  const filtered = tab === 'No leídas' ? items.filter((n) => !n.read) : items
+  let filtered = tab === 'No leídas' ? items.filter((n) => !n.read) : items
+  const selectedFilter = typeFilters.find((f) => f.id === typeFilter)
+  if (selectedFilter && selectedFilter.kinds.length > 0) {
+    filtered = filtered.filter((n) => selectedFilter.kinds.includes(n.kind))
+  }
   const unreadCount = items.filter((n) => !n.read).length
 
   return (

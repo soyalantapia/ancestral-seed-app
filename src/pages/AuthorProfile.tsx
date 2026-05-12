@@ -3,12 +3,15 @@ import { Link, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Award,
+  BookOpen,
+  Calendar,
   CheckCircle2,
   Mail,
   MapPin,
   Phone,
   Share2,
   Sparkles,
+  Users,
 } from 'lucide-react'
 import {
   useAuthor,
@@ -64,47 +67,68 @@ export default function AuthorProfile() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-          <div className="-mt-20 rounded-3xl border border-neutral-200 bg-white p-6 shadow-lg md:p-8">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <img
-                src={author.avatarUrl}
-                alt={author.name}
-                className="h-24 w-24 shrink-0 rounded-full border-4 border-white object-cover shadow-md md:h-32 md:w-32"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
-                    {author.name}
-                  </h1>
-                  <CheckCircle2 className="h-5 w-5 text-gold-500" />
-                </div>
-                <p className="mt-1 text-sm text-navy-300 md:text-base">
-                  {author.title}
-                </p>
-                {author.location && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-navy-300">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {author.location}
+          <div className="-mt-20 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg">
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center">
+                <img
+                  src={author.avatarUrl}
+                  alt={author.name}
+                  className="h-24 w-24 shrink-0 rounded-full border-4 border-white object-cover shadow-md md:h-32 md:w-32"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
+                      {author.name}
+                    </h1>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-success-100 px-2 py-0.5 text-[11px] font-bold text-success-300 ring-1 ring-success-300/30">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Verificado
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-navy-300 md:text-base">
+                    {author.title}
                   </p>
-                )}
+                  {author.location && (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-navy-300">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {author.location}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="navy" size="md">
+                    <Mail className="h-4 w-4" /> Contactar
+                  </Button>
+                  <Button variant="ghost" size="icon" aria-label="Compartir">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="navy" size="md">
-                  <Mail className="h-4 w-4" /> Contactar
-                </Button>
-                <Button variant="ghost" size="icon" aria-label="Compartir">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
+
+              <p className="mt-5 max-w-3xl text-sm leading-relaxed text-navy-300">
+                {author.bio}
+              </p>
             </div>
 
-            <p className="mt-5 max-w-3xl text-sm leading-relaxed text-navy-300">
-              {author.bio}
-            </p>
+            {/* Stats row */}
+            <dl className="grid grid-cols-3 divide-x divide-neutral-200 border-t border-neutral-200 bg-neutral-100/60 text-center">
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">Certificaciones</dt>
+                <dd className="mt-1 text-xl font-bold text-gold-700">{author.certificationsCount}</dd>
+              </div>
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">En la plataforma</dt>
+                <dd className="mt-1 text-xl font-bold text-navy-500">{formatJoined(author.joinedAt)}</dd>
+              </div>
+              <div className="px-3 py-4">
+                <dt className="text-[11px] font-medium uppercase tracking-widest text-navy-300">Comunidad</dt>
+                <dd className="mt-1 truncate text-xs font-bold text-navy-500 md:text-sm">
+                  {author.location?.split('·').pop()?.trim() ?? '—'}
+                </dd>
+              </div>
+            </dl>
 
-            <div className="mt-6 border-t border-neutral-200" />
-
-            <div className="mt-4 flex flex-wrap gap-1 overflow-x-auto">
+            <div className="flex flex-wrap gap-1 overflow-x-auto border-t border-neutral-200 px-6 md:px-8">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -198,23 +222,24 @@ function CertificationsTab({
 
 function InfoTab({ author }: { author: import('@/types').Author }) {
   return (
-    <div className="max-w-4xl space-y-10">
-      <section>
-        <h2 className="text-lg font-bold text-navy-500">Sobre mí</h2>
-        <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-navy-300">
-          <span className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-navy-300" />
-            <span className="font-semibold text-navy-500">
-              {author.name}
-            </span>
-            <span>· {author.location}</span>
+    <div className="max-w-4xl space-y-6">
+      <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+            <BookOpen className="h-4 w-4" />
           </span>
-          <span className="flex items-center gap-2">
+          <h2 className="text-base font-bold text-navy-500">Sobre mí</h2>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-navy-300">
+          <span className="inline-flex items-center gap-2">
             <Mail className="h-4 w-4 text-navy-300" />
             email_usuario@email.com
           </span>
-          <span className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2">
             <Phone className="h-4 w-4 text-navy-300" /> +56 1234 5678
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-navy-300" /> Miembro desde {formatJoined(author.joinedAt)}
           </span>
         </div>
         <div className="mt-5 space-y-3 text-sm leading-relaxed text-navy-300">
@@ -236,19 +261,20 @@ function InfoTab({ author }: { author: import('@/types').Author }) {
         </div>
       </section>
 
-      <hr className="border-neutral-200" />
-
-      <section>
-        <h2 className="text-lg font-bold text-navy-500">Comunidad</h2>
-        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <span className="flex items-center gap-2 text-navy-300">
-            <MapPin className="h-4 w-4 text-navy-300" />
-            <span className="font-semibold text-navy-500">
-              Sierra Nevada de Santa Marta
-            </span>
+      <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
+            <Users className="h-4 w-4" />
           </span>
-          <span className="flex items-center gap-2 text-navy-300">
-            <span className="text-navy-300">·</span> Artesana
+          <h2 className="text-base font-bold text-navy-500">Comunidad</h2>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <span className="inline-flex items-center gap-2 text-navy-500">
+            <MapPin className="h-4 w-4 text-navy-300" />
+            <span className="font-bold">Sierra Nevada de Santa Marta</span>
+          </span>
+          <span className="rounded-full bg-gold-100 px-2.5 py-0.5 text-[11px] font-bold text-gold-700">
+            Artesana
           </span>
         </div>
         <div className="mt-5 space-y-3 text-sm leading-relaxed text-navy-300">
@@ -329,4 +355,14 @@ function ProfileSkeleton() {
       </div>
     </div>
   )
+}
+
+function formatJoined(iso: string): string {
+  const d = new Date(iso)
+  const diffMs = Date.now() - d.getTime()
+  const months = Math.round(diffMs / (1000 * 60 * 60 * 24 * 30))
+  if (months < 1) return 'Reciente'
+  if (months < 12) return `${months} mes${months === 1 ? '' : 'es'}`
+  const years = Math.floor(months / 12)
+  return `${years} año${years === 1 ? '' : 's'}`
 }
