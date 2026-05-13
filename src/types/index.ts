@@ -27,6 +27,16 @@ export interface Certification {
   description: string
   coverUrl: string
   hash: string
+  /** "País · Región" — usado en ficha pública y mapa */
+  location?: string
+  /** Lugar puntual para el mapa embebido (Google Maps query). Default: location */
+  mapQuery?: string
+  /** URLs de la galería (carrusel). Si está vacío, usa coverUrl repetido */
+  galleryUrls?: string[]
+  /** Párrafos extra para la sección "Comunidad y región" */
+  contextParagraphs?: string[]
+  /** Párrafos extra para la sección "Técnica y producción" */
+  techniqueParagraphs?: string[]
 }
 
 export interface DirectoryFilters {

@@ -59,9 +59,12 @@ export default function CertificationDetail() {
   if (error || !cert) return <DetailError message={error ?? 'No encontrado'} />
 
   const authorName = isPlaceholder(cert.authorName) ? 'Autor' : cert.authorName
-  const region = isPlaceholder(cert.category)
-    ? 'Colombia · Caribe colombiano'
-    : `Colombia · ${cert.category}`
+  const region =
+    cert.location ??
+    (isPlaceholder(cert.category)
+      ? 'Sin región declarada'
+      : cert.category)
+  const mapQuery = cert.mapQuery ?? region
 
   return (
     <>
@@ -195,18 +198,15 @@ export default function CertificationDetail() {
               <Users className="h-4 w-4 text-gold-700" />
               Comunidad y región
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-navy-300">
-              {region}. Esta técnica mantiene un vínculo ancestral con la
-              Sierra Nevada de Santa Marta, transmitido a través de herencias
-              familiares de comunidades indígenas del territorio.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-navy-300">
-              Esta práctica tiene raíces milenarias, con hallazgos en
-              civilizaciones antiguas como Egipto y Grecia, y se desarrolló
-              ampliamente en distintas regiones de América Latina —como
-              Colombia, México y Perú— y Europa, especialmente en Portugal y
-              España.
-            </p>
+            <p className="mt-3 text-sm font-semibold text-navy-500">{region}</p>
+            {(cert.contextParagraphs ?? []).map((p, i) => (
+              <p
+                key={`ctx-${i}`}
+                className="mt-3 text-sm leading-relaxed text-navy-300"
+              >
+                {p}
+              </p>
+            ))}
 
             <h2 className="mt-10 flex items-center gap-2 text-base font-bold text-navy-500">
               <Sprout className="h-4 w-4 text-gold-700" />
@@ -215,27 +215,25 @@ export default function CertificationDetail() {
             <p className="mt-3 text-sm leading-relaxed text-navy-300">
               {cert.description}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-navy-300">
-              A lo largo del tiempo, la práctica se mantuvo viva gracias a la
-              transmisión oral y a la práctica familiar, conservando su valor
-              cultural y simbólico como una forma de expresión ligada a la
-              paciencia, la precisión y el trabajo manual.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-navy-300">
-              La pieza es elaborada mediante trabajo manual, utilizando la
-              técnica de enrollado y trenzado de hilos metálicos extremadamente
-              finos. Cada elemento se construye y se une mediante soldadura
-              artesanal, desarrollando la pieza completamente a mano, sin
-              intervención de procesos industriales.
-            </p>
+            {(cert.techniqueParagraphs ?? []).map((p, i) => (
+              <p
+                key={`tech-${i}`}
+                className="mt-3 text-sm leading-relaxed text-navy-300"
+              >
+                {p}
+              </p>
+            ))}
 
             <Gallery
-              cover={resolveAsset(cert.coverUrl)}
+              urls={(cert.galleryUrls?.length
+                ? cert.galleryUrls
+                : [cert.coverUrl, cert.coverUrl, cert.coverUrl, cert.coverUrl]
+              ).map(resolveAsset)}
               index={galleryIndex}
               setIndex={setGalleryIndex}
             />
 
-            <MapPreview region={region} />
+            <MapPreview region={region} mapQuery={mapQuery} />
           </div>
         </div>
       </section>
@@ -293,15 +291,15 @@ function Stat({
 }
 
 function Gallery({
-  cover,
+  urls,
   index,
   setIndex,
 }: {
-  cover: string
+  urls: string[]
   index: number
   setIndex: (n: number) => void
 }) {
-  const items = [cover, cover, cover, cover]
+  const items = urls
   return (
     <div className="relative mt-10">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -334,13 +332,14 @@ function Gallery({
   )
 }
 
-function MapPreview({ region }: { region: string }) {
+function MapPreview({ region, mapQuery }: { region: string; mapQuery: string }) {
+  const q = encodeURIComponent(mapQuery)
   return (
     <div className="mt-10 overflow-hidden rounded-3xl border border-neutral-200">
       <div className="relative aspect-[16/7] bg-neutral-100">
         <iframe
-          title="Mapa de origen"
-          src="https://www.google.com/maps?q=Sierra+Nevada+de+Santa+Marta,+Colombia&t=m&z=7&ie=UTF8&output=embed"
+          title={`Mapa de ${region}`}
+          src={`https://www.google.com/maps?q=${q}&t=m&z=7&ie=UTF8&output=embed`}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           className="absolute inset-0 h-full w-full border-0"
@@ -348,7 +347,7 @@ function MapPreview({ region }: { region: string }) {
         <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-navy-500 shadow">
           {region}
           <a
-            href="https://www.google.com/maps/search/Sierra+Nevada+de+Santa+Marta"
+            href={`https://www.google.com/maps/search/${q}`}
             target="_blank"
             rel="noopener noreferrer"
             className="pointer-events-auto ml-2 inline-flex items-center gap-1 text-gold-700 hover:underline"

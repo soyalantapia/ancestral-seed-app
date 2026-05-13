@@ -71,6 +71,16 @@ export const mockCertifications: Certification[] = [
       'Filigrana, una técnica de orfebrería que aprendió y desarrolló a partir de una herencia cultural transmitida en su familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     coverUrl: '/cards/card-filigrana.png',
     hash: '0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6',
+    location: 'Colombia · Caribe colombiano',
+    mapQuery: 'Sierra Nevada de Santa Marta, Colombia',
+    contextParagraphs: [
+      'Esta técnica mantiene un vínculo ancestral con la Sierra Nevada de Santa Marta, transmitido a través de herencias familiares de comunidades indígenas del territorio.',
+      'Tiene raíces milenarias, con hallazgos en civilizaciones antiguas como Egipto y Grecia, y se desarrolló ampliamente en distintas regiones de América Latina —como Colombia, México y Perú— y Europa, especialmente en Portugal y España.',
+    ],
+    techniqueParagraphs: [
+      'A lo largo del tiempo, la práctica se mantuvo viva gracias a la transmisión oral y a la práctica familiar, conservando su valor cultural y simbólico como una forma de expresión ligada a la paciencia, la precisión y el trabajo manual.',
+      'La pieza es elaborada mediante trabajo manual, utilizando la técnica de enrollado y trenzado de hilos metálicos extremadamente finos. Cada elemento se construye y se une mediante soldadura artesanal, sin intervención de procesos industriales.',
+    ],
   },
   {
     id: 'c-sabores',
@@ -85,9 +95,19 @@ export const mockCertifications: Certification[] = [
     status: 'verified',
     category: 'Córdoba',
     description:
-      'Libro que reúne saberes culinarios ancestrales y sus vínculos con la cosmovisión andina. Documenta recetas, ingredientes y rituales transmitidos por generaciones.',
+      'Sabores Cósmicos es una obra de investigación y reflexión que reúne conocimientos vinculados a la alimentación consciente, los ciclos naturales y las tradiciones cosmológicas presentes en diversas culturas. El libro recupera prácticas como la observación de las fases lunares, las dietas asociadas a estos ciclos y algunos principios vinculados a la astromedicina, una disciplina antigua que estudiaba la relación entre los movimientos celestes y el funcionamiento del cuerpo humano.',
     coverUrl: '/cards/card-sabores.png',
     hash: '0xC8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1C2',
+    location: 'Argentina · Córdoba',
+    mapQuery: 'Córdoba, Argentina',
+    contextParagraphs: [
+      'El trabajo de investigación desarrollado en Sabores Cósmicos dialoga con tradiciones culturales que históricamente observaron los ciclos lunares y los ritmos naturales como guías para la vida cotidiana.',
+      'A lo largo del tiempo, distintas civilizaciones desarrollaron calendarios y sistemas de conocimiento basados en los movimientos de los astros. Estas prácticas influían en aspectos fundamentales de la vida como la agricultura, la salud y la alimentación, integrando la observación del cielo con la comprensión del funcionamiento del cuerpo humano.',
+      'Aunque muchos de estos saberes fueron desplazados por modelos modernos de vida y nutrición, continúan siendo parte de tradiciones culturales que conciben la alimentación y el bienestar como procesos vinculados a los ciclos naturales.',
+    ],
+    techniqueParagraphs: [
+      'A través de una mirada contemporánea, la obra propone comprender el sentido cultural y energético que estas prácticas tenían dentro de las sociedades tradicionales, explorando cómo pueden reinterpretarse en el contexto actual para recuperar una relación más equilibrada entre la alimentación, el cuerpo y los ritmos de la naturaleza.',
+    ],
   },
   {
     id: 'c-tejido',
@@ -105,6 +125,8 @@ export const mockCertifications: Certification[] = [
       'Tradición textil del pueblo Pasto, con motivos y técnicas heredadas de la familia y la comunidad.',
     coverUrl: '/cards/card-tejido.png',
     hash: '0xB7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8A2B7C1D6F5E3A0B4C9D1E7F2',
+    location: 'Colombia · Nariño',
+    mapQuery: 'Nariño, Colombia',
   },
   {
     id: 'c-ecodestinos',
@@ -122,6 +144,8 @@ export const mockCertifications: Certification[] = [
       'Operador de turismo ancestral certificado, con experiencias diseñadas en alianza con comunidades originarias del territorio.',
     coverUrl: '/cards/card-ecodestinos.png',
     hash: '0xD9E4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1',
+    location: 'Colombia',
+    mapQuery: 'Colombia',
   },
   {
     id: 'c-joyeria',
