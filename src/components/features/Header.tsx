@@ -82,11 +82,14 @@ export function Header() {
   })
 
   const handleLogout = () => {
-    clearSession()
+    // Cerrar overlays ANTES para que ningún children quede con user=null
+    // y modal abierto. Navegar antes del clearSession evita race con
+    // el Navigate de RequireAuth.
     setMenuOpen(false)
     setBellOpen(false)
-    toast.success('Sesión cerrada')
     navigate('/login', { replace: true })
+    clearSession()
+    toast.success('Sesión cerrada')
   }
 
   const homeLink = isAuthenticated ? '/inicio' : '/'
@@ -421,10 +424,10 @@ export function Header() {
                     <button
                       type="button"
                       onClick={() => {
-                        clearSession()
                         closeMobileMenu()
-                        toast.success('Sesión cerrada')
                         navigate('/login', { replace: true })
+                        clearSession()
+                        toast.success('Sesión cerrada')
                       }}
                       className="flex items-center justify-center gap-2 rounded-full bg-error-100 px-5 py-3 text-sm font-semibold text-error-400 transition-colors hover:bg-error-200"
                     >

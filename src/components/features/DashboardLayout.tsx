@@ -12,6 +12,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Header } from './Header'
 import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
@@ -44,10 +45,15 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
   const [confirmLogout, setConfirmLogout] = useState(false)
 
   const handleLogout = () => {
-    clearSession()
+    // Cerrar UI overlays ANTES de tocar la sesión para evitar que algún
+    // children con user=null se renderice con el modal/drawer abierto.
     setDrawerOpen(false)
     setConfirmLogout(false)
-    navigate('/')
+    // Navegar primero (replace evita stacking con el Navigate de RequireAuth).
+    navigate('/login', { replace: true })
+    // Limpiar sesión al final.
+    clearSession()
+    toast.success('Sesión cerrada')
   }
 
   useEscape(confirmLogout, () => setConfirmLogout(false))
