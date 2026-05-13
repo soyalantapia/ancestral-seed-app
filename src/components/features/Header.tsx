@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import { Logo } from './Logo'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useEscape } from '@/hooks/useEscape'
@@ -83,7 +84,9 @@ export function Header() {
   const handleLogout = () => {
     clearSession()
     setMenuOpen(false)
-    navigate('/')
+    setBellOpen(false)
+    toast.success('Sesión cerrada')
+    navigate('/login', { replace: true })
   }
 
   const homeLink = isAuthenticated ? '/inicio' : '/'
@@ -420,7 +423,8 @@ export function Header() {
                       onClick={() => {
                         clearSession()
                         closeMobileMenu()
-                        navigate('/')
+                        toast.success('Sesión cerrada')
+                        navigate('/login', { replace: true })
                       }}
                       className="flex items-center justify-center gap-2 rounded-full bg-error-100 px-5 py-3 text-sm font-semibold text-error-400 transition-colors hover:bg-error-200"
                     >
