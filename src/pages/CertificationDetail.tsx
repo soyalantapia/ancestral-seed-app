@@ -478,7 +478,7 @@ function MethodologySection() {
     { label: 'Criterios\nPonderados', icon: FileCheck2 },
   ]
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden mb-12 md:mb-20">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
