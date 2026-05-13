@@ -113,6 +113,24 @@ export default function Notifications() {
         ))}
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        {typeFilters.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => setTypeFilter(f.id)}
+            className={cn(
+              'rounded-full border px-4 py-1.5 text-xs font-bold transition-colors',
+              typeFilter === f.id
+                ? 'border-navy-500 bg-navy-500 text-white'
+                : 'border-neutral-300 bg-white text-navy-400 hover:bg-neutral-100',
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-12 text-center">
           <Inbox className="mx-auto h-10 w-10 text-navy-300" strokeWidth={1.5} />

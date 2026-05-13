@@ -8,10 +8,12 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Clock,
   Headphones,
   Image as ImageIcon,
   Play,
   Upload,
+  X,
 } from 'lucide-react'
 import { useForm, FormProvider, useFormContext } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -94,9 +96,8 @@ const steps = [
 const benefits = [
   'Mayor legitimidad y respaldo',
   'Origen y trazabilidad segura',
-  'Más oportunidades de venta y visibilidad',
-  'Trazabilidad transparente',
-  'Mayor legitimidad y respaldo',
+  'Más oportunidades de venta',
+  'Visibilidad en el directorio',
 ]
 
 export default function CertifyForm() {
@@ -104,6 +105,7 @@ export default function CertifyForm() {
   const { data, step, setStep, updateData, reset } = useCertifyFormStore()
   const setSession = useAuthStore((s) => s.setSession)
   const [submitted, setSubmitted] = useState(false)
+  const [postponeOpen, setPostponeOpen] = useState(false)
 
   const schema = stepSchemas[step]
   const methods = useForm<Partial<CertifyFormData>>({
@@ -180,7 +182,15 @@ export default function CertifyForm() {
       {/* Floating header card */}
       <section className="relative bg-white">
         <div className="mx-auto -mt-6 max-w-[1100px] px-4 md:-mt-10 md:px-8">
-          <div className="rounded-2xl bg-white px-6 py-8 text-center shadow-md md:px-12 md:py-10">
+          <div className="relative rounded-2xl bg-white px-6 py-8 text-center shadow-md md:px-12 md:py-10">
+            <button
+              type="button"
+              onClick={() => setPostponeOpen(true)}
+              className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[11px] font-bold text-navy-400 transition-colors hover:bg-neutral-100 hover:text-navy-500 md:right-6 md:top-6 md:text-xs"
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Postergar
+            </button>
             <h1 className="text-2xl font-bold text-navy-500 md:text-[34px] md:leading-tight">
               Formulario de Certificación Ancestral
             </h1>
@@ -192,14 +202,15 @@ export default function CertifyForm() {
         </div>
 
         {/* Benefits bar */}
-        <div className="mx-auto mt-8 max-w-[1320px] px-4 md:px-8">
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-navy-500 md:text-sm">
-            {benefits.map((b, i) => (
-              <li key={i} className="flex items-center gap-6">
+        <div className="mx-auto mt-7 max-w-[1320px] px-4 md:mt-8 md:px-8">
+          <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-medium text-navy-500 md:gap-x-6 md:text-sm">
+            {benefits.map((b) => (
+              <li key={b} className="inline-flex items-center gap-2">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500"
+                  aria-hidden
+                />
                 <span>{b}</span>
-                {i < benefits.length - 1 && (
-                  <span className="hidden h-2 w-2 rounded-full bg-gold-500 md:inline-block" aria-hidden />
-                )}
               </li>
             ))}
           </ul>
@@ -212,6 +223,17 @@ export default function CertifyForm() {
           <Stepper current={step} />
         </div>
       </section>
+
+      {/* Postpone modal */}
+      <PostponeModal
+        open={postponeOpen}
+        onClose={() => setPostponeOpen(false)}
+        onConfirm={() => {
+          setPostponeOpen(false)
+          toast.success('Guardamos tus avances. Podés continuar más adelante.')
+          navigate('/')
+        }}
+      />
 
       {/* Form + video panel */}
       <section className="bg-white pb-16 md:pb-24">
@@ -268,9 +290,9 @@ export default function CertifyForm() {
 
             {/* RIGHT: video panel + help button */}
             <div className="lg:col-span-5">
-              <div className="sticky top-6 space-y-4">
+              <div className="space-y-4 lg:sticky lg:top-6">
                 <VideoPanel />
-                <div className="flex justify-end">
+                <div className="flex justify-center lg:justify-end">
                   <button
                     type="button"
                     className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-navy-400"
@@ -292,7 +314,7 @@ function VideoPanel() {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gold-300 shadow-md">
       <div
-        className="aspect-[4/5] w-full bg-cover bg-center"
+        className="relative aspect-[16/10] w-full bg-cover bg-center md:aspect-[4/5]"
         style={{ backgroundImage: `url('${import.meta.env.BASE_URL}hero-image.png')` }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
@@ -311,9 +333,43 @@ function VideoPanel() {
 
 function Stepper({ current }: { current: number }) {
   const progressPct = ((current + 1) / steps.length) * 100
+  const currentLabel = steps[current]?.title ?? ''
+  const nextLabel = steps[current + 1]?.title
   return (
     <div>
-      <ol className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+      {/* MOBILE: compact "Paso N de 7" + label */}
+      <div className="md:hidden">
+        <div className="flex items-baseline justify-between">
+          <p className="text-xs font-bold uppercase tracking-wider text-gold-700">
+            Paso {current + 1} de {steps.length}
+          </p>
+          <p className="text-xs text-navy-300">
+            {nextLabel ? `Sigue: ${nextLabel}` : 'Último paso'}
+          </p>
+        </div>
+        <p className="mt-1 text-base font-bold text-navy-500">{currentLabel}</p>
+        {/* dot indicator row */}
+        <ol className="mt-3 flex items-center gap-1.5" aria-hidden>
+          {steps.map((s, i) => {
+            const active = i === current
+            const done = i < current
+            return (
+              <li
+                key={s.id}
+                className={cn(
+                  'h-1.5 flex-1 rounded-full transition-colors',
+                  done && 'bg-navy-500',
+                  active && 'bg-gold-500',
+                  !done && !active && 'bg-neutral-200',
+                )}
+              />
+            )
+          })}
+        </ol>
+      </div>
+
+      {/* DESKTOP: full stepper */}
+      <ol className="hidden flex-wrap items-center gap-x-3 gap-y-2 text-sm md:flex">
         {steps.map((s, i) => {
           const active = i === current
           const done = i < current
@@ -349,7 +405,7 @@ function Stepper({ current }: { current: number }) {
           )
         })}
       </ol>
-      <div className="mt-3 h-[3px] w-full rounded-full bg-neutral-200">
+      <div className="mt-3 hidden h-[3px] w-full rounded-full bg-neutral-200 md:block">
         <div
           className="h-full rounded-full bg-navy-500 transition-all"
           style={{ width: `${progressPct}%` }}
@@ -1192,5 +1248,107 @@ function SuccessState({
         </motion.div>
       </div>
     </section>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POSTPONE MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PostponeModal({
+  open,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+}) {
+  // Close on Esc
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, onClose])
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={onClose}
+            className="absolute inset-0 bg-navy-500/50 backdrop-blur-[2px]"
+          />
+
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="postpone-title"
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+            className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl md:p-10"
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-100 text-success-300 ring-4 ring-success-100/60">
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+
+            <h2
+              id="postpone-title"
+              className="mt-5 text-xl font-bold text-navy-500 md:text-2xl"
+            >
+              ¿Postergar tu solicitud?
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-navy-300">
+              Guardamos tus avances de forma segura. Podés retomar la
+              certificación más adelante desde tu panel.
+            </p>
+
+            <div className="mt-7 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-navy-500 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
+              >
+                Postergar y guardar
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-semibold text-navy-400 transition-colors hover:bg-neutral-100 hover:text-navy-500"
+              >
+                Seguir completando
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
