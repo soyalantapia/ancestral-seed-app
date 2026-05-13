@@ -482,11 +482,14 @@ function MethodologySection() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
+          backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
         }}
         aria-hidden
       />
-      <div className="absolute inset-0 bg-navy-500/92" aria-hidden />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-navy-500/90 via-navy-500/80 to-navy-500/90"
+        aria-hidden
+      />
       <div className="relative z-10 mx-auto max-w-[1320px] px-4 py-14 text-center text-white md:px-8 md:py-20">
         <h2 className="text-2xl font-bold md:text-[32px] md:leading-tight">
           Nuestra metodología de certificación
