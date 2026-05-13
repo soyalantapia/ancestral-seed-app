@@ -336,7 +336,7 @@ export default function Directory() {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
+              backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/70 to-navy-500/85" />

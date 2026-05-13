@@ -362,7 +362,7 @@ function CTASection() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('${import.meta.env.BASE_URL}cta-banner.png')`,
+            backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
           }}
         />
         <div className="absolute inset-0 bg-navy-500/70" />
