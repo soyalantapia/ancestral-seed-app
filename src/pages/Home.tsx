@@ -103,7 +103,7 @@ function Pillars() {
     },
   ]
   return (
-    <section className="bg-white">
+    <section id="beneficios" className="scroll-mt-24 bg-white">
       <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-14 md:grid-cols-4 md:px-8 md:py-16">
         {pillars.map((p, i) => (
           <div key={i} className="flex flex-col items-center text-center">
@@ -144,18 +144,20 @@ function AncestralVision() {
           </div>
           <div className="rounded-3xl bg-pattern-aztec p-8 text-white md:p-10">
             <p className="text-sm leading-relaxed text-neutral-300 md:text-base">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
+              Durante siglos, los saberes de nuestras comunidades originarias
+              se transmitieron de generación en generación sin un registro que
+              los protegiera frente al fraude, la apropiación o el olvido.
             </p>
             <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur.
+              Ancestral Seed nace de una mirada compartida: documentar,
+              validar y proteger el origen de los productos y prácticas
+              ancestrales, devolviendo a sus creadores el reconocimiento que
+              les corresponde.
             </p>
             <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Trabajamos junto a curadores, auditores y referentes
+              territoriales para que cada certificación cuente con el respaldo
+              de la comunidad y la transparencia de la blockchain.
             </p>
           </div>
         </div>
@@ -192,7 +194,7 @@ function BlockchainSection() {
     },
   ]
   return (
-    <section id="como-funciona" className="bg-white">
+    <section id="como-funciona" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-20">
         <div className="text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">

@@ -1,7 +1,13 @@
 import { Link } from 'react-router-dom'
-import { ChevronDown, Search } from 'lucide-react'
+import { Facebook, Globe, Instagram, Linkedin, Twitter } from 'lucide-react'
 import { Logo } from './Logo'
-import { Input } from '@/components/ui/input'
+
+const socials = [
+  { label: 'Instagram', href: 'https://instagram.com', icon: Instagram },
+  { label: 'Facebook', href: 'https://facebook.com', icon: Facebook },
+  { label: 'X (Twitter)', href: 'https://x.com', icon: Twitter },
+  { label: 'LinkedIn', href: 'https://linkedin.com', icon: Linkedin },
+]
 
 export function Footer() {
   return (
@@ -10,11 +16,19 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-10">
           <div className="md:col-span-3">
             <Logo variant="light" layout="vertical" className="items-start text-left" markClassName="h-32 w-32" />
-            <div className="mt-7 flex gap-3">
-              <span className="block h-7 w-7 rounded-full bg-gold-500" aria-hidden />
-              <span className="block h-7 w-7 rounded-full bg-gold-500" aria-hidden />
-              <span className="block h-7 w-7 rounded-full bg-gold-500" aria-hidden />
-              <span className="block h-7 w-7 rounded-full bg-gold-500" aria-hidden />
+            <div className="mt-7 flex gap-2.5">
+              {socials.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500 text-navy-500 transition-colors hover:bg-gold-400"
+                >
+                  <Icon className="h-4 w-4" strokeWidth={2} />
+                </a>
+              ))}
             </div>
           </div>
 
@@ -74,13 +88,21 @@ export function Footer() {
               </li>
             </ul>
             <div className="mt-6">
+              <label htmlFor="lang-select" className="sr-only">
+                Elegir idioma
+              </label>
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-                <Input
-                  placeholder="Buscar"
-                  className="h-12 rounded-full border-0 bg-white pl-11 pr-11 text-sm text-navy-500 placeholder:text-navy-300 focus-visible:ring-2 focus-visible:ring-gold-500/40"
-                />
+                <Globe className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+                <select
+                  id="lang-select"
+                  defaultValue="es-AR"
+                  className="h-12 w-full appearance-none rounded-full border-0 bg-white pl-11 pr-10 text-sm font-medium text-navy-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/40 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat"
+                >
+                  <option value="es-AR">Español (Argentina)</option>
+                  <option value="es-LA">Español (Latam)</option>
+                  <option value="en">English</option>
+                  <option value="pt-BR">Português (BR)</option>
+                </select>
               </div>
             </div>
           </div>

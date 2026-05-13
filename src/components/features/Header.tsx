@@ -24,9 +24,9 @@ import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/', label: 'Beneficios', match: '/' },
-  { to: '/#como-funciona', label: '¿Cómo funciona?', match: '#como-funciona' },
-  { to: '/directorio', label: 'Certificados', match: '/directorio' },
+  { to: '/#beneficios', label: 'Beneficios' },
+  { to: '/#como-funciona', label: '¿Cómo funciona?' },
+  { to: '/directorio', label: 'Certificados' },
 ]
 
 export function Header() {
@@ -112,7 +112,7 @@ export function Header() {
               <NavLink
                 key={item.label}
                 to={item.to}
-                end={item.to === '/'}
+                end={false}
                 className={({ isActive }) =>
                   cn(
                     'text-sm font-medium transition-colors',
@@ -364,7 +364,7 @@ export function Header() {
                   <NavLink
                     key={item.label}
                     to={item.to}
-                    end={item.to === '/'}
+                    end={false}
                     onClick={closeMobileMenu}
                     className={({ isActive }) =>
                       cn(

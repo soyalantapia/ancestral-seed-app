@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   ArrowUpDown,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -150,22 +151,23 @@ export default function Directory() {
               </button>
             )}
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="relative ml-auto">
+              <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-navy-300" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-navy-300" />
               <select
                 value={filters.sortBy}
                 onChange={(e) =>
                   updateFilter('sortBy', e.target.value as DirectoryFilters['sortBy'])
                 }
-                className="h-9 rounded-full border border-neutral-300 bg-white px-3 pr-8 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+                className="h-9 appearance-none rounded-full border border-neutral-300 bg-white pl-9 pr-9 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
                 aria-label="Ordenar por"
               >
                 {sortOptions.map((s) => (
                   <option key={s.value} value={s.value}>
-                    Ordenar por · {s.label}
+                    {s.label}
                   </option>
                 ))}
               </select>
-              <ArrowUpDown className="h-4 w-4 text-navy-300" />
             </div>
           </div>
 
@@ -395,7 +397,7 @@ function FilterChip<T extends string>({
           </option>
         ))}
       </select>
-      <ChevronRight className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rotate-90 text-navy-300" />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-navy-300" />
     </div>
   )
 }

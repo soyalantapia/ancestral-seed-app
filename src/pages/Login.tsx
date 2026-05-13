@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Fingerprint, Lock, ShieldCheck, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -144,13 +144,34 @@ export default function Login() {
 
       <div className="bg-white">
         <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-10 md:grid-cols-4 md:px-8">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="text-xs leading-relaxed text-navy-300">
-              <p className="font-semibold text-navy-500">Lorem ipsum</p>
-              <p className="mt-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt
-              </p>
+          {[
+            {
+              icon: ShieldCheck,
+              title: 'Seguridad por diseño',
+              copy: 'Tus datos viajan cifrados y solo vos accedés a tu panel.',
+            },
+            {
+              icon: Fingerprint,
+              title: 'Identidad verificada',
+              copy: 'Iniciá sesión con tu email registrado durante la solicitud.',
+            },
+            {
+              icon: Sparkles,
+              title: 'Seguimiento en vivo',
+              copy: 'Mirá el avance de tu certificación paso a paso.',
+            },
+            {
+              icon: Lock,
+              title: 'Tu solicitud, tu control',
+              copy: 'Podés postergar, retomar o exportar tu progreso cuando quieras.',
+            },
+          ].map(({ icon: Icon, title, copy }) => (
+            <div key={title} className="text-xs leading-relaxed text-navy-300">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+                <Icon className="h-4 w-4" strokeWidth={1.75} />
+              </span>
+              <p className="mt-3 font-semibold text-navy-500">{title}</p>
+              <p className="mt-1.5">{copy}</p>
             </div>
           ))}
         </div>
