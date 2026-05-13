@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEscape } from '@/hooks/useEscape'
 import {
   AlertTriangle,
@@ -75,16 +76,29 @@ export default function CertificationRequest() {
     if (slug) setParams({ tab: slug }, { replace: true })
     else setParams({}, { replace: true })
   }
+  // Resolver request por id (puede ser undefined)
+  const request = mockCertificationRequests.find((r) => r.id === id)
+
   const [reschedule, setReschedule] = useState<AuditMeeting | null>(null)
   const [confirmReject, setConfirmReject] = useState<AuditMeeting | null>(null)
+  // Init seguro: usa las meetings del request actual (o [] si no existe)
   const [meetings, setMeetings] = useState<AuditMeeting[]>(
-    mockCertificationRequests[0].meetings,
+    () => request?.meetings ?? [],
   )
   const [diagnosticOpen, setDiagnosticOpen] = useState(false)
   const [threadFor, setThreadFor] = useState<AuditMeeting | null>(null)
   const [tutorFor, setTutorFor] = useState<string | null>(null)
 
-  const request = mockCertificationRequests.find((r) => r.id === id)
+  // Re-sync cuando cambia la URL (id) — evita mostrar meetings del request anterior
+  useEffect(() => {
+    setMeetings(request?.meetings ?? [])
+    setReschedule(null)
+    setConfirmReject(null)
+    setThreadFor(null)
+    setTutorFor(null)
+    setDiagnosticOpen(false)
+  }, [id])
+
   if (!request) return <RequestNotFound />
 
   const updateMeeting = (id: string, status: AuditMeetingStatus) => {

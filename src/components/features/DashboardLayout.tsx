@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { Header } from './Header'
 import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
+import { ErrorBoundary } from './ErrorBoundary'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
@@ -182,7 +183,9 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         {/* Main */}
         <main className="flex flex-1 flex-col bg-white">
           <div className="flex-1">
-            {children ?? <Outlet />}
+            <ErrorBoundary key={location.pathname}>
+              {children ?? <Outlet />}
+            </ErrorBoundary>
           </div>
           <DashboardFooter />
         </main>
