@@ -124,7 +124,7 @@ export default function CertificationRequest() {
               <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-[11px] font-bold text-navy-500">
                 {request.number}
               </span>
-              <StageStatusBadge status={request.status === 'En emisión' ? 'En emisión' : 'Preadiagnóstico'} />
+              <StageStatusBadge status={request.status === 'En emisión' ? 'En emisión' : 'Prediagnóstico'} />
               {request.pendingItems.length > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-error-100 px-2.5 py-0.5 text-[11px] font-bold text-error-400 ring-1 ring-error-200">
                   <AlertTriangle className="h-3 w-3" />
@@ -368,7 +368,7 @@ function SeguimientoTab({
           </div>
           <div className="flex items-center gap-2 text-sm text-navy-300">
             Estado actual:
-            <StageStatusBadge status="Preadiagnóstico" />
+            <StageStatusBadge status="Prediagnóstico" />
           </div>
         </div>
 

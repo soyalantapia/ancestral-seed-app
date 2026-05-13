@@ -152,7 +152,7 @@ export default function DashboardHome() {
             </div>
             <div className="flex items-center gap-2 text-sm text-navy-300">
               Estado actual:
-              <StageStatusBadge status="Preadiagnóstico" />
+              <StageStatusBadge status="Prediagnóstico" />
             </div>
           </div>
 

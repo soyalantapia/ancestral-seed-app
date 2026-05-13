@@ -42,7 +42,7 @@ interface ProfileData {
 
 const INITIAL: ProfileData = {
   name: 'Camila Montes',
-  email: 'email.usuario@gmail.com',
+  email: 'camila.montes@gmail.com',
   country: 'Colombia',
   region: 'Caribe colombiano',
   phone: '+57 2345-6789',

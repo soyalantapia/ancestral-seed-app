@@ -58,7 +58,7 @@ export function StagePipeline({ stages }: { stages: RequestStageItem[] }) {
 
 export function StageStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    Preadiagnóstico: 'bg-gold-100 text-gold-700',
+    Prediagnóstico: 'bg-gold-100 text-gold-700',
     'En curso': 'bg-gold-100 text-gold-700',
     'En emisión': 'bg-info-100 text-info-400',
     Vigente: 'bg-success-100 text-success-300 ring-1 ring-success-300/30',

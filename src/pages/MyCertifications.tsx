@@ -262,7 +262,7 @@ export default function MyCertifications() {
               </div>
 
               <dl className="mt-3 space-y-2 text-sm">
-                <Row icon={Clock} label="Estado:" value={<StageStatusBadge status={r.status === 'En emisión' ? 'En emisión' : 'Preadiagnóstico'} />} />
+                <Row icon={Clock} label="Estado:" value={<StageStatusBadge status={r.status === 'En emisión' ? 'En emisión' : 'Prediagnóstico'} />} />
                 <Row icon={TrendingUp} label="Progreso:" value={r.progressLabel} />
                 <Row icon={Calendar} label="Fecha de creación:" value={r.createdAt} />
                 {r.pendingItems.length > 0 && (
