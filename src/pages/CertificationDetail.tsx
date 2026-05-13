@@ -471,31 +471,11 @@ function MapPreview({ region, mapQuery }: { region: string; mapQuery: string }) 
 }
 
 function MethodologySection() {
-  const items = [
-    {
-      label: 'Auditoría personalizada',
-      description:
-        'Cada producto pasa por una revisión humana adaptada a su comunidad y disciplina.',
-      icon: SearchIcon,
-    },
-    {
-      label: 'Verificación comunitaria',
-      description:
-        'Validamos junto a referentes y curadores de la comunidad de origen.',
-      icon: Users,
-    },
-    {
-      label: 'Integridad blockchain',
-      description:
-        'El certificado se sella en una red pública, verificable por hash.',
-      icon: Network,
-    },
-    {
-      label: 'Criterios ponderados',
-      description:
-        'Puntaje según trazabilidad, autenticidad y respeto cultural.',
-      icon: FileCheck2,
-    },
+  const items: { label: string; icon: typeof SearchIcon }[] = [
+    { label: 'Auditoría\nPersonalizada', icon: SearchIcon },
+    { label: 'Verificación\nComunitaria', icon: Users },
+    { label: 'Integridad\nBlockchain', icon: Network },
+    { label: 'Criterios\nPonderados', icon: FileCheck2 },
   ]
   return (
     <section className="relative overflow-hidden">
@@ -516,24 +496,22 @@ function MethodologySection() {
           garantizar que cada certificación refleje el origen, la trazabilidad
           y el valor cultural del producto.
         </p>
-        <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 md:mt-14 lg:grid-cols-4 lg:gap-6">
-          {items.map(({ label, description, icon: Icon }) => (
-            <div
+        <ul className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 md:mt-12 md:grid-cols-4 md:gap-5">
+          {items.map(({ label, icon: Icon }) => (
+            <li
               key={label}
-              className="flex flex-col items-center rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-7 text-center backdrop-blur-[2px] transition-colors hover:bg-white/[0.07] md:items-start md:text-left"
+              className="flex items-center gap-3 rounded-2xl bg-gold-500 px-4 py-5 text-left shadow-md ring-1 ring-gold-700/10 md:px-5"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-500/15 text-gold-500 ring-1 ring-gold-500/30">
-                <Icon className="h-6 w-6" strokeWidth={2} />
-              </span>
-              <p className="mt-4 text-base font-bold leading-tight text-white">
+              <Icon
+                className="h-8 w-8 shrink-0 text-navy-500 md:h-9 md:w-9"
+                strokeWidth={1.75}
+              />
+              <span className="whitespace-pre-line text-sm font-bold leading-[1.15] text-navy-500 md:text-base">
                 {label}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-300 md:text-sm">
-                {description}
-              </p>
-            </div>
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   )
