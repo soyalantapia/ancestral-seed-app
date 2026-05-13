@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { MapPin, Star, User } from 'lucide-react'
 import { motion } from 'framer-motion'
-import type { Certification } from '@/types'
+import type { Certification, CertificationStatus } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,18 @@ interface CertificationCardProps {
 }
 
 const isPlaceholder = (v: string) => v === PLACEHOLDER_TOKEN || !v
+
+type StatusVariant = 'success' | 'warning' | 'muted' | 'danger'
+
+const STATUS_MAP: Record<
+  CertificationStatus,
+  { label: string; variant: StatusVariant }
+> = {
+  verified: { label: 'Vigente', variant: 'success' },
+  pending: { label: 'En revisión', variant: 'warning' },
+  expired: { label: 'Vencido', variant: 'muted' },
+  revoked: { label: 'Revocado', variant: 'danger' },
+}
 
 export function CertificationCard({
   certification: c,
@@ -32,6 +44,7 @@ export function CertificationCard({
       : c.authorName
   const score = placeholderText ? 'Puntaje' : '100/100'
   const title = placeholderText ? 'Título producto/servicio' : c.title
+  const status = STATUS_MAP[c.status] ?? STATUS_MAP.verified
 
   return (
     <motion.article
@@ -54,8 +67,11 @@ export function CertificationCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        <Badge variant="success" className="absolute right-3 top-3">
-          Estado
+        <Badge
+          variant={placeholderText ? 'success' : status.variant}
+          className="absolute right-3 top-3 shadow-sm"
+        >
+          {placeholderText ? 'Estado' : status.label}
         </Badge>
       </Link>
       <div className="flex flex-1 flex-col p-5">
