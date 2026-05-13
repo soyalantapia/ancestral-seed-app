@@ -8,6 +8,7 @@ export interface Author {
   bio: string
   avatarUrl: string
   location?: string
+  email?: string
   certificationsCount: number
   joinedAt: string
 }
@@ -17,6 +18,7 @@ export interface Certification {
   slug: string
   title: string
   authorId: string
+  authorSlug?: string
   authorName: string
   authorAvatarUrl: string
   issuedBy: string

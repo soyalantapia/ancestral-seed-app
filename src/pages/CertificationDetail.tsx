@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   Award,
   Calendar,
+  Check,
   ChevronLeft,
   ChevronRight,
   ChevronRight as ArrowRight,
+  Copy,
   Download,
   ExternalLink,
   FileCheck2,
@@ -13,6 +15,7 @@ import {
   Mail,
   Network,
   Search as SearchIcon,
+  Send,
   Share2,
   ShieldCheck,
   Sprout,
@@ -53,18 +56,56 @@ export default function CertificationDetail() {
   const { data: cert, isLoading, error } = useCertification(slug)
   const [showReport, setShowReport] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [showBlockchain, setShowBlockchain] = useState(false)
+  const [showVerified, setShowVerified] = useState(false)
+  const [showContact, setShowContact] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [galleryIndex, setGalleryIndex] = useState(0)
 
   if (isLoading) return <DetailSkeleton />
   if (error || !cert) return <DetailError message={error ?? 'No encontrado'} />
 
   const authorName = isPlaceholder(cert.authorName) ? 'Autor' : cert.authorName
+  const authorSlug = cert.authorSlug ?? cert.authorId
   const region =
     cert.location ??
     (isPlaceholder(cert.category)
       ? 'Sin región declarada'
       : cert.category)
   const mapQuery = cert.mapQuery ?? region
+
+  const galleryUrls = (
+    cert.galleryUrls?.length
+      ? cert.galleryUrls
+      : [cert.coverUrl, cert.coverUrl, cert.coverUrl, cert.coverUrl]
+  ).map(resolveAsset)
+
+  const handleDownload = () => {
+    const payload = {
+      title: cert.title,
+      author: authorName,
+      region,
+      issuedBy: cert.issuedBy,
+      issuedAt: cert.issuedAt,
+      expiresAt: cert.expiresAt,
+      status: cert.status,
+      hash: cert.hash,
+      description: cert.description,
+      verifyUrl: typeof window !== 'undefined' ? window.location.href : '',
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${cert.slug}-certificado.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    toast.success('Certificado descargado')
+  }
 
   return (
     <>
@@ -92,15 +133,27 @@ export default function CertificationDetail() {
             {/* RIGHT: Action buttons + Author card + Stats */}
             <div className="space-y-5 lg:col-span-6">
               <div className="flex flex-wrap gap-2">
-                <button className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-gold-400">
-                  <ShieldCheck className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => setShowBlockchain(true)}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-gold-400"
+                >
+                  <Network className="h-4 w-4" />
                   Ver en Blockchain
                 </button>
-                <button className="inline-flex h-11 items-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-navy-400">
+                <button
+                  type="button"
+                  onClick={() => setShowVerified(true)}
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+                >
                   <ShieldCheck className="h-4 w-4" />
                   Ver Certificado Verificado
                 </button>
-                <button className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
                   <Download className="h-4 w-4" />
                   Descargar
                 </button>
@@ -120,7 +173,7 @@ export default function CertificationDetail() {
                         {authorName}
                       </p>
                       <Link
-                        to={`/perfil/${cert.authorId}`}
+                        to={`/perfil/${authorSlug}`}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
                       >
                         <span>Ver Perfil</span>
@@ -166,11 +219,16 @@ export default function CertificationDetail() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-200 pt-5">
-                  <button className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowContact(true)}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
+                  >
                     <Mail className="h-3.5 w-3.5" />
                     Contactar
                   </button>
                   <button
+                    type="button"
                     onClick={() => setShowShare(true)}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
                   >
@@ -178,6 +236,7 @@ export default function CertificationDetail() {
                     Compartir
                   </button>
                   <button
+                    type="button"
                     onClick={() => setShowReport(true)}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-100 px-4 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-200"
                   >
@@ -225,12 +284,10 @@ export default function CertificationDetail() {
             ))}
 
             <Gallery
-              urls={(cert.galleryUrls?.length
-                ? cert.galleryUrls
-                : [cert.coverUrl, cert.coverUrl, cert.coverUrl, cert.coverUrl]
-              ).map(resolveAsset)}
+              urls={galleryUrls}
               index={galleryIndex}
               setIndex={setGalleryIndex}
+              onOpen={(i) => setLightboxIndex(i)}
             />
 
             <MapPreview region={region} mapQuery={mapQuery} />
@@ -253,6 +310,37 @@ export default function CertificationDetail() {
         author={authorName}
         url={typeof window !== 'undefined' ? window.location.href : ''}
         hash={cert.hash}
+      />
+
+      <BlockchainModal
+        open={showBlockchain}
+        onClose={() => setShowBlockchain(false)}
+        hash={cert.hash}
+        issuedAt={cert.issuedAt}
+        title={cert.title}
+      />
+
+      <VerifiedCertificateModal
+        open={showVerified}
+        onClose={() => setShowVerified(false)}
+        cert={cert}
+        authorName={authorName}
+        region={region}
+        onDownload={handleDownload}
+      />
+
+      <ContactSheet
+        open={showContact}
+        onClose={() => setShowContact(false)}
+        author={authorName}
+        certTitle={cert.title}
+      />
+
+      <Lightbox
+        urls={galleryUrls}
+        index={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onChange={(i) => setLightboxIndex(i)}
       />
     </>
   )
@@ -294,28 +382,46 @@ function Gallery({
   urls,
   index,
   setIndex,
+  onOpen,
 }: {
   urls: string[]
   index: number
   setIndex: (n: number) => void
+  onOpen: (i: number) => void
 }) {
   const items = urls
   return (
     <div className="relative mt-10">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {items.map((src, i) => (
-          <div
+          <button
+            type="button"
             key={i}
-            className="aspect-square overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100"
+            onClick={() => onOpen(i)}
+            aria-label={`Abrir imagen ${i + 1} de ${items.length}`}
+            className="group relative aspect-square overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
           >
-            <img src={src} alt="" className="h-full w-full object-cover" />
-          </div>
+            <img
+              src={src}
+              alt=""
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-navy-500/0 opacity-0 transition-opacity group-hover:bg-navy-500/30 group-hover:opacity-100">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold text-navy-500">
+                Ampliar
+              </span>
+            </span>
+          </button>
         ))}
       </div>
       <button
         type="button"
         aria-label="Anterior"
-        onClick={() => setIndex(Math.max(0, index - 1))}
+        onClick={() => {
+          const next = Math.max(0, index - 1)
+          setIndex(next)
+          onOpen(next)
+        }}
         className="absolute -left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-lg transition-all hover:scale-110 hover:bg-gold-400 md:flex"
       >
         <ChevronLeft className="h-5 w-5" />
@@ -323,7 +429,11 @@ function Gallery({
       <button
         type="button"
         aria-label="Siguiente"
-        onClick={() => setIndex(Math.min(items.length - 1, index + 1))}
+        onClick={() => {
+          const next = Math.min(items.length - 1, index + 1)
+          setIndex(next)
+          onOpen(next)
+        }}
         className="absolute -right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-lg transition-all hover:scale-110 hover:bg-gold-400 md:flex"
       >
         <ChevronRight className="h-5 w-5" />
@@ -698,6 +808,498 @@ function ShareModal({
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Blockchain Modal ─────────────────────────────────────────────────────────
+
+function BlockchainModal({
+  open,
+  onClose,
+  hash,
+  issuedAt,
+  title,
+}: {
+  open: boolean
+  onClose: () => void
+  hash: string
+  issuedAt: string
+  title: string
+}) {
+  useEscape(open, onClose)
+  if (!open) return null
+  const network = 'Polygon Mainnet'
+  // Block number derivado del hash (mock estable, consistente por cert)
+  const blockNumber =
+    52_000_000 +
+    parseInt(hash.slice(2, 8), 16) % 200_000
+  const explorerUrl = `https://polygonscan.com/search?q=${hash}`
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="blockchain-title"
+        className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <h2 id="blockchain-title" className="text-lg font-bold text-navy-500">
+            Registro en blockchain
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="px-6 py-6">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-100 text-gold-700 ring-4 ring-gold-100/60">
+            <Network className="h-7 w-7" />
+          </div>
+          <p className="mt-4 text-center text-xs uppercase tracking-widest text-success-300">
+            Registro inmutable
+          </p>
+          <p className="mt-1 text-center text-sm font-bold text-navy-500">
+            {title}
+          </p>
+
+          <dl className="mt-5 space-y-3 text-sm">
+            <KV label="Red">{network}</KV>
+            <KV label="Bloque">#{blockNumber.toLocaleString('es-AR')}</KV>
+            <KV label="Fecha de sellado">{formatDate(issuedAt)}</KV>
+          </dl>
+
+          <div className="mt-5">
+            <p className="text-xs font-bold text-navy-500">Hash de transacción</p>
+            <div className="mt-1 flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-100 px-3 py-2">
+              <code className="flex-1 truncate text-[10px] text-navy-500">
+                {hash}
+              </code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(hash)
+                  toast.success('Hash copiado al portapapeles')
+                }}
+                className="inline-flex items-center gap-1 rounded-full bg-gold-500 px-3 py-1 text-xs font-semibold text-navy-500 transition-colors hover:bg-gold-400"
+              >
+                <Copy className="h-3 w-3" />
+                Copiar
+              </button>
+            </div>
+          </div>
+
+          <a
+            href={explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Abrir en explorador
+          </a>
+          <p className="mt-3 text-center text-[11px] text-navy-300">
+            Verificá la inmutabilidad en una blockchain pública
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KV({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <dt className="text-xs text-navy-300">{label}</dt>
+      <dd className="text-sm font-semibold text-navy-500">{children}</dd>
+    </div>
+  )
+}
+
+// ─── Verified Certificate Modal ───────────────────────────────────────────────
+
+function VerifiedCertificateModal({
+  open,
+  onClose,
+  cert,
+  authorName,
+  region,
+  onDownload,
+}: {
+  open: boolean
+  onClose: () => void
+  cert: { title: string; issuedBy: string; issuedAt: string; expiresAt?: string; hash: string }
+  authorName: string
+  region: string
+  onDownload: () => void
+}) {
+  useEscape(open, onClose)
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/60 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="verified-title"
+        className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+          <h2 id="verified-title" className="text-lg font-bold text-navy-500">
+            Certificado verificado
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Certificate "paper" */}
+        <div className="bg-pattern-gold p-4 md:p-8">
+          <div className="relative overflow-hidden rounded-2xl border-4 border-gold-500 bg-white p-6 md:p-10">
+            <span className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gold-500/10" aria-hidden />
+            <span className="absolute -left-12 -bottom-12 h-32 w-32 rounded-full bg-navy-500/5" aria-hidden />
+
+            <div className="relative text-center">
+              <p className="text-[11px] uppercase tracking-[0.32em] text-gold-700">
+                Ancestral Seed
+              </p>
+              <p className="mt-1 text-xs text-navy-300">
+                Certificación cultural · Registro inmutable en blockchain
+              </p>
+              <div className="mx-auto mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-success-300 text-white shadow-lg">
+                <ShieldCheck className="h-7 w-7" />
+              </div>
+              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-success-300">
+                Verificado
+              </p>
+              <h3 className="mt-2 text-xl font-bold leading-tight text-navy-500 md:text-2xl">
+                {cert.title}
+              </h3>
+              <p className="mt-2 text-sm text-navy-300">
+                a nombre de <span className="font-bold text-navy-500">{authorName}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-navy-300">{region}</p>
+
+              <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-3 text-left">
+                <MiniKV label="Emisor" value={cert.issuedBy} />
+                <MiniKV label="Emitido" value={formatDate(cert.issuedAt)} />
+                <MiniKV
+                  label="Vigencia"
+                  value={cert.expiresAt ? formatDate(cert.expiresAt) : 'Indefinida'}
+                />
+                <MiniKV label="Estado" value="Vigente" tone="success" />
+              </div>
+
+              <div className="mt-6 rounded-xl bg-neutral-100 px-4 py-3 text-left">
+                <p className="text-[10px] uppercase tracking-widest text-navy-300">
+                  Hash blockchain
+                </p>
+                <code className="mt-1 block break-all text-[10px] font-medium text-navy-500">
+                  {cert.hash}
+                </code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-neutral-200 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center rounded-full px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              window.print()
+            }}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+          >
+            Imprimir
+          </button>
+          <button
+            type="button"
+            onClick={onDownload}
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+          >
+            <Download className="h-4 w-4" />
+            Descargar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MiniKV({
+  label,
+  value,
+  tone = 'default',
+}: {
+  label: string
+  value: string
+  tone?: 'default' | 'success'
+}) {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
+      <p className="text-[10px] uppercase tracking-widest text-navy-300">{label}</p>
+      <p
+        className={cn(
+          'mt-0.5 text-sm font-bold',
+          tone === 'success' ? 'text-success-300' : 'text-navy-500',
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  )
+}
+
+// ─── Contact Sheet ────────────────────────────────────────────────────────────
+
+const contactSchema = z.object({
+  fromName: z.string().min(2, 'Tu nombre completo'),
+  fromEmail: z.string().email('Email inválido'),
+  message: z.string().min(10, 'Mínimo 10 caracteres'),
+})
+type ContactForm = z.infer<typeof contactSchema>
+
+function ContactSheet({
+  open,
+  onClose,
+  author,
+  certTitle,
+}: {
+  open: boolean
+  onClose: () => void
+  author: string
+  certTitle: string
+}) {
+  const [sent, setSent] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactForm>({ resolver: zodResolver(contactSchema) })
+
+  const onSubmit = async (data: ContactForm) => {
+    await new Promise((r) => setTimeout(r, 500))
+    // En prod, esto golpearía /api/contact con cert id + author id
+    void data
+    setSent(true)
+    toast.success('Mensaje enviado al autor')
+  }
+
+  const handleClose = () => {
+    onClose()
+    setTimeout(() => {
+      setSent(false)
+      reset()
+    }, 250)
+  }
+
+  return (
+    <Sheet
+      open={open}
+      onClose={handleClose}
+      title={sent ? '¡Mensaje enviado!' : `Contactar a ${author}`}
+      description={
+        sent
+          ? undefined
+          : `Tu mensaje llegará junto al contexto de "${certTitle}"`
+      }
+    >
+      {sent ? (
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-300 text-white shadow-lg">
+            <Check className="h-7 w-7" />
+          </div>
+          <p className="mt-4 text-sm leading-relaxed text-navy-300">
+            {author} te responderá por email en las próximas 72 horas hábiles.
+          </p>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="mt-6 inline-flex h-10 items-center rounded-full bg-navy-500 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+          >
+            Cerrar
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label htmlFor="fromName">Tu nombre</Label>
+            <input
+              id="fromName"
+              autoComplete="name"
+              className="mt-2 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              {...register('fromName')}
+            />
+            {errors.fromName && (
+              <p className="mt-1 text-xs font-medium text-error-400">
+                {errors.fromName.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="fromEmail">Tu email</Label>
+            <input
+              id="fromEmail"
+              type="email"
+              autoComplete="email"
+              className="mt-2 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              {...register('fromEmail')}
+            />
+            {errors.fromEmail && (
+              <p className="mt-1 text-xs font-medium text-error-400">
+                {errors.fromEmail.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="message">Mensaje</Label>
+            <textarea
+              id="message"
+              rows={5}
+              placeholder={`Hola ${author.split(' ')[0] ?? ''}, me interesa…`}
+              className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-navy-500 placeholder:text-neutral-600 focus:border-gold-500 focus:outline-none"
+              {...register('message')}
+            />
+            {errors.message && (
+              <p className="mt-1 text-xs font-medium text-error-400">
+                {errors.message.message}
+              </p>
+            )}
+          </div>
+          <Button
+            type="submit"
+            variant="navy"
+            size="lg"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            <Send className="h-4 w-4" />
+            {isSubmitting ? 'Enviando…' : 'Enviar mensaje'}
+          </Button>
+          <p className="text-center text-[11px] text-navy-300">
+            Tu email solo se comparte con el autor. No publicamos tus datos.
+          </p>
+        </form>
+      )}
+    </Sheet>
+  )
+}
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+function Lightbox({
+  urls,
+  index,
+  onClose,
+  onChange,
+}: {
+  urls: string[]
+  index: number | null
+  onClose: () => void
+  onChange: (i: number) => void
+}) {
+  const open = index !== null
+  useEscape(open, onClose)
+
+  // Arrow keys navigation + block body scroll while open
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') return
+    const onKey = (e: KeyboardEvent) => {
+      if (index === null) return
+      if (e.key === 'ArrowLeft' && index > 0) onChange(index - 1)
+      if (e.key === 'ArrowRight' && index < urls.length - 1) onChange(index + 1)
+    }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, index, urls.length, onChange])
+
+  if (index === null) return null
+  const current = urls[index]
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Galería de imágenes"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-navy-500/90 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar"
+        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
+      <button
+        type="button"
+        disabled={index === 0}
+        onClick={(e) => {
+          e.stopPropagation()
+          onChange(Math.max(0, index - 1))
+        }}
+        aria-label="Anterior"
+        className="absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 disabled:opacity-30 md:flex"
+      >
+        <ChevronLeft className="h-6 w-6" />
+      </button>
+
+      <img
+        src={current}
+        alt={`Imagen ${index + 1} de ${urls.length}`}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[85vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+      />
+
+      <button
+        type="button"
+        disabled={index === urls.length - 1}
+        onClick={(e) => {
+          e.stopPropagation()
+          onChange(Math.min(urls.length - 1, index + 1))
+        }}
+        aria-label="Siguiente"
+        className="absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 disabled:opacity-30 md:flex"
+      >
+        <ChevronRight className="h-6 w-6" />
+      </button>
+
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+        {index + 1} / {urls.length}
       </div>
     </div>
   )
