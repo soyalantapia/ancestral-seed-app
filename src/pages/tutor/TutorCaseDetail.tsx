@@ -1464,10 +1464,23 @@ function SidebarAI({
   daysInStage: number
 }) {
   const [summaryOpen, setSummaryOpen] = useState(false)
+  const sla = STAGE_SLA_DAYS[caseData.stage] ?? 14
+  const slaTone =
+    daysInStage > sla ? 'red' : daysInStage > sla * 0.7 ? 'yellow' : 'green'
+  const evidenceShortfall = Math.max(
+    0,
+    (evidencesTotal || 3) - evidencesApproved,
+  )
   const suggestions = [
     `El scoring IA (${caseData.scoringIA}) sugiere riesgo ${caseData.scoringIA >= 80 ? 'bajo' : caseData.scoringIA >= 60 ? 'medio' : 'alto'}.`,
-    'Hay 1 evidencia marcada como "aclarar" — pedir al solicitante una nueva versión.',
-    'Tiempo en etapa actual dentro del SLA estándar.',
+    evidenceShortfall > 0
+      ? `Faltan ${evidenceShortfall} ${evidenceShortfall === 1 ? 'evidencia' : 'evidencias'} por aprobar — pedir al solicitante lo que necesites.`
+      : 'Todas las evidencias esperadas fueron aprobadas.',
+    slaTone === 'red'
+      ? `SLA excedido: lleva ${daysInStage}d sobre ${sla}d permitidos. Priorizar avance o cambio de etapa.`
+      : slaTone === 'yellow'
+        ? `SLA en zona amarilla: quedan ${Math.max(0, sla - daysInStage)}d antes de exceder el límite.`
+        : 'Tiempo en etapa actual dentro del SLA estándar.',
   ]
   return (
     <>
@@ -2129,13 +2142,23 @@ function AISummaryModal({
               <strong>{evidencesApproved} evidencias aprobadas</strong> sobre
               un total esperado de {evidencesTotal || 3}.
             </SummaryBullet>
-            <SummaryBullet icon={Star} tone="gold">
-              Score IA y score tutor con diferencia{' '}
-              <strong>
-                {Math.abs(caseData.scoringIA - finalScore).toFixed(0)} pts
-              </strong>{' '}
-              — sin desvío significativo.
-            </SummaryBullet>
+            {(() => {
+              const delta = Math.abs(caseData.scoringIA - finalScore)
+              const tone: 'gold' | 'yellow' | 'red' =
+                delta < 10 ? 'gold' : delta < 25 ? 'yellow' : 'red'
+              const verdict =
+                delta < 10
+                  ? 'sin desvío significativo'
+                  : delta < 25
+                    ? 'desvío moderado, conviene revisar criterios'
+                    : 'desvío alto, requiere validación cruzada'
+              return (
+                <SummaryBullet icon={Star} tone={tone}>
+                  Score IA y score tutor con diferencia{' '}
+                  <strong>{delta.toFixed(0)} pts</strong> — {verdict}.
+                </SummaryBullet>
+              )
+            })()}
           </ul>
         </section>
 
