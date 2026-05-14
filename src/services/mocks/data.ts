@@ -1,7 +1,9 @@
 import type {
+  ApprovalSignature,
   Author,
   Certification,
   CertificationRequest,
+  ImprovementPlan,
   InternalNote,
   IssuedCertification,
   MessageTemplate,
@@ -10,6 +12,8 @@ import type {
   ScoringValue,
   TutorAgendaItem,
   TutorCase,
+  TutorMetrics,
+  TutorNotification,
   TutorTask,
 } from '@/types'
 
@@ -1044,4 +1048,169 @@ export const STAGE_SLA_DAYS: Record<string, number> = {
   auditoria: 21,
   evaluacion: 10,
   certificacion: 7,
+}
+
+// ─── Sprint 2: firmas, notifs, métricas ──────────────────────────────────────
+
+export const mockPendingSignatures: ApprovalSignature[] = [
+  {
+    id: 'sig-001',
+    caseId: 'CE-110',
+    caseName: 'Joyería filigrana tradicional',
+    applicantName: 'Beatriz Salazar',
+    role: 'tutor',
+    signerName: 'Lic. Juan Pérez',
+    status: 'pending',
+    requestedAt: '2026-05-12T10:00:00-03:00',
+  },
+  {
+    id: 'sig-002',
+    caseId: 'CE-111',
+    caseName: 'Tejido en telar tradicional',
+    applicantName: 'Flor Imbacuán Pantoja',
+    role: 'tutor',
+    signerName: 'Lic. Juan Pérez',
+    status: 'pending',
+    requestedAt: '2026-05-13T08:30:00-03:00',
+  },
+  {
+    id: 'sig-003',
+    caseId: 'CE-109',
+    caseName: 'Sahumerio ceremonial',
+    applicantName: 'Inés Curaca',
+    role: 'tutor',
+    signerName: 'Lic. Juan Pérez',
+    status: 'pending',
+    requestedAt: '2026-05-13T14:00:00-03:00',
+  },
+]
+
+export const mockTutorNotifications: TutorNotification[] = [
+  {
+    id: 'tn-001',
+    kind: 'evidence_uploaded',
+    title: 'Camila subió 3 evidencias nuevas',
+    body: 'Para Tejido Wayúu · revisá fotos del proceso.',
+    caseId: 'CE-104',
+    caseName: 'Tejido Wayúu',
+    at: '2026-05-14T09:30:00-03:00',
+    read: false,
+    link: '/tutor/casos/CE-104',
+  },
+  {
+    id: 'tn-002',
+    kind: 'sla_breach',
+    title: 'SLA en alerta',
+    body: 'Café artesanal lleva 65 días en Auditoría (SLA 21d).',
+    caseId: 'CE-108',
+    caseName: 'Café artesanal de montaña',
+    at: '2026-05-14T08:00:00-03:00',
+    read: false,
+    link: '/tutor/casos/CE-108',
+  },
+  {
+    id: 'tn-003',
+    kind: 'applicant_replied',
+    title: 'Pedro respondió tu mensaje',
+    body: 'Necesita reagendar la auditoría del 18/05.',
+    caseId: 'CE-108',
+    caseName: 'Café artesanal de montaña',
+    at: '2026-05-13T18:45:00-03:00',
+    read: false,
+    link: '/tutor/casos/CE-108',
+  },
+  {
+    id: 'tn-004',
+    kind: 'signature_pending',
+    title: 'Firma pendiente',
+    body: 'Inés Curaca espera tu firma de evaluación.',
+    caseId: 'CE-109',
+    caseName: 'Sahumerio ceremonial',
+    at: '2026-05-13T14:00:00-03:00',
+    read: false,
+    link: '/tutor/casos/CE-109',
+  },
+  {
+    id: 'tn-005',
+    kind: 'meeting_reminder',
+    title: 'Reunión en 1h',
+    body: 'Reunión inicial con Luna Espinoza a las 11:00.',
+    caseId: 'CE-105',
+    caseName: 'Filigrana ancestral',
+    at: '2026-05-14T10:00:00-03:00',
+    read: true,
+    link: '/tutor/casos/CE-105',
+  },
+  {
+    id: 'tn-006',
+    kind: 'new_case_assigned',
+    title: 'Nuevo caso asignado',
+    body: 'Te asignaron Cerámica negra de Catamarca.',
+    caseId: 'CE-102',
+    caseName: 'Cerámica negra de Catamarca',
+    at: '2026-05-12T11:00:00-03:00',
+    read: true,
+    link: '/tutor/casos/CE-102',
+  },
+  {
+    id: 'tn-007',
+    kind: 'stage_changed',
+    title: 'Avance de etapa',
+    body: 'Tejido Pasto pasó de Diagnóstico a Auditoría.',
+    caseId: 'CE-107',
+    caseName: 'Tejido en telar Pasto',
+    at: '2026-05-11T16:20:00-03:00',
+    read: true,
+    link: '/tutor/casos/CE-107',
+  },
+]
+
+export const mockTutorMetrics: TutorMetrics = {
+  approvalRate: 86,
+  approvalRateDelta: 4,
+  avgDaysPerCase: 32,
+  avgDaysDelta: -3,        // mejoró 3 días
+  overdueCases: 2,
+  responseTimeHours: 6.5,
+  responseTimeDelta: -1.2,
+  satisfactionScore: 4.6,
+  totalCertified: 12,
+  totalRejected: 1,
+}
+
+export const mockImprovementPlans: Record<string, ImprovementPlan> = {
+  'CE-102': {
+    id: 'plan-001',
+    caseId: 'CE-102',
+    createdAt: '2026-05-09T10:00:00-03:00',
+    createdBy: 'Lic. Juan Pérez',
+    reEvaluationAt: '2026-07-09',
+    actions: [
+      {
+        id: 'a-1',
+        title: 'Documentar proceso completo con video',
+        detail: '5-7 minutos mostrando hornado, modelado y quemado.',
+        criterionId: 'tecnico',
+        dueDate: '20/06',
+        responsible: 'solicitante',
+        status: 'pending',
+      },
+      {
+        id: 'a-2',
+        title: 'Aval firmado por 2 referentes comunitarios',
+        criterionId: 'cultural',
+        dueDate: '15/06',
+        responsible: 'solicitante',
+        status: 'in_progress',
+      },
+      {
+        id: 'a-3',
+        title: 'Plan de comercialización para el próximo año',
+        criterionId: 'estrategico',
+        dueDate: '01/07',
+        responsible: 'solicitante',
+        status: 'pending',
+      },
+    ],
+  },
 }

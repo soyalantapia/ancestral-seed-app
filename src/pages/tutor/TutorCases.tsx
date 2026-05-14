@@ -5,14 +5,32 @@ import {
   ArrowUpDown,
   BarChart3,
   ChevronDown,
+  Clock,
   MoreHorizontal,
   Plus,
+  TriangleAlert,
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { mockTutor, mockTutorCases } from '@/services/mocks/data'
+import {
+  STAGE_SLA_DAYS,
+  mockTutor,
+  mockTutorCases,
+} from '@/services/mocks/data'
 import type { CaseStage, TutorCase } from '@/types'
 import { cn } from '@/lib/utils'
+
+function daysInStageFromCase(c: TutorCase): number {
+  return Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86_400_000)
+}
+
+function slaToneForCase(c: TutorCase): 'red' | 'yellow' | 'green' {
+  const sla = STAGE_SLA_DAYS[c.stage] ?? 14
+  const days = daysInStageFromCase(c)
+  if (days > sla) return 'red'
+  if (days > sla * 0.7) return 'yellow'
+  return 'green'
+}
 
 const STAGES: Array<{ id: CaseStage; label: string }> = [
   { id: 'postulado', label: 'Postulados' },
@@ -31,6 +49,13 @@ export default function TutorCases() {
 
   const total = cases.length
   const assigned = cases.filter((c) => c.tutorId).length
+
+  // SLA: casos vencidos / por vencer
+  const slaAlerts = useMemo(() => {
+    const overdue = cases.filter((c) => slaToneForCase(c) === 'red')
+    const watch = cases.filter((c) => slaToneForCase(c) === 'yellow')
+    return { overdue, watch }
+  }, [cases])
 
   const byStage = useMemo(() => {
     const map = new Map<CaseStage, TutorCase[]>()
@@ -95,6 +120,44 @@ export default function TutorCases() {
       </header>
 
       <hr className="my-6 border-neutral-200" />
+
+      {/* SLA alerts banner */}
+      {(slaAlerts.overdue.length > 0 || slaAlerts.watch.length > 0) && (
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-warning-300/60 bg-warning-100/60 p-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning-300 text-white">
+            <TriangleAlert className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-navy-500">
+              SLA en alerta
+            </p>
+            <p className="mt-0.5 text-xs text-navy-500/80">
+              {slaAlerts.overdue.length > 0 && (
+                <>
+                  <span className="font-bold text-error-400">
+                    {slaAlerts.overdue.length}{' '}
+                    {slaAlerts.overdue.length === 1 ? 'caso vencido' : 'casos vencidos'}
+                  </span>
+                  {slaAlerts.watch.length > 0 && ' · '}
+                </>
+              )}
+              {slaAlerts.watch.length > 0 && (
+                <span className="font-semibold text-warning-400">
+                  {slaAlerts.watch.length}{' '}
+                  {slaAlerts.watch.length === 1 ? 'cerca del límite' : 'cerca del límite'}
+                </span>
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => toast.info('Filtrando casos con SLA en alerta')}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white transition-colors hover:bg-navy-400"
+          >
+            Ver casos en alerta
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
@@ -232,6 +295,9 @@ function CaseCard({
       : c.risk === 'medio'
         ? 'Riesgo medio'
         : 'Riesgo bajo'
+  const slaTone = slaToneForCase(c)
+  const days = daysInStageFromCase(c)
+  const sla = STAGE_SLA_DAYS[c.stage] ?? 14
 
   return (
     <li
@@ -285,14 +351,30 @@ function CaseCard({
             </div>
           )}
         </div>
-        <span
-          className={cn(
-            'mt-3 inline-flex rounded-full border bg-white px-2.5 py-0.5 text-[10px] font-bold',
-            riskStyle,
-          )}
-        >
-          {riskLabel}
-        </span>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <span
+            className={cn(
+              'inline-flex rounded-full border bg-white px-2.5 py-0.5 text-[10px] font-bold',
+              riskStyle,
+            )}
+          >
+            {riskLabel}
+          </span>
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
+              slaTone === 'red'
+                ? 'bg-error-100 text-error-400 ring-1 ring-error-300/40'
+                : slaTone === 'yellow'
+                  ? 'bg-warning-100 text-warning-400 ring-1 ring-warning-300/40'
+                  : 'bg-success-100 text-success-300 ring-1 ring-success-300/30',
+            )}
+            title={`SLA de la etapa: ${sla} días`}
+          >
+            <Clock className="h-3 w-3" />
+            {days}d / {sla}d
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 border-t border-neutral-200 px-4 py-3">

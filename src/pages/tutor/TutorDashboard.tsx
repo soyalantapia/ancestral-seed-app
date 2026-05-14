@@ -4,27 +4,33 @@ import {
   AlertTriangle,
   ArrowRight,
   ArrowUpRight,
+  Check,
   CheckSquare,
   Clock,
   Download,
   FileCheck2,
+  Gauge,
   MessageSquare,
   MessageSquareWarning,
   Phone,
   Plus,
   ShieldCheck,
+  Star,
+  Timer,
   TrendingDown,
   TrendingUp,
   Users,
   Video,
 } from 'lucide-react'
 import {
+  mockPendingSignatures,
   mockTutor,
   mockTutorAgenda,
   mockTutorCases,
+  mockTutorMetrics,
   mockTutorTasks,
 } from '@/services/mocks/data'
-import type { TutorTask, TutorTaskKind } from '@/types'
+import type { ApprovalSignature, TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
 import { cn } from '@/lib/utils'
 
@@ -171,6 +177,14 @@ export default function TutorDashboard() {
               )
             }
           />
+
+          {/* Pendientes de firma */}
+          <PendingSignaturesCard
+            signatures={mockPendingSignatures}
+          />
+
+          {/* Métricas del tutor */}
+          <TutorMetricsCard metrics={mockTutorMetrics} />
 
           {/* Charts row */}
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -570,6 +584,154 @@ function TasksCard({
           })}
         </ul>
       )}
+    </section>
+  )
+}
+
+function PendingSignaturesCard({
+  signatures,
+}: {
+  signatures: ApprovalSignature[]
+}) {
+  if (signatures.length === 0) return null
+  return (
+    <section className="rounded-3xl border-2 border-warning-300/40 bg-warning-100/40 p-5 shadow-sm md:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-warning-400">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Pendientes de mi firma
+          </p>
+          <h3 className="mt-1 text-base font-bold text-navy-500">
+            {signatures.length} {signatures.length === 1 ? 'caso espera' : 'casos esperan'} tu firma
+          </h3>
+        </div>
+      </div>
+      <ul className="mt-4 space-y-2">
+        {signatures.map((s) => (
+          <li
+            key={s.id}
+            className="flex flex-wrap items-center gap-3 rounded-2xl border border-warning-200 bg-white p-3 sm:flex-nowrap"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning-100 text-warning-400">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-navy-500">{s.caseName}</p>
+              <p className="mt-0.5 truncate text-xs text-navy-300">
+                {s.caseId} · {s.applicantName} ·{' '}
+                {new Date(s.requestedAt).toLocaleDateString('es-AR', {
+                  day: '2-digit',
+                  month: 'short',
+                })}
+              </p>
+            </div>
+            <Link
+              to={`/tutor/casos/${s.caseId}`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white transition-colors hover:bg-navy-400"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Revisar y firmar
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function TutorMetricsCard({ metrics: m }: { metrics: typeof mockTutorMetrics }) {
+  const metrics = [
+    {
+      icon: Gauge,
+      label: 'Tasa de aprobación',
+      value: `${m.approvalRate}%`,
+      delta: m.approvalRateDelta,
+      deltaPositive: m.approvalRateDelta >= 0,
+      sub: `${m.totalCertified} certificados · ${m.totalRejected} rechazados`,
+    },
+    {
+      icon: Timer,
+      label: 'Tiempo promedio por caso',
+      value: `${m.avgDaysPerCase}d`,
+      delta: Math.abs(m.avgDaysDelta),
+      deltaPositive: m.avgDaysDelta < 0,
+      sub:
+        m.avgDaysDelta < 0
+          ? 'mejoraste vs período anterior'
+          : 'subió vs período anterior',
+    },
+    {
+      icon: Phone,
+      label: 'Tiempo de respuesta',
+      value: `${m.responseTimeHours}h`,
+      delta: Math.abs(m.responseTimeDelta),
+      deltaPositive: m.responseTimeDelta < 0,
+      sub:
+        m.responseTimeDelta < 0
+          ? 'más rápido que antes'
+          : 'más lento que antes',
+    },
+    {
+      icon: Star,
+      label: 'Satisfacción de solicitantes',
+      value: `${m.satisfactionScore}/5`,
+      delta: 0.2,
+      deltaPositive: true,
+      sub: 'según encuestas post-proceso',
+    },
+  ]
+  return (
+    <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-gold-700">
+            Tu performance
+          </p>
+          <h3 className="mt-1 text-base font-bold text-navy-500">
+            Métricas del tutor — últimos 30 días
+          </h3>
+        </div>
+        {m.overdueCases > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-error-100 px-3 py-1 text-[11px] font-bold text-error-400 ring-1 ring-error-300/40">
+            <AlertTriangle className="h-3 w-3" />
+            {m.overdueCases} {m.overdueCases === 1 ? 'caso vencido' : 'casos vencidos'}
+          </span>
+        )}
+      </div>
+      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {metrics.map(({ icon: Icon, label, value, delta, deltaPositive, sub }) => {
+          const Trend = deltaPositive ? TrendingUp : TrendingDown
+          return (
+            <li
+              key={label}
+              className="rounded-2xl border border-neutral-200 bg-white p-4"
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-0.5 text-[11px] font-bold',
+                    deltaPositive ? 'text-success-300' : 'text-error-400',
+                  )}
+                >
+                  <Trend className="h-3 w-3" />
+                  {delta}
+                </span>
+              </div>
+              <p className="mt-3 text-2xl font-bold text-navy-500">{value}</p>
+              <p className="mt-0.5 text-[11px] font-medium text-navy-500">
+                {label}
+              </p>
+              <p className="mt-0.5 text-[10px] leading-tight text-navy-300">
+                {sub}
+              </p>
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }

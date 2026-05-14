@@ -355,6 +355,84 @@ export interface MessageTemplate {
   body: string                // Con {placeholders}
 }
 
+// ─── Plan de mejora (cuando score < 70) ──────────────────────────────────────
+
+export type ImprovementActionStatus = 'pending' | 'in_progress' | 'done'
+
+export interface ImprovementAction {
+  id: string
+  title: string
+  detail?: string
+  criterionId?: ScoringCriterionId
+  dueDate?: string            // ISO o dd/MM
+  responsible: 'solicitante' | 'tutor' | 'comunidad'
+  status: ImprovementActionStatus
+}
+
+export interface ImprovementPlan {
+  id: string
+  caseId: string
+  createdAt: string
+  createdBy: string
+  reEvaluationAt?: string
+  actions: ImprovementAction[]
+}
+
+// ─── Firmas de certificación (multi-firma) ───────────────────────────────────
+
+export type SignatureRole = 'tutor' | 'curador' | 'coordinador'
+export type SignatureStatus = 'pending' | 'signed' | 'rejected'
+
+export interface ApprovalSignature {
+  id: string
+  caseId: string
+  caseName: string
+  applicantName: string
+  role: SignatureRole
+  signerName: string
+  status: SignatureStatus
+  signedAt?: string
+  requestedAt: string
+}
+
+// ─── Notificaciones específicas del tutor ────────────────────────────────────
+
+export type TutorNotificationKind =
+  | 'new_case_assigned'
+  | 'evidence_uploaded'
+  | 'applicant_replied'
+  | 'sla_breach'
+  | 'meeting_reminder'
+  | 'signature_pending'
+  | 'stage_changed'
+
+export interface TutorNotification {
+  id: string
+  kind: TutorNotificationKind
+  title: string
+  body: string
+  caseId?: string
+  caseName?: string
+  at: string
+  read: boolean
+  link?: string
+}
+
+// ─── Métricas de performance del tutor ───────────────────────────────────────
+
+export interface TutorMetrics {
+  approvalRate: number          // 0-100
+  approvalRateDelta: number     // % vs último período
+  avgDaysPerCase: number
+  avgDaysDelta: number          // negativo = mejoró
+  overdueCases: number
+  responseTimeHours: number     // tiempo promedio de respuesta
+  responseTimeDelta: number
+  satisfactionScore: number     // 0-5
+  totalCertified: number
+  totalRejected: number
+}
+
 export interface CertificationRequest {
   id: string
   number: string                // "#001"

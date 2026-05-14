@@ -1,18 +1,26 @@
-import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Award,
   Bell,
   Calendar,
+  CalendarClock,
+  CheckCheck,
   ChevronDown,
+  FileCheck2,
   Kanban,
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Search,
+  ShieldCheck,
+  Sparkles,
+  TriangleAlert,
   User as UserIcon,
   UserRound,
+  Users,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -20,7 +28,13 @@ import { Logo } from './Logo'
 import { ErrorBoundary } from './ErrorBoundary'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
-import { mockTutor } from '@/services/mocks/data'
+import {
+  mockIssuedCertifications,
+  mockTutor,
+  mockTutorCases,
+  mockTutorNotifications,
+} from '@/services/mocks/data'
+import type { TutorNotificationKind } from '@/types'
 import { cn } from '@/lib/utils'
 
 const operationsItems = [
@@ -40,6 +54,23 @@ export function TutorLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const [bellOpen, setBellOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [notifications, setNotifications] = useState(mockTutorNotifications)
+  const unread = notifications.filter((n) => !n.read).length
+
+  // Cierro dropdowns al click outside
+  useEffect(() => {
+    if (!bellOpen && !searchFocused) return
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('[data-bell]')) setBellOpen(false)
+      if (!target.closest('[data-search]')) setSearchFocused(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [bellOpen, searchFocused])
 
   // Datos del tutor (fallback al mock)
   const tutorName = user?.name ?? mockTutor.name
@@ -49,6 +80,41 @@ export function TutorLayout() {
   useEscape(confirmLogout, () => setConfirmLogout(false))
   useEscape(drawerOpen, () => setDrawerOpen(false))
   useEscape(menuOpen, () => setMenuOpen(false))
+  useEscape(bellOpen, () => setBellOpen(false))
+  useEscape(searchFocused, () => setSearchFocused(false))
+
+  // Resultados de búsqueda global (mock — casos + certs por id/nombre/solicitante)
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (q.length < 2) return { cases: [], certs: [] }
+    const cases = mockTutorCases
+      .filter(
+        (c) =>
+          c.id.toLowerCase().includes(q) ||
+          c.productName.toLowerCase().includes(q) ||
+          c.applicantName.toLowerCase().includes(q),
+      )
+      .slice(0, 5)
+    const certs = mockIssuedCertifications
+      .filter(
+        (c) =>
+          c.id.toLowerCase().includes(q) ||
+          c.productName.toLowerCase().includes(q) ||
+          c.authorName.toLowerCase().includes(q),
+      )
+      .slice(0, 4)
+    return { cases, certs }
+  }, [searchQuery])
+
+  const markAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+    toast.success('Todas marcadas como leídas')
+  }
+  const markOneRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    )
+  }
 
   const closeOnNav = () => setDrawerOpen(false)
 
@@ -163,23 +229,202 @@ export function TutorLayout() {
           </button>
 
           {/* Search global */}
-          <div className="relative max-w-xl flex-1">
+          <div data-search className="relative max-w-xl flex-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
             <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
               placeholder="Buscar caso, solicitante, certificación…"
               className="h-10 w-full rounded-full border border-neutral-200 bg-neutral-100 pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:bg-white focus:outline-none"
             />
+            {/* Search dropdown */}
+            <AnimatePresence>
+              {searchFocused && searchQuery.trim().length >= 2 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute left-0 right-0 top-12 z-40 max-h-[420px] overflow-y-auto rounded-2xl border border-neutral-200 bg-white shadow-2xl"
+                >
+                  {searchResults.cases.length === 0 &&
+                  searchResults.certs.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-navy-300">
+                      Sin resultados para "{searchQuery}".
+                    </div>
+                  ) : (
+                    <>
+                      {searchResults.cases.length > 0 && (
+                        <div>
+                          <p className="px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-widest text-navy-300">
+                            Casos
+                          </p>
+                          <ul>
+                            {searchResults.cases.map((c) => (
+                              <li key={c.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigate(`/tutor/casos/${c.id}`)
+                                    setSearchFocused(false)
+                                    setSearchQuery('')
+                                  }}
+                                  className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors hover:bg-neutral-100"
+                                >
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+                                    <Kanban className="h-3.5 w-3.5" />
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-bold text-navy-500">
+                                      {c.productName}
+                                    </p>
+                                    <p className="truncate text-[11px] text-navy-300">
+                                      {c.id} · {c.applicantName}
+                                    </p>
+                                  </div>
+                                  <span className="shrink-0 rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
+                                    {c.stage}
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {searchResults.certs.length > 0 && (
+                        <div className="border-t border-neutral-200">
+                          <p className="px-4 pb-1 pt-3 text-[10px] font-bold uppercase tracking-widest text-navy-300">
+                            Certificaciones emitidas
+                          </p>
+                          <ul>
+                            {searchResults.certs.map((c) => (
+                              <li key={c.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigate(`/tutor/certificaciones`)
+                                    setSearchFocused(false)
+                                    setSearchQuery('')
+                                  }}
+                                  className="flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors hover:bg-neutral-100"
+                                >
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success-100 text-success-300">
+                                    <Award className="h-3.5 w-3.5" />
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm font-bold text-navy-500">
+                                      {c.productName}
+                                    </p>
+                                    <p className="truncate text-[11px] text-navy-300">
+                                      {c.id} · {c.authorName}
+                                    </p>
+                                  </div>
+                                  <span className="shrink-0 rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
+                                    {c.status}
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Bell + avatar */}
           <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-navy-500 transition-colors hover:bg-neutral-200"
-              aria-label="Notificaciones"
-            >
-              <Bell className="h-4 w-4" />
-            </button>
+            <div data-bell className="relative">
+              <button
+                type="button"
+                onClick={() => setBellOpen((v) => !v)}
+                className={cn(
+                  'relative flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+                  bellOpen
+                    ? 'bg-navy-500 text-white'
+                    : 'bg-neutral-100 text-navy-500 hover:bg-neutral-200',
+                )}
+                aria-label="Notificaciones"
+                aria-expanded={bellOpen}
+              >
+                <Bell className="h-4 w-4" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold-500 px-1 text-[10px] font-bold text-navy-500 ring-2 ring-white">
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
+              </button>
+              <AnimatePresence>
+                {bellOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-[360px] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl"
+                  >
+                    <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+                      <p className="text-sm font-bold text-navy-500">
+                        Notificaciones
+                      </p>
+                      {unread > 0 && (
+                        <button
+                          type="button"
+                          onClick={markAllRead}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
+                        >
+                          <CheckCheck className="h-3.5 w-3.5" />
+                          Marcar todas
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <p className="px-4 py-8 text-center text-sm text-navy-300">
+                        No tenés notificaciones
+                      </p>
+                    ) : (
+                      <ul className="max-h-96 overflow-y-auto">
+                        {notifications.slice(0, 8).map((n) => (
+                          <li key={n.id}>
+                            <Link
+                              to={n.link ?? '/tutor/dashboard'}
+                              onClick={() => {
+                                markOneRead(n.id)
+                                setBellOpen(false)
+                              }}
+                              className={cn(
+                                'flex items-start gap-3 border-b border-neutral-100 px-4 py-3 text-sm transition-colors hover:bg-neutral-100',
+                                !n.read && 'bg-gold-100/30',
+                              )}
+                            >
+                              <NotifKindIcon kind={n.kind} />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-bold text-navy-500">
+                                  {n.title}
+                                </p>
+                                <p className="mt-0.5 line-clamp-2 text-xs text-navy-300">
+                                  {n.body}
+                                </p>
+                                <p className="mt-1 text-[10px] text-navy-300">
+                                  {formatRel(n.at)}
+                                </p>
+                              </div>
+                              {!n.read && (
+                                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-gold-500" />
+                              )}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="relative">
               <button
                 type="button"
@@ -302,6 +547,49 @@ export function TutorLayout() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+function formatRel(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.round(diff / 60_000)
+  if (mins < 1) return 'recién'
+  if (mins < 60) return `hace ${mins}min`
+  const hrs = Math.round(mins / 60)
+  if (hrs < 24) return `hace ${hrs}h`
+  const days = Math.round(hrs / 24)
+  if (days < 7) return `hace ${days}d`
+  return new Date(iso).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+  })
+}
+
+const NOTIF_ICON_META: Record<
+  TutorNotificationKind,
+  { Icon: typeof Bell; cls: string }
+> = {
+  new_case_assigned: { Icon: Users, cls: 'bg-info-100 text-info-400' },
+  evidence_uploaded: { Icon: FileCheck2, cls: 'bg-gold-100 text-gold-700' },
+  applicant_replied: { Icon: MessageSquare, cls: 'bg-success-100 text-success-300' },
+  sla_breach: { Icon: TriangleAlert, cls: 'bg-error-100 text-error-400' },
+  meeting_reminder: { Icon: CalendarClock, cls: 'bg-info-100 text-info-400' },
+  signature_pending: { Icon: ShieldCheck, cls: 'bg-warning-100 text-warning-400' },
+  stage_changed: { Icon: Sparkles, cls: 'bg-gold-100 text-gold-700' },
+}
+
+function NotifKindIcon({ kind }: { kind: TutorNotificationKind }) {
+  const meta = NOTIF_ICON_META[kind]
+  const Icon = meta.Icon
+  return (
+    <span
+      className={cn(
+        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+        meta.cls,
+      )}
+    >
+      <Icon className="h-3.5 w-3.5" />
+    </span>
   )
 }
 
