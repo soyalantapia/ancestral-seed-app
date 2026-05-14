@@ -171,26 +171,102 @@ function BlockchainSection() {
     {
       id: 'q1',
       question: '¿Qué es la blockchain?',
-      answer:
-        'Un registro distribuido e inmutable que garantiza que la información del certificado no pueda alterarse después de emitida.',
+      answer: (
+        <>
+          <p>
+            La blockchain es un registro digital compartido entre miles de
+            computadoras alrededor del mundo. Cada información que se inscribe
+            queda sellada de forma criptográfica y no puede borrarse ni
+            modificarse —ni siquiera por quienes la crearon—.
+          </p>
+          <p className="mt-3">
+            Es una tecnología pensada para que la confianza no dependa de una
+            única autoridad, sino de la transparencia matemática y de la
+            verificación pública.
+          </p>
+        </>
+      ),
     },
     {
       id: 'q2',
       question: '¿Qué rol cumple la blockchain en las certificaciones?',
-      answer:
-        'Cada certificado se firma digitalmente y se registra en la red, generando un hash único verificable por cualquiera.',
+      answer: (
+        <>
+          <p>
+            Cada certificado emitido por Ancestral Seed se convierte en un
+            registro único firmado en una red blockchain pública. Quedan
+            inscriptos el autor, la comunidad de origen, la fecha de emisión y
+            un hash que funciona como huella digital del producto, práctica o
+            saber.
+          </p>
+          <p className="mt-3">
+            Cualquier persona —cliente, auditor o curador— puede verificar la
+            autenticidad sin pedir permiso ni pasar por intermediarios.
+          </p>
+        </>
+      ),
     },
     {
       id: 'q3',
       question: '¿Qué asegura esta tecnología?',
-      answer:
-        'Trazabilidad completa, transparencia y resistencia a la manipulación: lo que se publica queda público y verificable para siempre.',
+      answer: (
+        <>
+          <p>Cuatro garantías concretas:</p>
+          <ul className="mt-3 space-y-2">
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>
+                <strong className="text-navy-500">Inmutabilidad:</strong> una
+                vez emitido, el certificado no puede falsificarse ni
+                alterarse.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>
+                <strong className="text-navy-500">Trazabilidad:</strong> todo
+                el historial queda público y consultable.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>
+                <strong className="text-navy-500">
+                  Verificación independiente:
+                </strong>{' '}
+                cualquiera puede comprobar la validez con el hash, sin
+                depender de Ancestral Seed.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>
+                <strong className="text-navy-500">Continuidad:</strong> el
+                registro persiste aunque la plataforma deje de existir.
+              </span>
+            </li>
+          </ul>
+        </>
+      ),
     },
     {
       id: 'q4',
       question: '¿Qué significa esto para las comunidades?',
-      answer:
-        'Reconocimiento, protección frente al fraude y una herramienta para defender el origen y la autoría de su saber.',
+      answer: (
+        <>
+          <p>
+            Significa que los saberes y productos ancestrales finalmente
+            tienen un respaldo público y permanente que reconoce su autoría
+            comunitaria.
+          </p>
+          <p className="mt-3">
+            Frente al avance de la apropiación cultural, el plagio o la
+            falsificación, las comunidades cuentan con una herramienta
+            verificable para defender su origen, valorizar su trabajo y abrir
+            nuevos mercados sin perder identidad.
+          </p>
+        </>
+      ),
     },
   ]
   return (
