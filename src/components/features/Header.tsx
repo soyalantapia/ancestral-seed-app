@@ -25,6 +25,7 @@ import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
 const navItems = [
+  { to: '/nosotros', label: 'Nosotros' },
   { to: '/#beneficios', label: 'Beneficios' },
   { to: '/#como-funciona', label: '¿Cómo funciona?' },
   { to: '/directorio', label: 'Certificados' },

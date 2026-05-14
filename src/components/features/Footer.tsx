@@ -43,6 +43,11 @@ export function Footer() {
           <div className="md:col-span-3">
             <ul className="flex flex-col gap-4 text-base text-white">
               <li>
+                <Link to="/nosotros" className="transition-colors hover:text-gold-400">
+                  Nosotros
+                </Link>
+              </li>
+              <li>
                 <Link to="/#beneficios" className="transition-colors hover:text-gold-400">
                   Beneficios
                 </Link>

@@ -21,6 +21,7 @@ const MyProfile = lazy(() => import('@/pages/MyProfile'))
 const Notifications = lazy(() => import('@/pages/Notifications'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const Help = lazy(() => import('@/pages/Help'))
+const Nosotros = lazy(() => import('@/pages/Nosotros'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 function PageFallback() {
@@ -49,6 +50,7 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: withSuspense(<Home />) },
         { path: 'directorio', element: withSuspense(<Directory />) },
+        { path: 'nosotros', element: withSuspense(<Nosotros />) },
         { path: 'certificado/:slug', element: withSuspense(<CertificationDetail />) },
         { path: 'autor/:slug', element: withSuspense(<AuthorProfile />) },
         { path: 'perfil/:slug', element: withSuspense(<AuthorProfile />) },
