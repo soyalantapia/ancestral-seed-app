@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/features/Layout'
 import { RequireAuth } from '@/components/features/RequireAuth'
+import { RequireTutor } from '@/components/features/RequireTutor'
 import { Skeleton } from '@/components/ui/skeleton'
 
 /**
@@ -63,6 +64,10 @@ const Nosotros = lazyWithRetry(() => import('@/pages/Nosotros'))
 const Pagos = lazyWithRetry(() => import('@/pages/Pagos'))
 const Documentos = lazyWithRetry(() => import('@/pages/Documentos'))
 const Calendario = lazyWithRetry(() => import('@/pages/Calendario'))
+const TutorDashboard = lazyWithRetry(() => import('@/pages/tutor/TutorDashboard'))
+const TutorCases = lazyWithRetry(() => import('@/pages/tutor/TutorCases'))
+const TutorCertifications = lazyWithRetry(() => import('@/pages/tutor/TutorCertifications'))
+const TutorAgenda = lazyWithRetry(() => import('@/pages/tutor/TutorAgenda'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 function PageFallback() {
@@ -117,6 +122,18 @@ export const router = createBrowserRouter(
         { path: 'configuracion', element: withSuspense(<Settings />) },
         { path: 'ayuda', element: withSuspense(<Help />) },
         { path: 'dashboard', element: <Navigate to="/inicio" replace /> },
+      ],
+    },
+    {
+      path: '/tutor',
+      element: <RequireTutor />,
+      children: [
+        { index: true, element: <Navigate to="/tutor/dashboard" replace /> },
+        { path: 'dashboard', element: withSuspense(<TutorDashboard />) },
+        { path: 'casos', element: withSuspense(<TutorCases />) },
+        { path: 'casos/:id', element: withSuspense(<CertificationRequest />) },
+        { path: 'agenda', element: withSuspense(<TutorAgenda />) },
+        { path: 'certificaciones', element: withSuspense(<TutorCertifications />) },
       ],
     },
     { path: '*', element: withSuspense(<NotFound />) },

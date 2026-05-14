@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Eye,
   FileText,
+  GraduationCap,
   LogIn,
   LogOut,
   Menu,
@@ -309,6 +310,14 @@ export function Header() {
                       <MenuItem to="/inicio" icon={UserRound} label="Mi cuenta" />
                       <MenuItem to="/mis-certificaciones" icon={FileText} label="Mis certificaciones" />
                       <MenuItem to="/configuracion" icon={SettingsIcon} label="Configuración" />
+                    </div>
+
+                    <div className="border-t border-neutral-200 py-2">
+                      <MenuItem
+                        to="/tutor"
+                        icon={GraduationCap}
+                        label="Cambiar a panel de tutor"
+                      />
                     </div>
 
                     <button

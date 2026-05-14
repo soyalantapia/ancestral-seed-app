@@ -195,6 +195,63 @@ export interface RequestSubmittedData {
   producerType: string
 }
 
+// ─── Tutor panel ─────────────────────────────────────────────────────────────
+
+export type CaseRisk = 'bajo' | 'medio' | 'alto'
+
+export type CaseStage =
+  | 'postulado'
+  | 'revision-inicial'
+  | 'elegible'
+  | 'diagnostico'
+  | 'auditoria'
+  | 'evaluacion'
+  | 'certificacion'
+
+export interface TutorCase {
+  id: string                  // CE-001
+  productName: string
+  applicantName: string
+  applicantAvatarUrl?: string
+  scoringIA: number           // 0-100
+  risk: CaseRisk
+  pendingItems: string[]
+  stage: CaseStage
+  tutorId?: string
+  tutorName?: string
+  tutorAvatarUrl?: string
+  category: string
+  country: string
+  region: string
+  createdAt: string           // ISO
+}
+
+export type IssuedCertStatus = 'vigente' | 'renovacion' | 'vencido' | 'denegado'
+
+export interface IssuedCertification {
+  id: string                  // CE-001
+  productName: string
+  authorName: string
+  authorAvatarUrl?: string
+  scoreLabel: string          // "95/100"
+  status: IssuedCertStatus
+  issuedAt: string            // ISO o dd/MM/yy
+  expiresAt: string
+  category: string
+  country: string
+  region: string
+}
+
+export interface TutorAgendaItem {
+  id: string
+  caseId: string
+  caseName: string
+  applicantName: string
+  kind: 'kickoff' | 'auditoria' | 'evaluacion' | 'cierre'
+  scheduledAt: string         // ISO
+  durationMin: number
+}
+
 export interface CertificationRequest {
   id: string
   number: string                // "#001"
