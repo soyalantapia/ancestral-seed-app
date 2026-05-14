@@ -240,6 +240,65 @@ export interface IssuedCertification {
   category: string
   country: string
   region: string
+  // ─── Expediente extendido (tutor) ──────────────────────────────────────────
+  authorPhone?: string
+  authorEmail?: string
+  authorRole?: string
+  community?: string
+  productType?: string
+  productSector?: string
+  productSubcategory?: string
+  productionDescription?: string
+  productionResponsible?: string
+  productionCapacity?: string
+  productionMode?: string
+  batchIdentifier?: string
+  renewalCycleMonths?: number
+  lastRenewalAt?: string
+  nextRenewalAt?: string
+}
+
+// ─── Recursos del expediente: evidencias, notas internas, checklist ──────────
+
+export interface CertExpedienteEvidence {
+  id: string
+  kind: 'image' | 'video' | 'document'
+  name: string
+  sizeKb?: number
+  uploadedAt?: string
+  thumbUrl?: string
+}
+
+export interface CertExpedienteNote {
+  id: string
+  authorName: string
+  authorInitials: string
+  body: string
+  at: string                  // ISO
+}
+
+export interface ChecklistItem {
+  id: string
+  label: string
+  checked: boolean
+}
+
+export interface ChecklistCategory {
+  id: string
+  name: string
+  items: ChecklistItem[]
+  comment?: string
+}
+
+export interface RenewalPreTask {
+  id: string
+  certId: string
+  title: string
+  description: string
+  evidenceTypes: Array<'image' | 'video' | 'document'>
+  dueAt: string               // ISO o dd/MM/yy
+  internalNote?: string
+  createdAt: string
 }
 
 export interface TutorAgendaItem {

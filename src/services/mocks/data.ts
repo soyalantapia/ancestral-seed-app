@@ -1,8 +1,11 @@
 import type {
   ApprovalSignature,
   Author,
+  CertExpedienteEvidence,
+  CertExpedienteNote,
   Certification,
   CertificationRequest,
+  ChecklistCategory,
   ImprovementPlan,
   InternalNote,
   IssuedCertification,
@@ -1213,4 +1216,174 @@ export const mockImprovementPlans: Record<string, ImprovementPlan> = {
       },
     ],
   },
+}
+
+// ─── Expediente extendido por cert ───────────────────────────────────────────
+
+/**
+ * Helper: enriquece un IssuedCertification con datos del expediente.
+ * Para CE-001 y CE-002 devuelve data específica; para el resto usa fallbacks
+ * razonables derivados del id.
+ */
+export function getExpedienteData(certId: string) {
+  if (certId === 'CE-001') {
+    return {
+      authorPhone: '+57 1234-5678',
+      authorEmail: 'camila.montes@gmail.com',
+      authorRole: 'Artesana · Líder comunitaria',
+      community: 'Sierra Nevada de Santa Marta',
+      productType: 'Producto físico',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Filigrana',
+      productionDescription:
+        'Trabajo manual con hilos extremadamente finos de plata, mediante la técnica de enrollado y trenzado, soldadura artesanal y terminación a mano. Proceso completo desde el hilado hasta el acabado, sin intervención industrial.',
+      productionResponsible: 'Yo misma · con apoyo familiar',
+      productionCapacity: 'Pequeña escala · 8 piezas/mes',
+      productionMode: 'Por encargo y stock propio',
+      batchIdentifier: 'Por fecha y nombre de pieza',
+      renewalCycleMonths: 24,
+      lastRenewalAt: '14/02/24',
+      nextRenewalAt: '14/02/26',
+    }
+  }
+  if (certId === 'CE-002') {
+    return {
+      authorPhone: '+54 351 234-5678',
+      authorEmail: 'maria.baulo@ancestralseed.io',
+      authorRole: 'Autora · Investigadora',
+      community: 'Córdoba ancestral',
+      productType: 'Editorial',
+      productSector: 'Editorial',
+      productSubcategory: 'Libro',
+      productionDescription:
+        'Obra de investigación que reúne saberes ancestrales sobre alimentación consciente, ciclos lunares y astromedicina. Texto original con bibliografía verificable y consulta a referentes culturales.',
+      productionResponsible: 'Autora principal · 2 editoras',
+      productionCapacity: 'Tirada limitada · 500 ejemplares',
+      productionMode: 'Impreso + e-book',
+      batchIdentifier: 'ISBN por edición',
+      renewalCycleMonths: 24,
+      lastRenewalAt: '20/11/23',
+      nextRenewalAt: '20/11/25',
+    }
+  }
+  // Fallback razonable
+  return {
+    authorPhone: '—',
+    authorEmail: '—',
+    authorRole: 'Artesano/a',
+    community: '—',
+    productType: 'Producto ancestral',
+    productSector: '—',
+    productSubcategory: '—',
+    productionDescription:
+      'Detalle del proceso productivo en revisión por el equipo de tutoría.',
+    productionResponsible: 'Solicitante',
+    productionCapacity: 'Pequeña escala',
+    productionMode: 'Por encargo',
+    batchIdentifier: 'Por fecha',
+    renewalCycleMonths: 24,
+    lastRenewalAt: '—',
+    nextRenewalAt: '—',
+  }
+}
+
+export function getEvidenciasByCert(certId: string): CertExpedienteEvidence[] {
+  // Default 3 imágenes + 1 video + 1 documento (matchea el Figma)
+  return [
+    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana.png' },
+    { id: `${certId}-img-2`, kind: 'image', name: 'pieza-reverso.jpg', sizeKb: 980 },
+    { id: `${certId}-img-3`, kind: 'image', name: 'proceso-detalle.jpg', sizeKb: 2100 },
+    { id: `${certId}-vid-1`, kind: 'video', name: 'proceso-completo.mp4', sizeKb: 18_200 },
+    { id: `${certId}-doc-1`, kind: 'document', name: 'aval-comunidad.pdf', sizeKb: 320 },
+  ]
+}
+
+export function getInitialNotesByCert(certId: string): CertExpedienteNote[] {
+  if (certId === 'CE-001') {
+    return [
+      {
+        id: 'n-001',
+        authorName: 'Ana Belén',
+        authorInitials: 'AB',
+        body: 'Camila viene con muy buen track de la comunidad. Validar aval con la Mtra. Quispe antes de cerrar el ciclo de renovación. La autoría comunitaria está bien documentada.',
+        at: '2026-02-12T10:00:00-03:00',
+      },
+      {
+        id: 'n-002',
+        authorName: 'Juan Pérez',
+        authorInitials: 'JP',
+        body: 'Coordinar entrega de avales actualizados para la renovación del próximo año.',
+        at: '2026-02-12T10:00:00-03:00',
+      },
+      {
+        id: 'n-003',
+        authorName: 'Juan Pérez',
+        authorInitials: 'JP',
+        body: 'Sub-criterio normativo: pendiente verificar nueva normativa local de orfebrería. Pedí documentación adicional al solicitante para cerrar el ciclo de renovación con todo en regla.',
+        at: '2026-02-12T10:00:00-03:00',
+      },
+    ]
+  }
+  return [
+    {
+      id: 'n-default-001',
+      authorName: 'Juan Pérez',
+      authorInitials: 'JP',
+      body: 'Caso en seguimiento estándar. Sin observaciones particulares al cierre del ciclo.',
+      at: new Date().toISOString(),
+    },
+  ]
+}
+
+export function getChecklistByCert(certId: string): ChecklistCategory[] {
+  // Diccionario de checklist final por categoría (matchea Figma)
+  void certId
+  return [
+    {
+      id: 'tecnico',
+      name: 'Conocimiento técnico',
+      items: [
+        { id: 't-1', label: 'Dominio del oficio verificado', checked: true },
+        { id: 't-2', label: 'Calidad del proceso productivo', checked: true },
+        { id: 't-3', label: 'Reproducibilidad documentada', checked: true },
+        { id: 't-4', label: 'Materias primas verificadas', checked: true },
+        { id: 't-5', label: 'Trazabilidad lote a lote', checked: true },
+      ],
+      comment:
+        'Excelente dominio técnico. La trazabilidad de cada pieza está documentada con foto+ficha de proceso.',
+    },
+    {
+      id: 'cultural',
+      name: 'Conocimiento cultural y ancestral',
+      items: [
+        { id: 'c-1', label: 'Vínculo con comunidad de origen', checked: true },
+        { id: 'c-2', label: 'Aval comunitario firmado', checked: true },
+        { id: 'c-3', label: 'Continuidad generacional declarada', checked: true },
+        { id: 'c-4', label: 'Referencias culturales verificables', checked: true },
+        { id: 'c-5', label: 'Respeto a protocolos comunitarios', checked: true },
+      ],
+    },
+    {
+      id: 'ambiental',
+      name: 'Conocimiento ambiental',
+      items: [
+        { id: 'a-1', label: 'Origen sustentable de materiales', checked: true },
+        { id: 'a-2', label: 'Bajo impacto del proceso', checked: true },
+        { id: 'a-3', label: 'Gestión de residuos declarada', checked: true },
+        { id: 'a-4', label: 'Sin uso de sustancias prohibidas', checked: true },
+        { id: 'a-5', label: 'Trazabilidad ambiental del recurso', checked: true },
+      ],
+    },
+    {
+      id: 'normativo',
+      name: 'Conocimiento normativo',
+      items: [
+        { id: 'n-1', label: 'Documentación legal vigente', checked: true },
+        { id: 'n-2', label: 'Marco normativo local cumplido', checked: true },
+        { id: 'n-3', label: 'Habilitación comercial activa', checked: true },
+        { id: 'n-4', label: 'Estándar interno cumplido', checked: true },
+        { id: 'n-5', label: 'Sin observaciones de auditoría externa', checked: true },
+      ],
+    },
+  ]
 }
