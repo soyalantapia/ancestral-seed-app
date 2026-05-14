@@ -170,79 +170,110 @@ function BlockchainSection() {
   const items: AccordionItem[] = [
     {
       id: 'q1',
-      question: '¿Qué es la blockchain?',
+      question: '¿Qué es la blockchain? (explicado con un cuaderno)',
       answer: (
         <>
           <p>
-            La blockchain es un registro digital compartido entre miles de
-            computadoras alrededor del mundo. Cada información que se inscribe
-            queda sellada de forma criptográfica y no puede borrarse ni
-            modificarse —ni siquiera por quienes la crearon—.
+            Imaginá un <strong>cuaderno gigante</strong> que se copia y comparte
+            entre miles de computadoras alrededor del mundo, al mismo tiempo.
+            Cuando alguien escribe algo en él —por ejemplo,{' '}
+            <em>"este tejido es de la comunidad Pasto"</em>— todos los
+            cuadernos lo registran a la vez.
           </p>
           <p className="mt-3">
-            Es una tecnología pensada para que la confianza no dependa de una
-            única autoridad, sino de la transparencia matemática y de la
-            verificación pública.
+            Si después alguien quisiera cambiar lo escrito, los demás cuadernos
+            no aceptan el cambio porque no coinciden. Por eso, lo que queda
+            anotado ahí <strong>no se puede borrar, mover ni modificar</strong>
+            , ni siquiera por nosotros.
+          </p>
+          <p className="mt-3 rounded-2xl bg-gold-100/60 px-4 py-3 text-xs text-navy-500 md:text-sm">
+            💡 En resumen: es como un libro de actas público, escrito a fuego,
+            que está en miles de lugares a la vez.
           </p>
         </>
       ),
     },
     {
       id: 'q2',
-      question: '¿Qué rol cumple la blockchain en las certificaciones?',
+      question: '¿Y qué tiene que ver con tu certificación?',
       answer: (
         <>
           <p>
-            Cada certificado emitido por Ancestral Seed se convierte en un
-            registro único firmado en una red blockchain pública. Quedan
-            inscriptos el autor, la comunidad de origen, la fecha de emisión y
-            un hash que funciona como huella digital del producto, práctica o
-            saber.
+            Cuando una comunidad o un autor recibe su certificado de Ancestral
+            Seed, <strong>nosotros dejamos una huella en ese cuaderno mundial</strong>.
+            En esa huella queda escrito:
           </p>
+          <ul className="mt-3 space-y-2">
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>Quién hizo el producto, saber o práctica</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>De qué comunidad y región viene</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>La fecha exacta en que se certificó</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>
+                Un código único —como una matrícula— imposible de copiar
+              </span>
+            </li>
+          </ul>
           <p className="mt-3">
-            Cualquier persona —cliente, auditor o curador— puede verificar la
-            autenticidad sin pedir permiso ni pasar por intermediarios.
+            Cualquier persona, en cualquier parte del mundo, puede revisar esa
+            huella y confirmar que el certificado es de verdad.
           </p>
         </>
       ),
     },
     {
       id: 'q3',
-      question: '¿Qué asegura esta tecnología?',
+      question: '¿Por qué esto es tan importante?',
       answer: (
         <>
-          <p>Cuatro garantías concretas:</p>
-          <ul className="mt-3 space-y-2">
-            <li className="flex gap-2">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+          <p>Porque te da cuatro cosas que antes eran imposibles:</p>
+          <ul className="mt-3 space-y-3">
+            <li className="flex gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-navy-500">
+                1
+              </span>
               <span>
-                <strong className="text-navy-500">Inmutabilidad:</strong> una
-                vez emitido, el certificado no puede falsificarse ni
-                alterarse.
+                <strong className="text-navy-500">Nadie puede falsificarlo.</strong>{' '}
+                Ni la competencia, ni un revendedor, ni siquiera nosotros.
               </span>
             </li>
-            <li className="flex gap-2">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+            <li className="flex gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-navy-500">
+                2
+              </span>
               <span>
-                <strong className="text-navy-500">Trazabilidad:</strong> todo
-                el historial queda público y consultable.
+                <strong className="text-navy-500">Cualquiera puede verificarlo.</strong>{' '}
+                Sin pedir permiso, sin pagar y sin tener cuenta en nuestra
+                plataforma.
               </span>
             </li>
-            <li className="flex gap-2">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+            <li className="flex gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-navy-500">
+                3
+              </span>
               <span>
-                <strong className="text-navy-500">
-                  Verificación independiente:
-                </strong>{' '}
-                cualquiera puede comprobar la validez con el hash, sin
-                depender de Ancestral Seed.
+                <strong className="text-navy-500">No depende de nosotros.</strong>{' '}
+                Aunque mañana Ancestral Seed dejara de existir, tu certificado
+                sigue vivo en la red.
               </span>
             </li>
-            <li className="flex gap-2">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+            <li className="flex gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-500 text-xs font-bold text-navy-500">
+                4
+              </span>
               <span>
-                <strong className="text-navy-500">Continuidad:</strong> el
-                registro persiste aunque la plataforma deje de existir.
+                <strong className="text-navy-500">Queda para siempre.</strong>{' '}
+                No hay forma de borrarlo, perderlo, ni "que se caiga el
+                sistema".
               </span>
             </li>
           </ul>
@@ -251,19 +282,36 @@ function BlockchainSection() {
     },
     {
       id: 'q4',
-      question: '¿Qué significa esto para las comunidades?',
+      question: '¿Y qué cambia esto para las comunidades?',
       answer: (
         <>
           <p>
-            Significa que los saberes y productos ancestrales finalmente
-            tienen un respaldo público y permanente que reconoce su autoría
-            comunitaria.
+            Durante siglos, los saberes y oficios ancestrales fueron copiados,
+            vendidos sin permiso o atribuidos a otros. Sin una prueba pública,
+            era muy difícil reclamar autoría.
           </p>
           <p className="mt-3">
-            Frente al avance de la apropiación cultural, el plagio o la
-            falsificación, las comunidades cuentan con una herramienta
-            verificable para defender su origen, valorizar su trabajo y abrir
-            nuevos mercados sin perder identidad.
+            Con un certificado en blockchain, tu comunidad tiene{' '}
+            <strong>una prueba pública e imborrable</strong> de que ese saber,
+            ese producto o esa práctica son tuyos. Y eso abre la puerta a:
+          </p>
+          <ul className="mt-3 space-y-2">
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>Defender tu autoría frente a copias o plagios</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>Vender en mercados que exigen origen verificado</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />
+              <span>Ponerle valor justo a tu trabajo y tradición</span>
+            </li>
+          </ul>
+          <p className="mt-3 rounded-2xl bg-gold-100/60 px-4 py-3 text-xs italic text-navy-500 md:text-sm">
+            Es como tener tu firma escrita a fuego en un libro que todo el
+            mundo puede leer, pero nadie puede arrancar.
           </p>
         </>
       ),
@@ -272,14 +320,19 @@ function BlockchainSection() {
   return (
     <section id="como-funciona" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-20">
-        <div className="text-center">
+        <div className="mx-auto max-w-3xl text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
             <Sparkles className="h-3.5 w-3.5 text-gold-500" />
-            ¿Cómo cuidamos la autenticidad?
+            Blockchain explicada simple
           </p>
           <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
-            Blockchain para certificaciones confiables y transparentes
+            Cómo protegemos lo que es tuyo, para que nadie pueda copiarlo
           </h2>
+          <p className="mx-auto mt-4 text-sm leading-relaxed text-navy-300 md:text-base">
+            Usamos una tecnología llamada <strong>blockchain</strong> para que
+            tu certificado quede registrado de forma pública y permanente. Te
+            la explicamos sin tecnicismos.
+          </p>
         </div>
         <div className="mt-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <Accordion items={items} />
