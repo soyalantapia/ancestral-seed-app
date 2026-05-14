@@ -3,11 +3,15 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
+  Calendar,
+  CreditCard,
+  FileCheck2,
   FileText,
   HelpCircle,
   Home,
   LogOut,
   Menu,
+  MessageSquare,
   Settings,
   UserRound,
   X,
@@ -24,12 +28,19 @@ import { cn } from '@/lib/utils'
 
 const generalItems = [
   { to: '/inicio', icon: Home, label: 'Inicio' },
-  { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: true },
+  { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: 'unread' as const },
+  { to: '/mensajes', icon: MessageSquare, label: 'Mensajes' },
   { to: '/mis-certificaciones', icon: FileText, label: 'Mis certificaciones' },
+  { to: '/calendario', icon: Calendar, label: 'Calendario' },
+]
+
+const financeItems = [
+  { to: '/pagos', icon: CreditCard, label: 'Pagos' },
 ]
 
 const accountItems = [
   { to: '/mi-perfil', icon: UserRound, label: 'Mi perfil' },
+  { to: '/documentos', icon: FileCheck2, label: 'Documentos' },
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]
@@ -88,15 +99,33 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 px-4 py-6">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
         <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
           General
         </p>
         {generalItems.map((item) => (
           <SidebarLink
             key={item.to}
-            {...item}
-            badge={item.badge && unread > 0 ? unread : undefined}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
+            badge={
+              'badge' in item && item.badge === 'unread' && unread > 0
+                ? unread
+                : undefined
+            }
+            onClose={closeOnNav}
+          />
+        ))}
+        <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
+          Finanzas
+        </p>
+        {financeItems.map((item) => (
+          <SidebarLink
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
             onClose={closeOnNav}
           />
         ))}
@@ -104,7 +133,13 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           Mi cuenta
         </p>
         {accountItems.map((item) => (
-          <SidebarLink key={item.to} {...item} onClose={closeOnNav} />
+          <SidebarLink
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
+            onClose={closeOnNav}
+          />
         ))}
       </nav>
       <button
