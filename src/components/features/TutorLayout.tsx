@@ -171,7 +171,7 @@ export function TutorLayout() {
   )
 
   return (
-    <div className="flex min-h-screen bg-neutral-100">
+    <div className="flex min-h-screen bg-white">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col bg-navy-500 text-white md:flex">
         {Sidebar}

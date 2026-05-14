@@ -68,6 +68,7 @@ const TutorDashboard = lazyWithRetry(() => import('@/pages/tutor/TutorDashboard'
 const TutorCases = lazyWithRetry(() => import('@/pages/tutor/TutorCases'))
 const TutorCaseDetail = lazyWithRetry(() => import('@/pages/tutor/TutorCaseDetail'))
 const TutorCertifications = lazyWithRetry(() => import('@/pages/tutor/TutorCertifications'))
+const TutorCertificationDetail = lazyWithRetry(() => import('@/pages/tutor/TutorCertificationDetail'))
 const TutorAgenda = lazyWithRetry(() => import('@/pages/tutor/TutorAgenda'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -135,6 +136,7 @@ export const router = createBrowserRouter(
         { path: 'casos/:id', element: withSuspense(<TutorCaseDetail />) },
         { path: 'agenda', element: withSuspense(<TutorAgenda />) },
         { path: 'certificaciones', element: withSuspense(<TutorCertifications />) },
+        { path: 'certificaciones/:id', element: withSuspense(<TutorCertificationDetail />) },
       ],
     },
     { path: '*', element: withSuspense(<NotFound />) },

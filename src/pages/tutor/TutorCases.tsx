@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowUpDown,
@@ -283,6 +283,10 @@ function CaseCard({
   onDragEnd: () => void
   onAssignSelf: () => void
 }) {
+  const navigate = useNavigate()
+  // Distinguir entre click y drag: si el puntero se movió >5px durante mousedown,
+  // es drag (no navegamos). Si no se movió, es click.
+  const [dragMoved, setDragMoved] = useState(false)
   const riskStyle =
     c.risk === 'alto'
       ? 'border-error-300 text-error-400'
@@ -299,16 +303,34 @@ function CaseCard({
   const days = daysInStageFromCase(c)
   const sla = STAGE_SLA_DAYS[c.stage] ?? 14
 
+  const openCase = () => {
+    if (dragMoved) {
+      setDragMoved(false)
+      return
+    }
+    navigate(`/tutor/casos/${c.id}`)
+  }
+
   return (
     <li
       draggable
+      role="button"
+      tabIndex={0}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = 'move'
+        setDragMoved(true)
         onDragStart()
       }}
       onDragEnd={onDragEnd}
+      onClick={openCase}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          navigate(`/tutor/casos/${c.id}`)
+        }
+      }}
       className={cn(
-        'group cursor-grab rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all active:cursor-grabbing',
+        'group cursor-pointer rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all hover:border-gold-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500',
         dragging && 'opacity-50 ring-2 ring-gold-500',
       )}
     >
@@ -403,6 +425,7 @@ function CaseCard({
         )}
         <Link
           to={`/tutor/casos/${c.id}`}
+          onClick={(e) => e.stopPropagation()}
           className="inline-flex h-8 items-center rounded-full bg-navy-500 px-3 text-[11px] font-bold text-white transition-colors hover:bg-navy-400"
         >
           Ver caso

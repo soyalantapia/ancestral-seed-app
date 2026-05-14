@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ChevronDown,
   ChevronLeft,
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { mockIssuedCertifications } from '@/services/mocks/data'
-import type { IssuedCertification, IssuedCertStatus } from '@/types'
+import type { IssuedCertStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE = 8
@@ -45,6 +46,7 @@ const STATUS_META: Record<
 type SortKey = 'id' | 'productName' | 'authorName' | 'scoreLabel' | 'status' | 'issuedAt' | 'expiresAt'
 
 export default function TutorCertifications() {
+  const navigate = useNavigate()
   const all = mockIssuedCertifications
 
   const [query, setQuery] = useState('')
@@ -208,12 +210,13 @@ export default function TutorCertifications() {
               return (
                 <tr
                   key={c.id}
+                  onClick={() => navigate(`/tutor/certificaciones/${c.id}`)}
                   className={cn(
-                    'transition-colors hover:bg-neutral-100',
+                    'cursor-pointer transition-colors hover:bg-neutral-100',
                     isSel && 'bg-gold-100/40',
                   )}
                 >
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={isSel}
@@ -243,13 +246,16 @@ export default function TutorCertifications() {
                   </td>
                   <td className="px-4 py-3 text-xs text-navy-300">{c.issuedAt}</td>
                   <td className="px-4 py-3 text-xs text-navy-300">{c.expiresAt}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td
+                    className="px-4 py-3 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <RowMenu
                       open={openRow === c.id}
                       onToggle={() =>
                         setOpenRow(openRow === c.id ? null : c.id)
                       }
-                      cert={c}
+                      onView={() => navigate(`/tutor/certificaciones/${c.id}`)}
                     />
                   </td>
                 </tr>
@@ -276,7 +282,8 @@ export default function TutorCertifications() {
           return (
             <li
               key={c.id}
-              className="rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm"
+              onClick={() => navigate(`/tutor/certificaciones/${c.id}`)}
+              className="cursor-pointer rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition-colors hover:bg-neutral-100"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
@@ -424,17 +431,17 @@ function SortableTh({
 function RowMenu({
   open,
   onToggle,
-  cert,
+  onView,
 }: {
   open: boolean
   onToggle: () => void
-  cert: IssuedCertification
+  onView: () => void
 }) {
   const actions = [
     {
       icon: Eye,
       label: 'Ver detalle',
-      onClick: () => toast.info(`Abriendo ${cert.id}…`),
+      onClick: onView,
     },
     {
       icon: Download,
