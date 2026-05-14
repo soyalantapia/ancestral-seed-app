@@ -56,7 +56,7 @@ function applyFilters(
 }
 
 export const handlers = [
-  http.get('/api/certifications', async ({ request }) => {
+  http.get('*/api/certifications', async ({ request }) => {
     await realisticDelay()
     const url = new URL(request.url)
     const filters: DirectoryFilters = {
@@ -78,14 +78,14 @@ export const handlers = [
     })
   }),
 
-  http.get('/api/certifications/featured', async () => {
+  http.get('*/api/certifications/featured', async () => {
     await realisticDelay()
     return HttpResponse.json(
       mockCertifications.filter((c) => c.status === 'verified').slice(0, 4),
     )
   }),
 
-  http.get('/api/certifications/:slug', async ({ params }) => {
+  http.get('*/api/certifications/:slug', async ({ params }) => {
     await realisticDelay()
     const cert = mockCertifications.find((c) => c.slug === params.slug)
     if (!cert) {
@@ -97,7 +97,7 @@ export const handlers = [
     return HttpResponse.json(cert)
   }),
 
-  http.post('/api/certifications/verify', async ({ request }) => {
+  http.post('*/api/certifications/verify', async ({ request }) => {
     await realisticDelay()
     const { hashOrCode } = (await request.json()) as { hashOrCode: string }
     const found = mockCertifications.find(
@@ -111,12 +111,12 @@ export const handlers = [
     return HttpResponse.json({ valid: false })
   }),
 
-  http.get('/api/authors', async () => {
+  http.get('*/api/authors', async () => {
     await realisticDelay()
     return HttpResponse.json(mockAuthors)
   }),
 
-  http.get('/api/authors/:slug', async ({ params }) => {
+  http.get('*/api/authors/:slug', async ({ params }) => {
     await realisticDelay()
     const author = mockAuthors.find((a) => a.slug === params.slug)
     if (!author) {
@@ -128,7 +128,7 @@ export const handlers = [
     return HttpResponse.json(author)
   }),
 
-  http.get('/api/authors/:slug/certifications', async ({ params }) => {
+  http.get('*/api/authors/:slug/certifications', async ({ params }) => {
     await realisticDelay()
     const author = mockAuthors.find((a) => a.slug === params.slug)
     if (!author) return HttpResponse.json([], { status: 404 })
@@ -136,12 +136,12 @@ export const handlers = [
     return HttpResponse.json(certs)
   }),
 
-  http.get('/api/categories', async () => {
+  http.get('*/api/categories', async () => {
     await realisticDelay()
     return HttpResponse.json(mockCategories)
   }),
 
-  http.post('/api/auth/login', async ({ request }) => {
+  http.post('*/api/auth/login', async ({ request }) => {
     await realisticDelay()
     const { email, password } = (await request.json()) as {
       email: string
@@ -159,12 +159,12 @@ export const handlers = [
     })
   }),
 
-  http.post('/api/auth/logout', async () => {
+  http.post('*/api/auth/logout', async () => {
     await realisticDelay()
     return HttpResponse.json({ ok: true })
   }),
 
-  http.post('/api/incidents', async ({ request }) => {
+  http.post('*/api/incidents', async ({ request }) => {
     await realisticDelay()
     const body = (await request.json()) as Record<string, unknown>
     if (!body.reason) {

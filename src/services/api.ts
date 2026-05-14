@@ -7,7 +7,12 @@ import type {
   User,
 } from '@/types'
 
-const BASE_URL = '/api'
+// El sitio se sirve desde el BASE_URL del bundle (por ej. `/ancestral-seed-app/`
+// en GitHub Pages, `/` en dev). El service worker de MSW se registra dentro
+// de ese scope, así que los fetch deben usar el mismo prefix — si no, salen
+// fuera del scope del SW y caen al server real (405/404).
+const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+const BASE_URL = `${BASE}/api`
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
