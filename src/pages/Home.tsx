@@ -337,7 +337,7 @@ function FeaturedCertifications() {
         {data && (
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {data.map((c) => (
-              <CertificationCard key={c.id} certification={c} placeholderText />
+              <CertificationCard key={c.id} certification={c} />
             ))}
           </div>
         )}

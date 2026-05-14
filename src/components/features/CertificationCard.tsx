@@ -32,11 +32,11 @@ export function CertificationCard({
   certification: c,
   placeholderText = false,
 }: CertificationCardProps) {
+  // Prefer location ("Argentina · Córdoba") over just category
+  const realRegion = c.location ?? (isPlaceholder(c.category) ? '' : c.category)
   const region = placeholderText
     ? 'País - Región'
-    : isPlaceholder(c.category)
-      ? 'País - Región'
-      : c.category
+    : realRegion || 'País - Región'
   const author = placeholderText
     ? 'Autor'
     : isPlaceholder(c.authorName)
