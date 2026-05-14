@@ -11,22 +11,46 @@ interface Props {
 
 interface State {
   error: Error | null
+  isChunkError: boolean
+}
+
+/**
+ * Detecta el típico error de "deploy mismatch": el bundle cacheado en el
+ * browser apunta a chunks lazy que ya no existen porque hubo un deploy
+ * nuevo. Manifestación: "Importing a module script failed",
+ * "Failed to fetch dynamically imported module", "ChunkLoadError",
+ * "Loading chunk N failed".
+ */
+function isChunkLoadError(error: Error): boolean {
+  const msg = (error?.message ?? '').toLowerCase()
+  const name = (error?.name ?? '').toLowerCase()
+  return (
+    name === 'chunkloaderror' ||
+    msg.includes('importing a module script failed') ||
+    msg.includes('failed to fetch dynamically imported module') ||
+    msg.includes('loading chunk') ||
+    msg.includes('loading css chunk')
+  )
 }
 
 /**
  * Error boundary global. Captura errores de render/lifecycle de los hijos
  * y muestra una UI de fallback en vez de pantalla blanca. Permite resetear
  * sin recargar la página.
+ *
+ * Caso especial: si el error es por un chunk lazy que no se pudo cargar
+ * (deploy mismatch), muestra una UI específica con un botón "Recargar"
+ * que limpia el storage y vuelve a cargar. No reintenta solo para evitar
+ * loops si el problema persiste.
  */
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null }
+  state: State = { error: null, isChunkError: false }
 
   static getDerivedStateFromError(error: Error): State {
-    return { error }
+    return { error, isChunkError: isChunkLoadError(error) }
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Log en dev para debugging
     if (typeof console !== 'undefined') {
       console.error('[ErrorBoundary]', error, info)
     }
@@ -34,15 +58,48 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   reset = () => {
-    this.setState({ error: null })
+    this.setState({ error: null, isChunkError: false })
+  }
+
+  reload = () => {
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.removeItem('ancestral-seed-chunk-reload')
+      window.location.reload()
+    }
   }
 
   render() {
-    const { error } = this.state
+    const { error, isChunkError } = this.state
     if (!error) return this.props.children
 
     if (this.props.fallback) {
       return this.props.fallback(this.reset, error)
+    }
+
+    // UI específica para deploy mismatch (chunk load failure)
+    if (isChunkError) {
+      return (
+        <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-12 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
+            <RefreshCw className="h-8 w-8" />
+          </div>
+          <h1 className="mt-6 text-2xl font-bold text-navy-500">
+            Hay una versión nueva disponible
+          </h1>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-navy-300">
+            Actualizamos la plataforma. Recargá la página para tomar la última
+            versión y seguir trabajando.
+          </p>
+          <button
+            type="button"
+            onClick={this.reload}
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Recargar página
+          </button>
+        </div>
+      )
     }
 
     return (

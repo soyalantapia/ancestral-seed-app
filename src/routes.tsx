@@ -1,28 +1,66 @@
-import { lazy, Suspense, type ReactNode } from 'react'
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/features/Layout'
 import { RequireAuth } from '@/components/features/RequireAuth'
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * Wrapper de `lazy()` con retry automático para resolver el error
+ *   "Importing a module script failed" / "Failed to fetch dynamically
+ *   imported module"
+ *
+ * Esto pasa típicamente después de un deploy: el `index.js` cacheado
+ * en el browser apunta a chunks (`Home-OLDHASH.js`) que ya no existen.
+ * El primer fallo gatilla un reload automático (una sola vez por
+ * sesión) para tomar el bundle nuevo. Si después del reload sigue
+ * fallando, propaga el error al ErrorBoundary.
+ */
+function lazyWithRetry<T extends ComponentType<unknown>>(
+  factory: () => Promise<{ default: T }>,
+) {
+  return lazy(async () => {
+    const STORAGE_KEY = 'ancestral-seed-chunk-reload'
+    try {
+      return await factory()
+    } catch (err) {
+      const alreadyReloaded =
+        typeof window !== 'undefined' &&
+        window.sessionStorage.getItem(STORAGE_KEY) === '1'
+      if (!alreadyReloaded && typeof window !== 'undefined') {
+        window.sessionStorage.setItem(STORAGE_KEY, '1')
+        window.location.reload()
+        // Promise pendiente: el reload mata el script antes de resolver
+        return new Promise<{ default: T }>(() => {})
+      }
+      throw err
+    }
+  })
+}
+
+// Reset del flag de retry cuando el bundle nuevo cargó OK
+if (typeof window !== 'undefined') {
+  window.sessionStorage.removeItem('ancestral-seed-chunk-reload')
+}
+
 // Lazy pages — cada route se descarga on-demand
-const Home = lazy(() => import('@/pages/Home'))
-const Directory = lazy(() => import('@/pages/Directory'))
-const CertificationDetail = lazy(() => import('@/pages/CertificationDetail'))
-const AuthorProfile = lazy(() => import('@/pages/AuthorProfile'))
-const Verify = lazy(() => import('@/pages/Verify'))
-const Login = lazy(() => import('@/pages/Login'))
-const Signup = lazy(() => import('@/pages/Signup'))
-const RecoverPassword = lazy(() => import('@/pages/RecoverPassword'))
-const CertifyForm = lazy(() => import('@/pages/CertifyForm'))
-const DashboardHome = lazy(() => import('@/pages/DashboardHome'))
-const MyCertifications = lazy(() => import('@/pages/MyCertifications'))
-const CertificationRequest = lazy(() => import('@/pages/CertificationRequest'))
-const MyProfile = lazy(() => import('@/pages/MyProfile'))
-const Notifications = lazy(() => import('@/pages/Notifications'))
-const Settings = lazy(() => import('@/pages/Settings'))
-const Help = lazy(() => import('@/pages/Help'))
-const Nosotros = lazy(() => import('@/pages/Nosotros'))
-const NotFound = lazy(() => import('@/pages/NotFound'))
+const Home = lazyWithRetry(() => import('@/pages/Home'))
+const Directory = lazyWithRetry(() => import('@/pages/Directory'))
+const CertificationDetail = lazyWithRetry(() => import('@/pages/CertificationDetail'))
+const AuthorProfile = lazyWithRetry(() => import('@/pages/AuthorProfile'))
+const Verify = lazyWithRetry(() => import('@/pages/Verify'))
+const Login = lazyWithRetry(() => import('@/pages/Login'))
+const Signup = lazyWithRetry(() => import('@/pages/Signup'))
+const RecoverPassword = lazyWithRetry(() => import('@/pages/RecoverPassword'))
+const CertifyForm = lazyWithRetry(() => import('@/pages/CertifyForm'))
+const DashboardHome = lazyWithRetry(() => import('@/pages/DashboardHome'))
+const MyCertifications = lazyWithRetry(() => import('@/pages/MyCertifications'))
+const CertificationRequest = lazyWithRetry(() => import('@/pages/CertificationRequest'))
+const MyProfile = lazyWithRetry(() => import('@/pages/MyProfile'))
+const Notifications = lazyWithRetry(() => import('@/pages/Notifications'))
+const Settings = lazyWithRetry(() => import('@/pages/Settings'))
+const Help = lazyWithRetry(() => import('@/pages/Help'))
+const Nosotros = lazyWithRetry(() => import('@/pages/Nosotros'))
+const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
 function PageFallback() {
   return (
