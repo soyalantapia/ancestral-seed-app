@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -322,7 +322,12 @@ export default function TutorCaseDetail() {
             {tab === 'notas' && (
               <NotasTab caseId={caseData.id} initial={internalNotes} />
             )}
-            {tab === 'mensajes' && <MensajesTab caseData={caseData} />}
+            {tab === 'mensajes' && (
+              <MensajesTab
+                caseData={caseData}
+                onOpenTemplate={() => setOpenTemplateModal(true)}
+              />
+            )}
             {tab === 'historial' && <HistorialTab caseData={caseData} />}
           </div>
         </div>
@@ -336,7 +341,13 @@ export default function TutorCaseDetail() {
             daysInStage={daysInStage}
           />
           <SidebarChecklist canAdvance={canAdvance} />
-          <SidebarAI caseData={caseData} />
+          <SidebarAI
+            caseData={caseData}
+            finalScore={finalScore}
+            evidencesApproved={evidencesApproved}
+            evidencesTotal={evidencesTotal}
+            daysInStage={daysInStage}
+          />
         </aside>
       </div>
 
@@ -675,6 +686,7 @@ function EvidenciasTab({
   evals: Array<{ evidenceId: string; verdict: EvidenceVerdict; comment?: string }>
 }) {
   const [evals, setEvals] = useState(initialEvals)
+  const [requestOpen, setRequestOpen] = useState(false)
 
   const mockFiles = [
     { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image' },
@@ -708,7 +720,7 @@ function EvidenciasTab({
         </div>
         <button
           type="button"
-          onClick={() => toast.info('Solicitud enviada al solicitante')}
+          onClick={() => setRequestOpen(true)}
           className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white transition-colors hover:bg-navy-400"
         >
           <Plus className="h-3.5 w-3.5" />
@@ -796,6 +808,13 @@ function EvidenciasTab({
           )
         })}
       </ul>
+
+      {requestOpen && (
+        <EvidenceRequestModal
+          caseData={caseData}
+          onClose={() => setRequestOpen(false)}
+        />
+      )}
     </div>
   )
 }
@@ -1098,7 +1117,13 @@ function NotasTab({
 
 // ─── Mensajes (público con el solicitante) ────────────────────────────────────
 
-function MensajesTab({ caseData }: { caseData: TutorCase }) {
+function MensajesTab({
+  caseData,
+  onOpenTemplate,
+}: {
+  caseData: TutorCase
+  onOpenTemplate: () => void
+}) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-navy-300">
@@ -1128,7 +1153,7 @@ function MensajesTab({ caseData }: { caseData: TutorCase }) {
           </a>
           <button
             type="button"
-            onClick={() => toast.info('Plantillas disponibles arriba')}
+            onClick={onOpenTemplate}
             className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
           >
             <FileText className="h-3.5 w-3.5" />
@@ -1425,38 +1450,64 @@ function SidebarChecklist({
   )
 }
 
-function SidebarAI({ caseData }: { caseData: TutorCase }) {
+function SidebarAI({
+  caseData,
+  finalScore,
+  evidencesApproved,
+  evidencesTotal,
+  daysInStage,
+}: {
+  caseData: TutorCase
+  finalScore: number
+  evidencesApproved: number
+  evidencesTotal: number
+  daysInStage: number
+}) {
+  const [summaryOpen, setSummaryOpen] = useState(false)
   const suggestions = [
     `El scoring IA (${caseData.scoringIA}) sugiere riesgo ${caseData.scoringIA >= 80 ? 'bajo' : caseData.scoringIA >= 60 ? 'medio' : 'alto'}.`,
     'Hay 1 evidencia marcada como "aclarar" — pedir al solicitante una nueva versión.',
     'Tiempo en etapa actual dentro del SLA estándar.',
   ]
   return (
-    <section className="rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-5 shadow-sm">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gold-700">
-        <Sparkles className="h-3.5 w-3.5" />
-        Asistente IA
-      </div>
-      <ul className="mt-3 space-y-2">
-        {suggestions.map((s, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-2 rounded-xl bg-white/70 px-3 py-2 text-xs leading-relaxed text-navy-500 shadow-sm"
-          >
-            <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
-            {s}
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        onClick={() => toast.info('Generando resumen del caso…')}
-        className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-gold-700 hover:underline"
-      >
-        <BookOpen className="h-3.5 w-3.5" />
-        Ver resumen IA del caso
-      </button>
-    </section>
+    <>
+      <section className="rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-5 shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gold-700">
+          <Sparkles className="h-3.5 w-3.5" />
+          Asistente IA
+        </div>
+        <ul className="mt-3 space-y-2">
+          {suggestions.map((s, i) => (
+            <li
+              key={i}
+              className="flex items-start gap-2 rounded-xl bg-white/70 px-3 py-2 text-xs leading-relaxed text-navy-500 shadow-sm"
+            >
+              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
+              {s}
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          onClick={() => setSummaryOpen(true)}
+          className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-gold-700 hover:underline"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          Ver resumen IA del caso
+        </button>
+      </section>
+
+      {summaryOpen && (
+        <AISummaryModal
+          caseData={caseData}
+          finalScore={finalScore}
+          evidencesApproved={evidencesApproved}
+          evidencesTotal={evidencesTotal}
+          daysInStage={daysInStage}
+          onClose={() => setSummaryOpen(false)}
+        />
+      )}
+    </>
   )
 }
 
@@ -1764,5 +1815,500 @@ function MeetingModal({
         </div>
       </div>
     </div>
+  )
+}
+
+// ─── Evidence request modal ───────────────────────────────────────────────────
+
+const EVIDENCE_REQUEST_OPTIONS: Array<{
+  id: 'fotos' | 'video' | 'aval' | 'documento'
+  label: string
+  detail: string
+  icon: typeof FileCheck2
+}> = [
+  {
+    id: 'fotos',
+    label: 'Fotos del proceso',
+    detail: '3+ imágenes claras del oficio en acción',
+    icon: FileCheck2,
+  },
+  {
+    id: 'video',
+    label: 'Video corto',
+    detail: '1–3 min mostrando la técnica',
+    icon: Video,
+  },
+  {
+    id: 'aval',
+    label: 'Aval comunitario',
+    detail: 'Firma de un referente reconocido',
+    icon: Shield,
+  },
+  {
+    id: 'documento',
+    label: 'Documento adicional',
+    detail: 'Certificado, contrato o acta',
+    icon: FileText,
+  },
+]
+
+function EvidenceRequestModal({
+  caseData,
+  onClose,
+}: {
+  caseData: TutorCase
+  onClose: () => void
+}) {
+  const [selected, setSelected] = useState<Record<string, boolean>>({
+    fotos: true,
+  })
+  const [note, setNote] = useState('')
+
+  const toggle = (id: string) =>
+    setSelected((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  const items = EVIDENCE_REQUEST_OPTIONS.filter((o) => selected[o.id])
+  const firstName = caseData.applicantName.split(' ')[0]
+
+  const summary = items.length
+    ? `Hola ${firstName}, para avanzar con el diagnóstico necesito que subas:\n\n${items
+        .map((i) => `• ${i.label} — ${i.detail}`)
+        .join('\n')}${note ? `\n\nNota: ${note}` : ''}\n\n¡Gracias!`
+    : `Hola ${firstName}, necesito que subas evidencias adicionales.${note ? `\n\n${note}` : ''}`
+
+  const waUrl = `https://wa.me/5491145678901?text=${encodeURIComponent(summary)}`
+
+  const disabled = items.length === 0
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-500 text-white">
+              <Plus className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg font-bold text-navy-500">
+              Pedir más evidencias
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-navy-300">
+          A {caseData.applicantName} · {caseData.id}
+        </p>
+
+        <div className="mt-4 space-y-2">
+          {EVIDENCE_REQUEST_OPTIONS.map((opt) => {
+            const active = !!selected[opt.id]
+            const Icon = opt.icon
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => toggle(opt.id)}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors',
+                  active
+                    ? 'border-navy-500 bg-navy-500/5'
+                    : 'border-neutral-200 bg-white hover:bg-neutral-100',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                    active
+                      ? 'bg-navy-500 text-white'
+                      : 'bg-neutral-100 text-navy-500',
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-navy-500">{opt.label}</p>
+                  <p className="mt-0.5 text-xs text-navy-300">{opt.detail}</p>
+                </div>
+                <span
+                  className={cn(
+                    'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
+                    active
+                      ? 'border-navy-500 bg-navy-500 text-white'
+                      : 'border-neutral-300 bg-white',
+                  )}
+                >
+                  {active && <Check className="h-3 w-3" strokeWidth={3} />}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="mt-4">
+          <label className="text-xs font-bold text-navy-500">
+            Nota adicional (opcional)
+          </label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+            placeholder="Aclaraciones, ejemplos, fecha límite…"
+            className="mt-1 w-full resize-y rounded-2xl border border-neutral-300 bg-white px-3 py-2 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+          />
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-neutral-200 bg-neutral-100 p-3">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy-300">
+            Vista previa del mensaje
+          </p>
+          <p className="mt-1 whitespace-pre-line text-xs text-navy-500">
+            {summary}
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              setTimeout(() => {
+                toast.success(
+                  `Solicitud enviada a ${firstName} por WhatsApp`,
+                )
+                onClose()
+              }, 200)
+            }}
+            className={cn(
+              'inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold shadow-sm transition-colors',
+              disabled
+                ? 'pointer-events-none cursor-not-allowed bg-neutral-200 text-navy-300'
+                : 'bg-success-300 text-white hover:bg-success-400',
+            )}
+          >
+            <Phone className="h-4 w-4" />
+            Enviar por WhatsApp
+          </a>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              toast.success('Solicitud registrada en el expediente')
+              onClose()
+            }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Send className="h-4 w-4" />
+            Registrar oficial
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── AI Summary modal ─────────────────────────────────────────────────────────
+
+function AISummaryModal({
+  caseData,
+  finalScore,
+  evidencesApproved,
+  evidencesTotal,
+  daysInStage,
+  onClose,
+}: {
+  caseData: TutorCase
+  finalScore: number
+  evidencesApproved: number
+  evidencesTotal: number
+  daysInStage: number
+  onClose: () => void
+}) {
+  const riskLevel =
+    caseData.scoringIA >= 80
+      ? 'bajo'
+      : caseData.scoringIA >= 60
+        ? 'medio'
+        : 'alto'
+  const sla = STAGE_SLA_DAYS[caseData.stage] ?? 14
+  const slaTone = daysInStage > sla ? 'red' : daysInStage > sla * 0.7 ? 'yellow' : 'green'
+  const estClosingDays = Math.max(7, sla - daysInStage + 14)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gold-500 to-gold-400 text-navy-500">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
+                Resumen IA
+              </p>
+              <h3 className="text-lg font-bold text-navy-500">
+                {caseData.productName}
+              </h3>
+              <p className="text-xs text-navy-300">
+                {caseData.id} · {caseData.applicantName}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Top KPIs */}
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <KpiBox label="Score IA" value={`${caseData.scoringIA}/100`} tone={riskLevel === 'bajo' ? 'green' : riskLevel === 'medio' ? 'yellow' : 'red'} />
+          <KpiBox label="Score tutor" value={`${finalScore.toFixed(0)}/100`} tone="navy" />
+          <KpiBox label="Evidencias" value={`${evidencesApproved}/${evidencesTotal || 3}`} tone="navy" />
+          <KpiBox label="Días en etapa" value={`${daysInStage}d`} tone={slaTone} />
+        </div>
+
+        {/* Resumen ejecutivo */}
+        <section className="mt-5 rounded-2xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-4">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gold-700">
+            <BookOpen className="h-3.5 w-3.5" />
+            Resumen ejecutivo
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-navy-500">
+            {caseData.applicantName} solicita certificación para{' '}
+            <strong>{caseData.productName}</strong> desde{' '}
+            {caseData.country}, {caseData.region}. El caso se encuentra en
+            etapa{' '}
+            <strong>{STAGE_LABEL[caseData.stage]}</strong> con un score IA de{' '}
+            <strong>{caseData.scoringIA}</strong> (riesgo {riskLevel}). Lleva{' '}
+            <strong>{daysInStage} días</strong> en la etapa actual (SLA: {sla}{' '}
+            días).
+          </p>
+        </section>
+
+        {/* Highlights */}
+        <section className="mt-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy-300">
+            Highlights
+          </p>
+          <ul className="mt-2 space-y-2">
+            <SummaryBullet icon={ShieldCheck} tone="green">
+              <strong>Identidad y origen verificados</strong> — coincide con
+              registros previos de la comunidad.
+            </SummaryBullet>
+            <SummaryBullet icon={FileCheck2} tone="navy">
+              <strong>{evidencesApproved} evidencias aprobadas</strong> sobre
+              un total esperado de {evidencesTotal || 3}.
+            </SummaryBullet>
+            <SummaryBullet icon={Star} tone="gold">
+              Score IA y score tutor con diferencia{' '}
+              <strong>
+                {Math.abs(caseData.scoringIA - finalScore).toFixed(0)} pts
+              </strong>{' '}
+              — sin desvío significativo.
+            </SummaryBullet>
+          </ul>
+        </section>
+
+        {/* Riesgos */}
+        <section className="mt-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy-300">
+            Riesgos identificados
+          </p>
+          <ul className="mt-2 space-y-2">
+            {riskLevel === 'alto' && (
+              <SummaryBullet icon={AlertCircle} tone="red">
+                Score IA bajo ({caseData.scoringIA}) — revisar criterios de
+                autenticidad y unicidad antes de avanzar.
+              </SummaryBullet>
+            )}
+            {slaTone === 'red' && (
+              <SummaryBullet icon={Clock} tone="red">
+                <strong>SLA excedido</strong> — el caso supera los {sla} días
+                permitidos en {STAGE_LABEL[caseData.stage]}.
+              </SummaryBullet>
+            )}
+            {slaTone === 'yellow' && (
+              <SummaryBullet icon={Clock} tone="yellow">
+                <strong>SLA en zona amarilla</strong> — quedan{' '}
+                {Math.max(0, sla - daysInStage)} días antes de exceder el
+                límite.
+              </SummaryBullet>
+            )}
+            {evidencesApproved < (evidencesTotal || 3) && (
+              <SummaryBullet icon={FileCheck2} tone="yellow">
+                Faltan {Math.max(0, (evidencesTotal || 3) - evidencesApproved)}{' '}
+                evidencias por evaluar.
+              </SummaryBullet>
+            )}
+            {riskLevel === 'bajo' && slaTone === 'green' && evidencesApproved >= (evidencesTotal || 3) && (
+              <SummaryBullet icon={CheckCircle2} tone="green">
+                Sin riesgos críticos detectados — el expediente está en
+                condiciones de avanzar.
+              </SummaryBullet>
+            )}
+          </ul>
+        </section>
+
+        {/* Próximos pasos */}
+        <section className="mt-4">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-navy-300">
+            Próximos pasos sugeridos
+          </p>
+          <ol className="mt-2 space-y-2">
+            <SummaryStep n={1}>
+              {caseData.stage === 'certificacion'
+                ? 'Confirmar firma del tutor y emitir certificado en blockchain.'
+                : `Avanzar a la siguiente etapa una vez completados los requisitos de ${STAGE_LABEL[caseData.stage]}.`}
+            </SummaryStep>
+            <SummaryStep n={2}>
+              {evidencesApproved < (evidencesTotal || 3)
+                ? 'Solicitar al postulante las evidencias faltantes vía WhatsApp.'
+                : 'Validar evaluaciones finales con el coordinador del programa.'}
+            </SummaryStep>
+            <SummaryStep n={3}>
+              Programar reunión de cierre con el solicitante en los próximos{' '}
+              {Math.min(7, estClosingDays)} días.
+            </SummaryStep>
+          </ol>
+        </section>
+
+        {/* Tiempo estimado */}
+        <section className="mt-4 rounded-2xl border border-info-300/40 bg-info-100/40 p-4">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-info-400">
+            <CalendarClock className="h-3.5 w-3.5" />
+            Tiempo estimado de cierre
+          </div>
+          <p className="mt-2 text-sm text-navy-500">
+            En base al ritmo actual y los días restantes en cada etapa, este
+            caso podría cerrarse en aproximadamente{' '}
+            <strong>{estClosingDays} días</strong>.
+          </p>
+        </section>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              toast.success('Resumen IA exportado al expediente')
+              onClose()
+            }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm hover:bg-gold-400"
+          >
+            <Pin className="h-4 w-4" />
+            Pinear al expediente
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KpiBox({
+  label,
+  value,
+  tone,
+}: {
+  label: string
+  value: string
+  tone: 'green' | 'yellow' | 'red' | 'navy'
+}) {
+  const toneCls = {
+    green: 'bg-success-100 text-success-300 ring-success-300/30',
+    yellow: 'bg-warning-100 text-warning-400 ring-warning-300/40',
+    red: 'bg-error-100 text-error-400 ring-error-300/40',
+    navy: 'bg-neutral-100 text-navy-500 ring-neutral-300',
+  }[tone]
+  return (
+    <div className={cn('rounded-2xl px-3 py-2 ring-1', toneCls)}>
+      <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">
+        {label}
+      </p>
+      <p className="mt-0.5 text-base font-bold">{value}</p>
+    </div>
+  )
+}
+
+function SummaryBullet({
+  icon: Icon,
+  tone,
+  children,
+}: {
+  icon: typeof FileCheck2
+  tone: 'green' | 'yellow' | 'red' | 'navy' | 'gold'
+  children: ReactNode
+}) {
+  const toneCls = {
+    green: 'bg-success-100 text-success-300',
+    yellow: 'bg-warning-100 text-warning-400',
+    red: 'bg-error-100 text-error-400',
+    navy: 'bg-neutral-100 text-navy-500',
+    gold: 'bg-gold-100 text-gold-700',
+  }[tone]
+  return (
+    <li className="flex items-start gap-2 text-xs leading-relaxed text-navy-500">
+      <span
+        className={cn(
+          'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
+          toneCls,
+        )}
+      >
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span>{children}</span>
+    </li>
+  )
+}
+
+function SummaryStep({
+  n,
+  children,
+}: {
+  n: number
+  children: ReactNode
+}) {
+  return (
+    <li className="flex items-start gap-3 text-xs leading-relaxed text-navy-500">
+      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-500 text-[11px] font-bold text-white">
+        {n}
+      </span>
+      <span>{children}</span>
+    </li>
   )
 }

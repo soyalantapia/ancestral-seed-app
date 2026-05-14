@@ -14,7 +14,28 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import type { PaymentStatus } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, downloadBlob } from '@/lib/utils'
+
+function buildPaymentReceipt(p: FlatPayment): string {
+  return [
+    '═══════════════════════════════════════════════════════════════',
+    '       ANCESTRAL SEED — COMPROBANTE DE PAGO',
+    '═══════════════════════════════════════════════════════════════',
+    '',
+    `Identificador: ${p.id}`,
+    `Concepto: ${p.concept}`,
+    `Solicitud: ${p.requestNumber} · ${p.requestName}`,
+    `Monto: ${p.currency} ${p.amount.toLocaleString('es-AR')}`,
+    `Estado: ${p.status.toUpperCase()}`,
+    `Vencimiento: ${p.dueDate}`,
+    p.paidAt ? `Pagado el: ${p.paidAt}` : '',
+    '',
+    `Generado el ${new Date().toLocaleString('es-AR')}`,
+    'Documento de validez oficial — Ancestral Seed Foundation',
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
 
 type FlatPayment = {
   id: string
@@ -349,7 +370,13 @@ export default function Pagos() {
                     ) : p.invoiceUrl ? (
                       <button
                         type="button"
-                        onClick={() => toast.success('Descargando factura')}
+                        onClick={() => {
+                          downloadBlob(
+                            `factura-${p.id}.txt`,
+                            buildPaymentReceipt(p),
+                          )
+                          toast.success(`Factura ${p.id} descargada`)
+                        }}
                         className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                       >
                         <Download className="h-3.5 w-3.5" />

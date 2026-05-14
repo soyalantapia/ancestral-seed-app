@@ -1,13 +1,17 @@
-import { useMemo, useState, type ComponentType } from 'react'
+import { useMemo, useState, type ComponentType, type ReactNode } from 'react'
 import {
+  AlertTriangle,
   ChevronDown,
   CreditCard,
   Eye,
   EyeOff,
+  Lock,
   Mail,
+  Pause,
   Search,
   Trash2,
   UserCog,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSettingsStore } from '@/store/settings'
@@ -224,6 +228,8 @@ function AccountSection() {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [repeat, setRepeat] = useState('')
+  const [deactivateOpen, setDeactivateOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
     <div className="space-y-10">
@@ -307,14 +313,14 @@ function AccountSection() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => toast.info('Cuenta desactivada temporalmente')}
+            onClick={() => setDeactivateOpen(true)}
             className="inline-flex items-center rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
           >
             Desactivar cuenta
           </button>
           <button
             type="button"
-            onClick={() => toast.error('Acción crítica — confirmación por email requerida')}
+            onClick={() => setDeleteOpen(true)}
             className="inline-flex items-center gap-2 rounded-full bg-error-400 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-error-300"
           >
             <Trash2 className="h-4 w-4" />
@@ -322,28 +328,110 @@ function AccountSection() {
           </button>
         </div>
       </Group>
+
+      {deactivateOpen && (
+        <DeactivateModal onClose={() => setDeactivateOpen(false)} />
+      )}
+      {deleteOpen && (
+        <DeleteAccountModal
+          email={email}
+          onClose={() => setDeleteOpen(false)}
+        />
+      )}
     </div>
   )
 }
 
+interface SavedPaymentMethod {
+  id: string
+  brand: 'visa' | 'mastercard' | 'amex' | 'otra'
+  last4: string
+  holder: string
+  expiry: string
+}
+
 function BillingSection() {
   const s = useSettingsStore()
+  const [methods, setMethods] = useState<SavedPaymentMethod[]>([])
+  const [addOpen, setAddOpen] = useState(false)
+
+  const handleAddMethod = (pm: Omit<SavedPaymentMethod, 'id'>) => {
+    const id = `pm-${Date.now()}`
+    setMethods((prev) => [{ ...pm, id }, ...prev])
+    setAddOpen(false)
+    toast.success(`Tarjeta ${pm.brand.toUpperCase()} •••• ${pm.last4} agregada`)
+  }
+
   return (
     <div className="space-y-8">
       <Group title="Métodos de pago" hint="Tarjetas y cuentas guardadas para futuras facturas.">
-        <div className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center">
-          <CreditCard className="mx-auto h-7 w-7 text-navy-300" />
-          <p className="mt-2 text-sm font-semibold text-navy-500">No tenés métodos de pago</p>
-          <p className="text-xs text-navy-300">Agregá uno para próximas facturas</p>
-          <button
-            type="button"
-            onClick={() => toast.info('Integración de pagos próximamente')}
-            className="mt-3 inline-flex items-center rounded-full bg-gold-500 px-4 py-2 text-xs font-bold text-navy-500 hover:bg-gold-400"
-          >
-            Agregar método
-          </button>
-        </div>
+        {methods.length > 0 && (
+          <ul className="mb-4 space-y-2">
+            {methods.map((m) => (
+              <li
+                key={m.id}
+                className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm"
+              >
+                <span className="flex h-10 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-navy-500 to-navy-400 text-[10px] font-bold uppercase tracking-widest text-white">
+                  {m.brand}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-navy-500">
+                    •••• •••• •••• {m.last4}
+                  </p>
+                  <p className="text-xs text-navy-300">
+                    {m.holder} · vence {m.expiry}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMethods((prev) => prev.filter((x) => x.id !== m.id))
+                    toast.success('Tarjeta eliminada')
+                  }}
+                  className="rounded-full p-2 text-navy-300 hover:bg-error-100 hover:text-error-400"
+                  aria-label="Eliminar"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {methods.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-neutral-300 p-6 text-center">
+            <CreditCard className="mx-auto h-7 w-7 text-navy-300" />
+            <p className="mt-2 text-sm font-semibold text-navy-500">No tenés métodos de pago</p>
+            <p className="text-xs text-navy-300">Agregá uno para próximas facturas</p>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="mt-3 inline-flex items-center rounded-full bg-gold-500 px-4 py-2 text-xs font-bold text-navy-500 hover:bg-gold-400"
+            >
+              Agregar método
+            </button>
+          </div>
+        )}
+        {methods.length > 0 && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-xs font-bold text-navy-500 hover:bg-gold-400"
+            >
+              <CreditCard className="h-3.5 w-3.5" />
+              Agregar otra tarjeta
+            </button>
+          </div>
+        )}
       </Group>
+
+      {addOpen && (
+        <AddPaymentModal
+          onClose={() => setAddOpen(false)}
+          onAdd={handleAddMethod}
+        />
+      )}
 
       <Group title="Moneda preferida" hint="Mostramos los importes en esta moneda.">
         <select
@@ -394,7 +482,7 @@ function Group({
 }: {
   title: string
   hint?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <section>
@@ -464,6 +552,348 @@ function Password({
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Deactivate modal ────────────────────────────────────────────────────────
+
+function DeactivateModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-warning-100 text-warning-400">
+              <Pause className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg font-bold text-navy-500">
+              Desactivar cuenta
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="mt-3 text-sm text-navy-500">
+          Vamos a pausar tu cuenta. Mientras esté desactivada:
+        </p>
+        <ul className="mt-3 space-y-1.5 text-xs text-navy-500">
+          <li className="flex items-start gap-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-warning-400" />
+            No vas a recibir notificaciones por email ni in-app.
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-warning-400" />
+            Tu perfil público dejará de ser visible.
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-warning-400" />
+            Los procesos en curso quedan en pausa hasta que reactivés.
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-success-300" />
+            Podés reactivarla iniciando sesión nuevamente.
+          </li>
+        </ul>
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              toast.success('Cuenta desactivada · te enviamos un email con los pasos para reactivarla')
+              onClose()
+            }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-warning-400 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-warning-300"
+          >
+            <Pause className="h-4 w-4" />
+            Desactivar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Delete account modal ────────────────────────────────────────────────────
+
+function DeleteAccountModal({
+  email,
+  onClose,
+}: {
+  email: string
+  onClose: () => void
+}) {
+  const [typed, setTyped] = useState('')
+  const canDelete = typed.trim().toLowerCase() === email.trim().toLowerCase()
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-error-100 text-error-400">
+              <AlertTriangle className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg font-bold text-navy-500">
+              Eliminar cuenta
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-3 rounded-2xl border border-error-300/60 bg-error-100/40 p-3">
+          <p className="text-xs font-bold uppercase tracking-widest text-error-400">
+            Acción irreversible
+          </p>
+          <p className="mt-1 text-xs text-navy-500">
+            Vas a eliminar permanentemente tu cuenta, certificaciones, evidencias
+            y métodos de pago. <strong>No se puede deshacer.</strong>
+          </p>
+        </div>
+        <div className="mt-4">
+          <label className="text-xs font-bold text-navy-500">
+            Para confirmar, escribí tu email <strong>{email}</strong>
+          </label>
+          <input
+            type="text"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder={email}
+            autoFocus
+            className="mt-1 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-error-400 focus:outline-none"
+          />
+        </div>
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!canDelete}
+            onClick={() => {
+              toast.success('Solicitud de eliminación enviada — vas a recibir un email para confirmarla')
+              onClose()
+            }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-error-400 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-error-300 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 className="h-4 w-4" />
+            Eliminar para siempre
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Add payment method modal ────────────────────────────────────────────────
+
+function detectBrand(num: string): SavedPaymentMethod['brand'] {
+  const n = num.replace(/\s/g, '')
+  if (/^4/.test(n)) return 'visa'
+  if (/^(5[1-5]|2[2-7])/.test(n)) return 'mastercard'
+  if (/^3[47]/.test(n)) return 'amex'
+  return 'otra'
+}
+
+function AddPaymentModal({
+  onClose,
+  onAdd,
+}: {
+  onClose: () => void
+  onAdd: (pm: Omit<SavedPaymentMethod, 'id'>) => void
+}) {
+  const [holder, setHolder] = useState('')
+  const [number, setNumber] = useState('')
+  const [expiry, setExpiry] = useState('')
+  const [cvv, setCvv] = useState('')
+
+  const digits = number.replace(/\D/g, '')
+  const brand = detectBrand(number)
+  const last4 = digits.slice(-4)
+  const expiryOk = /^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)
+  const cvvOk = /^\d{3,4}$/.test(cvv)
+  const canSubmit =
+    holder.trim().length > 2 && digits.length >= 13 && expiryOk && cvvOk
+
+  const formatNumber = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 19)
+    return d.match(/.{1,4}/g)?.join(' ') ?? d
+  }
+
+  const formatExpiry = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 4)
+    if (d.length <= 2) return d
+    return `${d.slice(0, 2)}/${d.slice(2)}`
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-500 text-white">
+              <CreditCard className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg font-bold text-navy-500">
+              Agregar método de pago
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Card preview */}
+        <div className="mt-5 rounded-2xl bg-gradient-to-br from-navy-500 to-navy-400 p-5 text-white shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">
+              {brand}
+            </span>
+            <CreditCard className="h-5 w-5 opacity-80" />
+          </div>
+          <p className="mt-6 font-mono text-base tracking-widest">
+            {number.padEnd(19, '•').replace(/\d{4}/g, '$& ').slice(0, 23) ||
+              '•••• •••• •••• ••••'}
+          </p>
+          <div className="mt-4 flex items-center justify-between text-[11px]">
+            <span className="uppercase opacity-80">
+              {holder || 'NOMBRE Y APELLIDO'}
+            </span>
+            <span className="font-mono">{expiry || 'MM/AA'}</span>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <label className="block">
+            <span className="text-xs font-bold text-navy-500">
+              Titular de la tarjeta
+            </span>
+            <input
+              type="text"
+              value={holder}
+              onChange={(e) => setHolder(e.target.value.toUpperCase())}
+              placeholder="NOMBRE Y APELLIDO"
+              className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm uppercase text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-bold text-navy-500">
+              Número de tarjeta
+            </span>
+            <input
+              type="text"
+              value={number}
+              inputMode="numeric"
+              onChange={(e) => setNumber(formatNumber(e.target.value))}
+              placeholder="1234 5678 9012 3456"
+              className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-xs font-bold text-navy-500">
+                Vencimiento
+              </span>
+              <input
+                type="text"
+                value={expiry}
+                inputMode="numeric"
+                onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                placeholder="MM/AA"
+                className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-bold text-navy-500">CVV</span>
+              <input
+                type="password"
+                value={cvv}
+                inputMode="numeric"
+                maxLength={4}
+                onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
+                placeholder="•••"
+                className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 font-mono text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              />
+            </label>
+          </div>
+        </div>
+
+        <p className="mt-3 flex items-center gap-1.5 text-[11px] text-navy-300">
+          <Lock className="h-3 w-3" />
+          Tus datos viajan cifrados. No los guardamos en texto plano.
+        </p>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={() =>
+              onAdd({
+                brand,
+                last4,
+                holder: holder.trim(),
+                expiry,
+              })
+            }
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <CreditCard className="h-4 w-4" />
+            Guardar tarjeta
+          </button>
+        </div>
       </div>
     </div>
   )

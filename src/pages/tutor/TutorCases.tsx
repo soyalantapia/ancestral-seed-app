@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   AlertCircle,
@@ -6,10 +6,12 @@ import {
   BarChart3,
   ChevronDown,
   Clock,
+  Filter,
   MoreHorizontal,
   Plus,
   TriangleAlert,
   Users,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -17,7 +19,7 @@ import {
   mockTutor,
   mockTutorCases,
 } from '@/services/mocks/data'
-import type { CaseStage, TutorCase } from '@/types'
+import type { CaseRisk, CaseStage, TutorCase } from '@/types'
 import { cn } from '@/lib/utils'
 
 function daysInStageFromCase(c: TutorCase): number {
@@ -46,6 +48,9 @@ export default function TutorCases() {
   const [cases, setCases] = useState<TutorCase[]>(mockTutorCases)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [hoverColumn, setHoverColumn] = useState<CaseStage | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [slaFilter, setSlaFilter] = useState<'all' | 'alerts'>('all')
+  const kanbanRef = useRef<HTMLDivElement | null>(null)
 
   const total = cases.length
   const assigned = cases.filter((c) => c.tutorId).length
@@ -57,14 +62,58 @@ export default function TutorCases() {
     return { overdue, watch }
   }, [cases])
 
+  // Vista filtrada según el filtro SLA
+  const visibleCases = useMemo(() => {
+    if (slaFilter === 'alerts') {
+      return cases.filter((c) => slaToneForCase(c) !== 'green')
+    }
+    return cases
+  }, [cases, slaFilter])
+
   const byStage = useMemo(() => {
     const map = new Map<CaseStage, TutorCase[]>()
     STAGES.forEach((s) => map.set(s.id, []))
-    for (const c of cases) {
+    for (const c of visibleCases) {
       map.get(c.stage)?.push(c)
     }
     return map
-  }, [cases])
+  }, [visibleCases])
+
+  const handleCreateCase = (data: {
+    productName: string
+    applicantName: string
+    country: string
+    region: string
+    category: string
+    risk: CaseRisk
+    pending?: string
+  }) => {
+    const nextId = `CE-${String(200 + cases.length).padStart(3, '0')}`
+    const newCase: TutorCase = {
+      id: nextId,
+      productName: data.productName,
+      applicantName: data.applicantName,
+      scoringIA: 0,
+      risk: data.risk,
+      pendingItems: data.pending ? [data.pending] : ['Completar postulación'],
+      stage: 'postulado',
+      category: data.category,
+      country: data.country,
+      region: data.region,
+      createdAt: new Date().toISOString(),
+    }
+    setCases((prev) => [newCase, ...prev])
+    setCreateOpen(false)
+    toast.success(`Solicitud ${nextId} creada en Postulados`)
+  }
+
+  const handleViewAlerts = () => {
+    setSlaFilter('alerts')
+    toast.success('Mostrando solo casos con SLA en alerta')
+    setTimeout(() => {
+      kanbanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 60)
+  }
 
   const handleDrop = (target: CaseStage) => {
     if (!draggingId) return
@@ -111,7 +160,7 @@ export default function TutorCases() {
 
         <button
           type="button"
-          onClick={() => toast.info('Crear solicitud — próximamente')}
+          onClick={() => setCreateOpen(true)}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
         >
           <Plus className="h-4 w-4" />
@@ -151,7 +200,7 @@ export default function TutorCases() {
           </div>
           <button
             type="button"
-            onClick={() => toast.info('Filtrando casos con SLA en alerta')}
+            onClick={handleViewAlerts}
             className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white transition-colors hover:bg-navy-400"
           >
             Ver casos en alerta
@@ -175,8 +224,29 @@ export default function TutorCases() {
         </button>
       </div>
 
+      {/* Filtro SLA activo */}
+      {slaFilter === 'alerts' && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-warning-300/60 bg-warning-100/30 p-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-warning-300/30 text-warning-400">
+            <Filter className="h-4 w-4" />
+          </span>
+          <p className="flex-1 text-xs text-navy-500">
+            <span className="font-bold">Filtro activo:</span> mostrando solo
+            casos con SLA en alerta ({visibleCases.length}/{total}).
+          </p>
+          <button
+            type="button"
+            onClick={() => setSlaFilter('all')}
+            className="inline-flex h-8 items-center gap-1 rounded-full border border-neutral-300 bg-white px-3 text-[11px] font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            <X className="h-3 w-3" />
+            Quitar filtro
+          </button>
+        </div>
+      )}
+
       {/* Kanban */}
-      <div className="mt-6 -mx-4 overflow-x-auto pb-4 sm:-mx-6 md:-mx-8">
+      <div ref={kanbanRef} className="mt-6 -mx-4 overflow-x-auto pb-4 sm:-mx-6 md:-mx-8">
         <div className="flex gap-4 px-4 sm:px-6 md:px-8" style={{ minWidth: 'max-content' }}>
           {STAGES.map((stage) => {
             const items = byStage.get(stage.id) ?? []
@@ -254,7 +324,213 @@ export default function TutorCases() {
       <p className="mt-4 text-center text-[11px] text-navy-300">
         💡 Arrastrá una card entre columnas para cambiar su etapa
       </p>
+
+      {createOpen && (
+        <CreateCaseModal
+          onClose={() => setCreateOpen(false)}
+          onCreate={handleCreateCase}
+        />
+      )}
     </div>
+  )
+}
+
+function CreateCaseModal({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void
+  onCreate: (data: {
+    productName: string
+    applicantName: string
+    country: string
+    region: string
+    category: string
+    risk: CaseRisk
+    pending?: string
+  }) => void
+}) {
+  const [productName, setProductName] = useState('')
+  const [applicantName, setApplicantName] = useState('')
+  const [country, setCountry] = useState('Argentina')
+  const [region, setRegion] = useState('')
+  const [category, setCategory] = useState('Textil')
+  const [risk, setRisk] = useState<CaseRisk>('medio')
+  const [pending, setPending] = useState('')
+
+  const canSubmit =
+    productName.trim().length > 0 && applicantName.trim().length > 0
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-navy-500">
+              <Plus className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="text-lg font-bold text-navy-500">
+                Crear solicitud
+              </h3>
+              <p className="text-xs text-navy-300">
+                La solicitud queda en etapa{' '}
+                <strong className="text-navy-500">Postulados</strong>.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          <Field label="Nombre del producto / oficio *">
+            <input
+              type="text"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              placeholder="Ej: Cerámica negra de Mata Ortiz"
+              className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </Field>
+
+          <Field label="Postulante (comunidad o autor) *">
+            <input
+              type="text"
+              value={applicantName}
+              onChange={(e) => setApplicantName(e.target.value)}
+              placeholder="Ej: María Elena Quezada"
+              className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="País">
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              >
+                <option>Argentina</option>
+                <option>Bolivia</option>
+                <option>Chile</option>
+                <option>Colombia</option>
+                <option>Ecuador</option>
+                <option>México</option>
+                <option>Paraguay</option>
+                <option>Perú</option>
+                <option>Uruguay</option>
+              </select>
+            </Field>
+            <Field label="Región">
+              <input
+                type="text"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                placeholder="Ej: Salta"
+                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Categoría">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              >
+                <option>Textil</option>
+                <option>Cerámica</option>
+                <option>Joyería</option>
+                <option>Madera</option>
+                <option>Cuero</option>
+                <option>Gastronomía</option>
+                <option>Música</option>
+                <option>Otro</option>
+              </select>
+            </Field>
+            <Field label="Riesgo estimado">
+              <select
+                value={risk}
+                onChange={(e) => setRisk(e.target.value as CaseRisk)}
+                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+              >
+                <option value="bajo">Bajo</option>
+                <option value="medio">Medio</option>
+                <option value="alto">Alto</option>
+              </select>
+            </Field>
+          </div>
+
+          <Field label="Primer pendiente (opcional)">
+            <input
+              type="text"
+              value={pending}
+              onChange={(e) => setPending(e.target.value)}
+              placeholder="Ej: Subir documentación de origen"
+              className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </Field>
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={() =>
+              onCreate({
+                productName: productName.trim(),
+                applicantName: applicantName.trim(),
+                country,
+                region: region.trim() || '—',
+                category,
+                risk,
+                pending: pending.trim() || undefined,
+              })
+            }
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Plus className="h-4 w-4" />
+            Crear solicitud
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold text-navy-500">{label}</span>
+      <div className="mt-1">{children}</div>
+    </label>
   )
 }
 

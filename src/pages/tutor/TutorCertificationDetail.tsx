@@ -49,7 +49,7 @@ import type {
   IssuedCertStatus,
 } from '@/types'
 import { useEscape } from '@/hooks/useEscape'
-import { cn } from '@/lib/utils'
+import { cn, downloadBlob } from '@/lib/utils'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -190,7 +190,10 @@ export default function TutorCertificationDetail() {
             </button>
             <button
               type="button"
-              onClick={() => toast.success('Descargando acta de certificación…')}
+              onClick={() => {
+                downloadActa(cert, extra)
+                toast.success(`acta-${cert.id}.txt descargada`)
+              }}
               className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
             >
               <Download className="h-4 w-4" />
@@ -760,6 +763,7 @@ function InfoTab({
 
       {/* Renovación timeline */}
       <RenovacionSection
+        certId={cert.id}
         lastRenewalAt={extra.lastRenewalAt}
         nextRenewalAt={extra.nextRenewalAt}
         cycleMonths={extra.renewalCycleMonths}
@@ -893,7 +897,7 @@ function EvidenciasSection({
                   </p>
                   <button
                     type="button"
-                    onClick={() => toast.success(`Descargando ${e.name}`)}
+                    onClick={() => { downloadBlob(`${e.name}.txt`, `Archivo: ${e.name}\nTipo: ${e.kind}\nTamaño: ${e.sizeKb ?? '—'} KB\n\n(Placeholder mock — en prod descarga el binario real)`); toast.success(`${e.name} descargado`) }}
                     aria-label="Descargar"
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-navy-500 transition-colors hover:bg-white"
                   >
@@ -927,7 +931,7 @@ function EvidenciasSection({
                   </div>
                   <button
                     type="button"
-                    onClick={() => toast.success(`Descargando ${e.name}`)}
+                    onClick={() => { downloadBlob(`${e.name}.txt`, `Archivo: ${e.name}\nTipo: ${e.kind}\nTamaño: ${e.sizeKb ?? '—'} KB\n\n(Placeholder mock — en prod descarga el binario real)`); toast.success(`${e.name} descargado`) }}
                     aria-label="Descargar"
                     className="inline-flex h-8 items-center gap-1 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                   >
@@ -984,13 +988,53 @@ function EvidenceTab({
 
 // ─── Renovación timeline ─────────────────────────────────────────────────────
 
+function buildRenewalReminderIcs(certId: string, nextRenewalAt?: string): string {
+  // dd/MM/yy → yyyy-MM-dd
+  let dateStr: string
+  if (nextRenewalAt && /^\d{2}\/\d{2}\/\d{2}$/.test(nextRenewalAt)) {
+    const [d, m, yy] = nextRenewalAt.split('/')
+    dateStr = `20${yy}${m}${d}`
+  } else {
+    const future = new Date()
+    future.setDate(future.getDate() + 30)
+    dateStr = future.toISOString().slice(0, 10).replace(/-/g, '')
+  }
+  const dtStamp = new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}/, '')
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Ancestral Seed//Renovacion//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:renovacion-${certId}@ancestralseed.io`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART;VALUE=DATE:${dateStr}`,
+    `DTEND;VALUE=DATE:${dateStr}`,
+    `SUMMARY:Renovación certificado ${certId} — Ancestral Seed`,
+    `DESCRIPTION:Recordatorio de renovación del expediente ${certId}. Coordiná con el solicitante para preparar las evidencias.`,
+    'BEGIN:VALARM',
+    'TRIGGER:-P7D',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:Renovación ${certId} en 7 días`,
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+}
+
 function RenovacionSection({
+  certId,
   lastRenewalAt,
   nextRenewalAt,
   cycleMonths,
   status,
   onCreatePreTask,
 }: {
+  certId: string
   lastRenewalAt?: string
   nextRenewalAt?: string
   cycleMonths?: number
@@ -1069,7 +1113,16 @@ function RenovacionSection({
       <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
-          onClick={() => toast.info('Programando recordatorio…')}
+          onClick={() => {
+            // Descargar ICS para agregar a Google/Outlook/Apple Calendar
+            const ics = buildRenewalReminderIcs(certId, nextRenewalAt)
+            downloadBlob(
+              `recordatorio-renovacion-${certId}.ics`,
+              ics,
+              'text/calendar;charset=utf-8',
+            )
+            toast.success('Recordatorio descargado · agregalo a tu calendario')
+          }}
           className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
         >
           <CalendarClock className="h-3.5 w-3.5" />

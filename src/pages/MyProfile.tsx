@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useEscape } from '@/hooks/useEscape'
 import {
   BookOpen,
@@ -55,8 +56,18 @@ const INITIAL: ProfileData = {
   avatarUrl: '',
 }
 
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export default function MyProfile() {
   const [tab, setTab] = useState<Tab>('Mi perfil')
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [data, setData] = useState<ProfileData>({
     ...INITIAL,
@@ -174,7 +185,10 @@ export default function MyProfile() {
         </div>
         <button
           type="button"
-          onClick={() => toast.info('Vista previa pública del perfil')}
+          onClick={() => {
+            const slug = user?.authorSlug ?? slugify(data.name || 'mi-perfil')
+            navigate(`/perfil/${slug}`)
+          }}
           className="inline-flex items-center gap-2 rounded-full bg-neutral-200 px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-300"
         >
           Ver vista previa
@@ -470,12 +484,23 @@ interface HighlightItem {
 const highlightTabs = ['Todas', 'Publicadas', 'Borradores'] as const
 type HighlightTab = (typeof highlightTabs)[number]
 
+type HighlightSort = 'recientes' | 'antiguos' | 'alfabetico' | 'estado'
+
 function Highlights() {
+  const navigate = useNavigate()
   const [tab, setTab] = useState<HighlightTab>('Todas')
   const [menuFor, setMenuFor] = useState<string | null>(null)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [sort, setSort] = useState<HighlightSort>('recientes')
+  const [editing, setEditing] = useState<HighlightItem | null>(null)
+  const sortRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  useEscape(Boolean(menuFor), () => setMenuFor(null))
+  useEscape(Boolean(menuFor) || sortOpen || !!editing, () => {
+    setMenuFor(null)
+    setSortOpen(false)
+    setEditing(null)
+  })
 
   useEffect(() => {
     if (!menuFor) return
@@ -498,11 +523,44 @@ function Highlights() {
     })),
   )
 
-  const filtered = items.filter((it) => {
-    if (tab === 'Todas') return true
-    if (tab === 'Publicadas') return it.status === 'Publicada'
-    return it.status === 'Borrador'
-  })
+  const filtered = items
+    .filter((it) => {
+      if (tab === 'Todas') return true
+      if (tab === 'Publicadas') return it.status === 'Publicada'
+      return it.status === 'Borrador'
+    })
+    .slice()
+    .sort((a, b) => {
+      if (sort === 'alfabetico') return a.title.localeCompare(b.title)
+      if (sort === 'estado') return a.status.localeCompare(b.status)
+      if (sort === 'antiguos') return a.date.localeCompare(b.date)
+      // recientes (default): preservar orden inverso de creación
+      return b.date.localeCompare(a.date)
+    })
+
+  const sortLabel: Record<HighlightSort, string> = {
+    recientes: 'Más recientes',
+    antiguos: 'Más antiguos',
+    alfabetico: 'A → Z',
+    estado: 'Estado',
+  }
+
+  useEffect(() => {
+    if (!sortOpen) return
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [sortOpen])
+
+  const handleSaveEdit = (patch: HighlightItem) => {
+    setItems((prev) => prev.map((p) => (p.id === patch.id ? patch : p)))
+    setEditing(null)
+    toast.success('Destacado actualizado')
+  }
 
   return (
     <div className="mt-8">
@@ -525,14 +583,39 @@ function Highlights() {
           ))}
         </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => toast.info('Filtros de orden próximamente')}
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
-          >
-            Ordenar por
-            <Filter className="h-4 w-4" />
-          </button>
+          <div className="relative" ref={sortRef}>
+            <button
+              type="button"
+              onClick={() => setSortOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+            >
+              {sortLabel[sort]}
+              <Filter className="h-4 w-4" />
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 top-12 z-20 w-48 overflow-hidden rounded-2xl border border-neutral-200 bg-white py-2 shadow-lg">
+                {(Object.keys(sortLabel) as HighlightSort[]).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => {
+                      setSort(k)
+                      setSortOpen(false)
+                    }}
+                    className={cn(
+                      'flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm hover:bg-neutral-100',
+                      sort === k ? 'font-bold text-navy-500' : 'text-navy-500',
+                    )}
+                  >
+                    {sortLabel[k]}
+                    {sort === k && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success-300" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -621,8 +704,22 @@ function Highlights() {
                   ref={menuRef}
                   className="absolute right-0 top-12 z-20 w-44 rounded-2xl border border-neutral-200 bg-white py-2 shadow-lg"
                 >
-                  <MenuButton icon={Pencil} label="Editar" onClick={() => { toast.info('Editar'); setMenuFor(null) }} />
-                  <MenuButton icon={Eye} label="Vista previa" onClick={() => { toast.info('Vista previa'); setMenuFor(null) }} />
+                  <MenuButton
+                    icon={Pencil}
+                    label="Editar"
+                    onClick={() => {
+                      setEditing(it)
+                      setMenuFor(null)
+                    }}
+                  />
+                  <MenuButton
+                    icon={Eye}
+                    label="Vista previa"
+                    onClick={() => {
+                      setMenuFor(null)
+                      navigate(`/certificacion/${it.id}`)
+                    }}
+                  />
                   <MenuButton
                     icon={Trash2}
                     label="Eliminar"
@@ -644,6 +741,119 @@ function Highlights() {
           </li>
         )}
       </ul>
+
+      {editing && (
+        <EditHighlightModal
+          item={editing}
+          onClose={() => setEditing(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
+    </div>
+  )
+}
+
+function EditHighlightModal({
+  item,
+  onClose,
+  onSave,
+}: {
+  item: HighlightItem
+  onClose: () => void
+  onSave: (patch: HighlightItem) => void
+}) {
+  const [title, setTitle] = useState(item.title)
+  const [subtitle, setSubtitle] = useState(item.subtitle)
+  const [status, setStatus] = useState<HighlightStatus>(item.status)
+
+  const canSave = title.trim().length > 0
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-navy-500">
+              <Pencil className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg font-bold text-navy-500">
+              Editar destacado
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
+            aria-label="Cerrar"
+          >
+            <Plus className="h-4 w-4 rotate-45" />
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          <label className="block">
+            <span className="text-xs font-bold text-navy-500">Título</span>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-bold text-navy-500">Descripción</span>
+            <textarea
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              rows={3}
+              className="mt-1 w-full resize-y rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-bold text-navy-500">Estado</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as HighlightStatus)}
+              className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
+            >
+              <option value="Publicada">Publicada</option>
+              <option value="Borrador">Borrador</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-navy-500 hover:bg-neutral-100"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!canSave}
+            onClick={() =>
+              onSave({
+                ...item,
+                title: title.trim(),
+                subtitle: subtitle.trim(),
+                status,
+              })
+            }
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Save className="h-4 w-4" />
+            Guardar cambios
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

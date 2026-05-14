@@ -16,7 +16,7 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import type { CertificationRequest, EvidenceFile, PaymentItem } from '@/types'
-import { cn } from '@/lib/utils'
+import { buildPlaceholderQrSvg, cn, downloadBlob } from '@/lib/utils'
 
 type Tab = 'certificados' | 'avales' | 'facturas'
 
@@ -252,7 +252,11 @@ function CertificatesGrid({
                 </Link>
                 <button
                   type="button"
-                  onClick={() => toast.success('Descargando PDF…')}
+                  onClick={() => {
+                    const content = buildCertPdfContent(req)
+                    downloadBlob(`certificado-${req.number.replace('#', '')}.txt`, content)
+                    toast.success(`Certificado ${req.number} descargado`)
+                  }}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                 >
                   <Download className="h-3.5 w-3.5" />
@@ -260,7 +264,15 @@ function CertificatesGrid({
                 </button>
                 <button
                   type="button"
-                  onClick={() => toast.success('Generando QR…')}
+                  onClick={() => {
+                    const verifyUrl = `${window.location.origin}${import.meta.env.BASE_URL || '/'}verificar?id=${req.id}`
+                    downloadBlob(
+                      `qr-${req.number.replace('#', '')}.svg`,
+                      buildPlaceholderQrSvg(verifyUrl),
+                      'image/svg+xml',
+                    )
+                    toast.success('QR descargado · escanealo para verificar')
+                  }}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                 >
                   QR
@@ -328,7 +340,10 @@ function EvidencesList({
             </div>
             <button
               type="button"
-              onClick={() => toast.success(`Descargando ${e.name}`)}
+              onClick={() => {
+                downloadBlob(`${e.name}.txt`, buildEvidenceContent(e))
+                toast.success(`${e.name} descargado`)
+              }}
               className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
             >
               <Download className="h-3.5 w-3.5" />
@@ -393,7 +408,10 @@ function InvoicesList({
             </p>
             <button
               type="button"
-              onClick={() => toast.success('Descargando factura')}
+              onClick={() => {
+                downloadBlob(`factura-${i.id}.txt`, buildInvoiceContent(i))
+                toast.success(`Factura ${i.id} descargada`)
+              }}
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gold-500 px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
             >
               <Download className="h-3.5 w-3.5" />
@@ -404,6 +422,59 @@ function InvoicesList({
       ))}
     </ul>
   )
+}
+
+function buildCertPdfContent(req: CertificationRequest): string {
+  return [
+    '═══════════════════════════════════════════════════════════════',
+    '       ANCESTRAL SEED — CERTIFICADO',
+    '═══════════════════════════════════════════════════════════════',
+    '',
+    `Número: ${req.number}`,
+    `Producto / Servicio: ${req.productName}`,
+    `Estado: ${req.status}`,
+    `Creado: ${req.createdAt}`,
+    `Avance: ${req.progressLabel}`,
+    '',
+    'Etapas:',
+    ...req.stages.map(
+      (s, i) =>
+        `  ${i + 1}. ${s.label} — ${s.status.toUpperCase()}${s.date ? ` (${s.date})` : ''}`,
+    ),
+    '',
+    `Descargado el ${new Date().toLocaleString('es-AR')}`,
+    'Documento de validez oficial — Ancestral Seed Foundation',
+  ].join('\n')
+}
+
+function buildEvidenceContent(e: EvidenceFile): string {
+  return [
+    `Archivo: ${e.name}`,
+    `Tipo: ${e.kind}`,
+    `Tamaño: ${e.sizeKb} KB`,
+    `Subido: ${e.uploadedAt}`,
+    '',
+    '(Este es un placeholder mock. En producción acá descargaría el binario real desde el storage.)',
+  ].join('\n')
+}
+
+function buildInvoiceContent(i: PaymentItem): string {
+  return [
+    '═══════════════════════════════════════════════════════════════',
+    '       ANCESTRAL SEED — FACTURA',
+    '═══════════════════════════════════════════════════════════════',
+    '',
+    `Identificador: ${i.id}`,
+    `Concepto: ${i.concept}`,
+    `Monto: ${i.currency} ${i.amount.toLocaleString('es-AR')}`,
+    `Estado: ${i.status}`,
+    `Vencimiento: ${i.dueDate}`,
+    i.paidAt ? `Pagada el: ${i.paidAt}` : '',
+    '',
+    `Generada el ${new Date().toLocaleString('es-AR')}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
 }
 
 function EmptyState({ text }: { text: string }) {

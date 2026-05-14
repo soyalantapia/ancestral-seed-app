@@ -39,7 +39,7 @@ import type {
   RequestStageItem,
   TutorMessage,
 } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, downloadBlob } from '@/lib/utils'
 
 const tabs = [
   'Seguimiento',
@@ -939,18 +939,23 @@ function PaymentRow({ payment }: { payment: PaymentItem }) {
           {payment.status === 'refunded' && 'Reintegrado'}
         </span>
         {isPay && (
-          <button
-            type="button"
-            onClick={() => toast.success('Te llevamos al checkout (demo)')}
+          <Link
+            to="/pagos"
+            onClick={() => toast.success('Te llevamos al detalle de pagos')}
             className="inline-flex items-center rounded-full bg-gold-500 px-4 py-1.5 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
           >
             Pagar
-          </button>
+          </Link>
         )}
         {payment.invoiceUrl && (
           <a
             href={payment.invoiceUrl}
-            onClick={(e) => { e.preventDefault(); toast.info('Descarga del comprobante (demo)') }}
+            onClick={(e) => {
+              e.preventDefault()
+              const content = `COMPROBANTE DE PAGO\n\nConcepto: ${payment.concept}\nMonto: ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: payment.currency }).format(payment.amount)}\nEstado: ${payment.status}\nVencimiento: ${formatDate(payment.dueDate)}${payment.paidAt ? `\nPagado: ${formatDate(payment.paidAt)}` : ''}\n\n(Demo — en producción este link descarga el PDF oficial)`
+              downloadBlob(`comprobante-${payment.id}.txt`, content)
+              toast.success('Comprobante descargado')
+            }}
             className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
           >
             <Download className="h-3.5 w-3.5" />
