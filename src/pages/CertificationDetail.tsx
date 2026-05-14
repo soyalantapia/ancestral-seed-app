@@ -159,7 +159,7 @@ export default function CertificationDetail() {
                 </button>
               </div>
 
-              <div className="rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm">
+              <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6 md:p-7">
                 <div className="flex items-center gap-4">
                   <img
                     src={cert.authorAvatarUrl || 'https://i.pravatar.cc/200?img=47'}

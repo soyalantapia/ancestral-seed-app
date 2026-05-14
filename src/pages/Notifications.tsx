@@ -63,7 +63,7 @@ export default function Notifications() {
   const unreadCount = items.filter((n) => !n.read).length
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">

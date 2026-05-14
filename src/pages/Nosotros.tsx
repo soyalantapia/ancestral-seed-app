@@ -96,7 +96,7 @@ export default function Nosotros() {
       {/* HERO */}
       <section className="relative overflow-hidden bg-pattern-gold pb-16 pt-10 md:pb-24 md:pt-16">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-          <div className="rounded-[32px] bg-white p-8 shadow-md md:p-14">
+          <div className="rounded-3xl bg-white p-6 shadow-md sm:p-8 md:rounded-[32px] md:p-14">
             <span className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold-700">
               <Sparkles className="h-3.5 w-3.5" />
               Quiénes somos

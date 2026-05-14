@@ -120,7 +120,7 @@ export default function CertificationRequest() {
     'Sin avances'
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-6 md:px-10 md:py-8">
+    <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6 md:px-10 md:py-8">
       <Link
         to="/mis-certificaciones"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-300 hover:text-navy-500"
@@ -216,7 +216,7 @@ export default function CertificationRequest() {
       </section>
 
       {/* Sticky tabs */}
-      <div className="sticky top-16 z-10 -mx-6 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-6 backdrop-blur md:top-20 md:-mx-10 md:px-10">
+      <div className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10">
         <div className="flex gap-1 py-3">
           {tabs.map((t) => {
             return (

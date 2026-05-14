@@ -33,27 +33,27 @@ function Hero() {
   return (
     <section className="relative overflow-hidden bg-pattern-gold pb-16 pt-10 md:pb-24 md:pt-16">
       <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-        <div className="grid grid-cols-1 items-center gap-8 rounded-[32px] bg-white p-8 shadow-md md:min-h-[480px] md:p-14 lg:grid-cols-12 lg:gap-12">
+        <div className="grid grid-cols-1 items-center gap-6 rounded-3xl bg-white p-6 shadow-md sm:p-8 md:min-h-[480px] md:gap-8 md:rounded-[32px] md:p-14 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
-            <span className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold-700">
+            <span className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-700 md:text-xs">
               <Sparkles className="h-3.5 w-3.5" />
               Certificación cultural blockchain
             </span>
-            <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-navy-500 md:text-5xl lg:text-[56px]">
+            <h1 className="mt-4 text-[28px] font-bold leading-[1.1] tracking-tight text-navy-500 sm:text-4xl md:mt-5 md:text-5xl lg:text-[56px]">
               Autenticidad ancestral,<br className="hidden md:inline" />{' '}
               certificada digitalmente
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-300 md:text-lg">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
               Validamos la autenticidad de productos y saberes originarios
               mediante un sistema de certificación cultural, auditoría y
               tecnología blockchain.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
               <Button
                 variant="gold"
                 size="lg"
                 onClick={() => navigate('/certificar')}
-                className="shadow-lg shadow-gold-500/30"
+                className="w-full shadow-lg shadow-gold-500/30 sm:w-auto"
               >
                 Certificar Producto
               </Button>
@@ -61,6 +61,7 @@ function Hero() {
                 variant="outlineNavy"
                 size="lg"
                 onClick={() => navigate('/verificar')}
+                className="w-full sm:w-auto"
               >
                 Verificar Certificado
               </Button>
@@ -70,7 +71,7 @@ function Hero() {
             <img
               src={`${import.meta.env.BASE_URL}logo-large.png`}
               alt="Ancestral Seed"
-              className="h-64 w-64 object-contain md:h-80 md:w-80 lg:h-96 lg:w-96"
+              className="h-44 w-44 object-contain sm:h-56 sm:w-56 md:h-80 md:w-80 lg:h-96 lg:w-96"
             />
           </div>
         </div>
@@ -104,7 +105,7 @@ function Pillars() {
   ]
   return (
     <section id="beneficios" className="scroll-mt-24 bg-white">
-      <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-8 px-4 py-14 md:grid-cols-4 md:px-8 md:py-16">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-2 gap-6 px-4 py-12 sm:gap-8 md:grid-cols-4 md:px-8 md:py-16">
         {pillars.map((p, i) => (
           <div key={i} className="flex flex-col items-center text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-100">
@@ -142,7 +143,7 @@ function AncestralVision() {
               className="h-full w-full object-cover"
             />
           </div>
-          <div className="rounded-3xl bg-pattern-aztec p-8 text-white md:p-10">
+          <div className="rounded-3xl bg-pattern-aztec p-6 text-white sm:p-8 md:p-10">
             <p className="text-sm leading-relaxed text-neutral-300 md:text-base">
               Durante siglos, los saberes de nuestras comunidades originarias
               se transmitieron de generación en generación sin un registro que

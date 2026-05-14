@@ -120,7 +120,7 @@ export default function MyProfile() {
   const completionPct = Math.round((completedCount / fields.length) * 100)
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
       <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">Mi perfil</h1>
       <p className="mt-1 text-sm text-navy-300 md:text-base">
         Administrá tu perfil y tus destacados, y visualizá tus certificaciones públicas.

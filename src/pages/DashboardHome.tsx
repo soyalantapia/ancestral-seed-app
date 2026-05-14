@@ -38,7 +38,7 @@ export default function DashboardHome() {
   // Empty welcome state for first-time users
   if (requests.length === 0) {
     return (
-      <div className="mx-auto max-w-[1100px] px-6 py-12 md:px-10 md:py-20">
+      <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-12 md:px-10 md:py-20">
         <OnboardingTour />
         <div className="relative overflow-hidden rounded-3xl bg-pattern-aztec p-10 text-center text-white shadow-xl md:p-16">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-500 text-navy-500 shadow-lg">
@@ -82,7 +82,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
       <OnboardingTour />
       <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">Inicio</h1>
       <p className="mt-2 max-w-3xl text-sm text-navy-300 md:text-base">

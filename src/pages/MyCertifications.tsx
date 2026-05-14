@@ -68,7 +68,7 @@ export default function MyCertifications() {
   // First-time empty state
   if (isEmpty) {
     return (
-      <div className="mx-auto max-w-[1100px] px-6 py-12 md:px-10 md:py-20">
+      <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-12 md:px-10 md:py-20">
         <div className="rounded-3xl border border-neutral-200 bg-white p-10 text-center shadow-sm md:p-16">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gold-100 text-gold-700">
             <FileText className="h-8 w-8" />
@@ -93,7 +93,7 @@ export default function MyCertifications() {
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">

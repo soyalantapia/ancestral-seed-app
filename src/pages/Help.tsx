@@ -46,7 +46,7 @@ export default function Help() {
     : topics
 
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-8 md:px-10 md:py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
       {/* Search panel */}
       <section className="mt-6 rounded-3xl bg-info-100 px-6 py-10 text-center md:px-10 md:py-12">
         <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">

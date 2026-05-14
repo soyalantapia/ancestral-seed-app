@@ -65,7 +65,7 @@ export default function Directory() {
     <>
       <section className="bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-          <div className="rounded-3xl bg-white px-8 py-10 text-center shadow-sm md:px-16 md:py-12">
+          <div className="rounded-3xl bg-white px-6 py-8 text-center shadow-sm sm:px-8 sm:py-10 md:px-16 md:py-12">
             <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-[32px]">
               Directorio de certificaciones auténticas
             </h1>
@@ -88,7 +88,7 @@ export default function Directory() {
               <Search className="h-4 w-4" />
             </button>
             <Input
-              placeholder="Buscar certificaciones, Nombre, ID, Hash..."
+              placeholder="Buscar por nombre, ID o hash..."
               value={filters.query ?? ''}
               onChange={(e) => updateFilter('query', e.target.value)}
               className="h-12 rounded-full border-neutral-300 pl-14"
