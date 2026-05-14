@@ -10,7 +10,6 @@ import {
   CalendarClock,
   Camera,
   CheckCircle2,
-  Clock,
   CreditCard,
   Download,
   Eye,
@@ -265,14 +264,6 @@ export default function DashboardHome() {
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-navy-300 md:text-base">
             {greetingSubtitle(totalPending, upcomingMeetings.length)}
           </p>
-        </div>
-        <div className="hidden items-center gap-3 text-xs text-navy-300 md:flex">
-          <Clock className="h-3.5 w-3.5" />
-          {new Date().toLocaleDateString('es-AR', {
-            weekday: 'long',
-            day: '2-digit',
-            month: 'long',
-          })}
         </div>
       </header>
 
@@ -825,6 +816,13 @@ function TutorMessageCard({
   message: TutorMessage & { meetingId: string }
   requestId: string
 }) {
+  // Toda la comunicación es vía WhatsApp para reducir fricción.
+  // Número mock del tutor — en prod vendría del backend asociado al meeting.
+  const tutorPhone = '5491145678901'
+  const waText = encodeURIComponent(
+    `Hola ${message.authorName.split(' ')[0]}, te escribo desde Ancestral Seed por mi solicitud.`,
+  )
+  const whatsappUrl = `https://wa.me/${tutorPhone}?text=${waText}`
   return (
     <section className="rounded-3xl border border-info-300/40 bg-info-100/40 p-5 shadow-sm md:p-6">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-info-400">
@@ -848,18 +846,21 @@ function TutorMessageCard({
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link
-          to={`/mis-certificaciones/${requestId}?tab=evaluacion`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-navy-500 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-navy-400"
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-success-300 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-success-400"
         >
-          Responder
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+          <MessageSquare className="h-3.5 w-3.5" />
+          Responder por WhatsApp
+        </a>
         <Link
           to={`/mis-certificaciones/${requestId}?tab=evaluacion`}
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
         >
-          Ver conversación
+          Ver solicitud
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </section>
@@ -972,7 +973,7 @@ function RemindersCard({
     <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-navy-500" />
+          <CalendarClock className="h-5 w-5 text-navy-500" />
           <h3 className="text-lg font-bold text-navy-500">Recordatorios</h3>
         </div>
         <span className="text-xs text-navy-300">

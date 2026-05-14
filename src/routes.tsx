@@ -62,7 +62,6 @@ const Help = lazyWithRetry(() => import('@/pages/Help'))
 const Nosotros = lazyWithRetry(() => import('@/pages/Nosotros'))
 const Pagos = lazyWithRetry(() => import('@/pages/Pagos'))
 const Documentos = lazyWithRetry(() => import('@/pages/Documentos'))
-const Mensajes = lazyWithRetry(() => import('@/pages/Mensajes'))
 const Calendario = lazyWithRetry(() => import('@/pages/Calendario'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 
@@ -112,7 +111,6 @@ export const router = createBrowserRouter(
         { path: 'mis-certificaciones/:id', element: withSuspense(<CertificationRequest />) },
         { path: 'mi-perfil', element: withSuspense(<MyProfile />) },
         { path: 'notificaciones', element: withSuspense(<Notifications />) },
-        { path: 'mensajes', element: withSuspense(<Mensajes />) },
         { path: 'calendario', element: withSuspense(<Calendario />) },
         { path: 'pagos', element: withSuspense(<Pagos />) },
         { path: 'documentos', element: withSuspense(<Documentos />) },

@@ -11,7 +11,6 @@ import {
   Home,
   LogOut,
   Menu,
-  MessageSquare,
   Settings,
   UserRound,
   X,
@@ -29,7 +28,6 @@ import { cn } from '@/lib/utils'
 const generalItems = [
   { to: '/inicio', icon: Home, label: 'Inicio' },
   { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: 'unread' as const },
-  { to: '/mensajes', icon: MessageSquare, label: 'Mensajes' },
   { to: '/mis-certificaciones', icon: FileText, label: 'Mis certificaciones' },
   { to: '/calendario', icon: Calendar, label: 'Calendario' },
 ]

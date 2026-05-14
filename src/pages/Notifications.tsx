@@ -16,11 +16,16 @@ import { useNotificationsStore } from '@/store/notifications'
 import type { NotificationKind } from '@/types'
 import { cn } from '@/lib/utils'
 
-const tabs = ['Todas', 'No leídas'] as const
-type Tab = (typeof tabs)[number]
-
-const typeFilters: Array<{ id: string; label: string; kinds: NotificationKind[] }> = [
+// Fila unificada de filtros: tipo + estado (no leídas).
+// "unread" no es un kind, es un toggle aparte que usamos al filtrar.
+const typeFilters: Array<{
+  id: string
+  label: string
+  kinds: NotificationKind[]
+  unreadOnly?: boolean
+}> = [
   { id: 'all', label: 'Todas', kinds: [] },
+  { id: 'unread', label: 'No leídas', kinds: [], unreadOnly: true },
   { id: 'audit', label: 'Auditoría', kinds: ['audit_proposed', 'audit_accepted'] },
   { id: 'evidence', label: 'Evidencias', kinds: ['evidence_request', 'document_uploaded'] },
   { id: 'message', label: 'Mensajes', kinds: ['message_received'] },
@@ -52,11 +57,13 @@ export default function Notifications() {
   const markRead = useNotificationsStore((s) => s.markRead)
   const markAllRead = useNotificationsStore((s) => s.markAllRead)
   const remove = useNotificationsStore((s) => s.remove)
-  const [tab, setTab] = useState<Tab>('Todas')
   const [typeFilter, setTypeFilter] = useState<string>('all')
 
-  let filtered = tab === 'No leídas' ? items.filter((n) => !n.read) : items
   const selectedFilter = typeFilters.find((f) => f.id === typeFilter)
+  let filtered = items
+  if (selectedFilter?.unreadOnly) {
+    filtered = filtered.filter((n) => !n.read)
+  }
   if (selectedFilter && selectedFilter.kinds.length > 0) {
     filtered = filtered.filter((n) => selectedFilter.kinds.includes(n.kind))
   }
@@ -90,52 +97,47 @@ export default function Notifications() {
         )}
       </div>
 
-      <div className="mt-6 flex gap-2">
-        {tabs.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={cn(
-              'rounded-full px-5 py-2 text-sm font-bold transition-colors',
-              tab === t
-                ? 'bg-gold-100 text-gold-700 ring-1 ring-gold-300'
-                : 'text-navy-300 hover:bg-neutral-100 hover:text-navy-500',
-            )}
-          >
-            {t}
-            {t === 'No leídas' && unreadCount > 0 && (
-              <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-gold-500 px-1.5 text-xs font-bold text-navy-500">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {typeFilters.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setTypeFilter(f.id)}
-            className={cn(
-              'rounded-full border px-4 py-1.5 text-xs font-bold transition-colors',
-              typeFilter === f.id
-                ? 'border-navy-500 bg-navy-500 text-white'
-                : 'border-neutral-300 bg-white text-navy-400 hover:bg-neutral-100',
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {typeFilters.map((f) => {
+          const active = typeFilter === f.id
+          const showBadge = f.id === 'unread' && unreadCount > 0
+          return (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setTypeFilter(f.id)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors',
+                active
+                  ? 'border-navy-500 bg-navy-500 text-white'
+                  : 'border-neutral-300 bg-white text-navy-400 hover:bg-neutral-100',
+              )}
+            >
+              {f.label}
+              {showBadge && (
+                <span
+                  className={cn(
+                    'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold',
+                    active
+                      ? 'bg-gold-500 text-navy-500'
+                      : 'bg-gold-500 text-navy-500',
+                  )}
+                >
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-12 text-center">
           <Inbox className="mx-auto h-10 w-10 text-navy-300" strokeWidth={1.5} />
           <p className="mt-4 text-sm font-semibold text-navy-500">
-            {tab === 'No leídas' ? 'No hay notificaciones sin leer' : 'No tenés notificaciones'}
+            {selectedFilter?.unreadOnly
+              ? 'No hay notificaciones sin leer'
+              : 'No tenés notificaciones'}
           </p>
           <p className="mx-auto mt-1 max-w-md text-sm text-navy-300">
             Cuando un tutor revise tu solicitud o haya novedades, vas a verlo acá.

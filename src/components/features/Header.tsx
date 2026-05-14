@@ -53,7 +53,7 @@ export function Header() {
   // Detect if user is on a dashboard route
   const isDashboardRoute =
     isAuthenticated &&
-    /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda)/.test(
+    /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda|pagos|documentos|calendario)/.test(
       location.pathname,
     )
 
