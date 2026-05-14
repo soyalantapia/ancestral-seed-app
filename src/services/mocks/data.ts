@@ -2,10 +2,15 @@ import type {
   Author,
   Certification,
   CertificationRequest,
+  InternalNote,
   IssuedCertification,
+  MessageTemplate,
   Notification,
+  ScoringCriterionDef,
+  ScoringValue,
   TutorAgendaItem,
   TutorCase,
+  TutorTask,
 } from '@/types'
 
 const PLACEHOLDER = '__placeholder__'
@@ -769,3 +774,274 @@ export const mockTutorAgenda: TutorAgendaItem[] = [
     durationMin: 30,
   },
 ]
+
+// ─── Tutor scoring criteria definitions ──────────────────────────────────────
+
+export const SCORING_CRITERIA: ScoringCriterionDef[] = [
+  {
+    id: 'tecnico',
+    label: 'Conocimiento técnico',
+    description:
+      'Capacidad de evaluar productos y servicios bajo estándares de calidad, eficiencia y sostenibilidad ancestral.',
+    weight: 18,
+    subitems: [
+      'Dominio del oficio y la técnica',
+      'Calidad del proceso productivo',
+      'Reproducibilidad del proceso',
+    ],
+  },
+  {
+    id: 'ambiental',
+    label: 'Conocimiento ambiental',
+    description:
+      'Gestión responsable de los recursos naturales y prácticas sustentables.',
+    weight: 14,
+    subitems: [
+      'Origen de materias primas',
+      'Impacto ambiental del proceso',
+      'Trazabilidad del recurso',
+    ],
+  },
+  {
+    id: 'cultural',
+    label: 'Conocimiento cultural y ancestral',
+    description:
+      'Valoración y preservación de saberes tradicionales como parte fundamental de la identidad.',
+    weight: 20,
+    subitems: [
+      'Vínculo con la comunidad de origen',
+      'Continuidad generacional del saber',
+      'Aval de referentes culturales',
+    ],
+  },
+  {
+    id: 'tecnologico',
+    label: 'Conocimiento tecnológico',
+    description:
+      'Aplicación de herramientas innovadoras, digitalización y trazabilidad.',
+    weight: 10,
+    subitems: [
+      'Trazabilidad digital del producto',
+      'Adopción de tecnología sin perder identidad',
+    ],
+  },
+  {
+    id: 'social',
+    label: 'Conocimiento social y territorial',
+    description:
+      'Dinámicas comunitarias, impacto social y arraigo territorial.',
+    weight: 14,
+    subitems: [
+      'Impacto social del proyecto',
+      'Vínculo territorial declarado',
+      'Participación de la comunidad',
+    ],
+  },
+  {
+    id: 'estrategico',
+    label: 'Conocimiento estratégico y empresarial',
+    description:
+      'Planificación, liderazgo, integración comercial y posicionamiento.',
+    weight: 12,
+    subitems: [
+      'Plan de comercialización',
+      'Sustentabilidad económica',
+    ],
+  },
+  {
+    id: 'normativo',
+    label: 'Conocimiento normativo y de certificación',
+    description:
+      'Manejo de estándares, regulaciones y marcos de cumplimiento.',
+    weight: 12,
+    subitems: [
+      'Documentación legal',
+      'Cumplimiento de marco normativo local',
+    ],
+  },
+]
+
+// ─── Evaluaciones por caso (scoring + evidencias + notas) ────────────────────
+
+export const mockScoringByCase: Record<string, ScoringValue[]> = {
+  'CE-104': [
+    { criterionId: 'tecnico', score: 9, comment: 'Dominio técnico excelente.' },
+    { criterionId: 'ambiental', score: 8, comment: 'Buen uso de fibra natural.' },
+    { criterionId: 'cultural', score: 10, comment: 'Aval comunitario sólido.' },
+    { criterionId: 'tecnologico', score: 6 },
+    { criterionId: 'social', score: 9, comment: 'Fuerte vínculo territorial.' },
+    { criterionId: 'estrategico', score: 7 },
+    { criterionId: 'normativo', score: 8 },
+  ],
+  'CE-108': [
+    { criterionId: 'tecnico', score: 7 },
+    { criterionId: 'ambiental', score: 9, comment: 'Sin agroquímicos.' },
+    { criterionId: 'cultural', score: 8 },
+    { criterionId: 'tecnologico', score: 5 },
+    { criterionId: 'social', score: 7 },
+    { criterionId: 'estrategico', score: 8 },
+    { criterionId: 'normativo', score: 6, comment: 'Falta documentación tributaria.' },
+  ],
+}
+
+export const mockEvidenceEvaluations: Record<
+  string,
+  Array<{ evidenceId: string; verdict: 'pending' | 'approved' | 'rejected' | 'clarify'; comment?: string }>
+> = {
+  'CE-104': [
+    { evidenceId: 'e-001', verdict: 'approved', comment: 'Foto clara, fecha visible.' },
+    { evidenceId: 'e-002', verdict: 'approved' },
+    { evidenceId: 'e-003', verdict: 'clarify', comment: 'Necesito ver el proceso completo.' },
+  ],
+}
+
+export const mockInternalNotes: InternalNote[] = [
+  {
+    id: 'note-001',
+    caseId: 'CE-104',
+    author: 'Juan Pérez',
+    authorRole: 'tutor',
+    body: 'Camila viene con muy buen track de la comunidad. Validar aval con la Mtra. Quispe antes de cerrar diagnóstico.',
+    at: '2026-04-25T14:30:00-03:00',
+    pinned: true,
+  },
+  {
+    id: 'note-002',
+    caseId: 'CE-104',
+    author: 'Juan Pérez',
+    authorRole: 'tutor',
+    body: 'Falta validar la fecha de la foto de proceso. Pedí aclaración en evidencia e-003.',
+    at: '2026-04-28T09:00:00-03:00',
+  },
+  {
+    id: 'note-003',
+    caseId: 'CE-108',
+    author: 'Juan Pérez',
+    authorRole: 'tutor',
+    body: 'Pedro va bien, pero la documentación tributaria es un blocker para certificación final.',
+    at: '2026-04-20T11:00:00-03:00',
+  },
+]
+
+// ─── Bandeja de tareas del tutor ─────────────────────────────────────────────
+
+export const mockTutorTasks: TutorTask[] = [
+  {
+    id: 'task-001',
+    kind: 'review_evidence',
+    title: 'Revisar 3 evidencias subidas',
+    caseId: 'CE-104',
+    caseName: 'Tejido Wayúu',
+    applicantName: 'Camila Montes',
+    priority: 'urgent',
+    dueAt: '2026-05-14',
+    done: false,
+  },
+  {
+    id: 'task-002',
+    kind: 'audit_meeting',
+    title: 'Reunión inicial — preparar checklist',
+    caseId: 'CE-105',
+    caseName: 'Filigrana ancestral',
+    applicantName: 'Luna Espinoza',
+    priority: 'today',
+    dueAt: '2026-05-18',
+    done: false,
+  },
+  {
+    id: 'task-003',
+    kind: 'sign_evaluation',
+    title: 'Firmar evaluación final',
+    caseId: 'CE-109',
+    caseName: 'Sahumerio ceremonial',
+    applicantName: 'Inés Curaca',
+    priority: 'today',
+    dueAt: '2026-05-14',
+    done: false,
+  },
+  {
+    id: 'task-004',
+    kind: 'call_applicant',
+    title: 'Llamar para confirmar fechas',
+    caseId: 'CE-108',
+    caseName: 'Café artesanal de montaña',
+    applicantName: 'Pedro Huilca',
+    priority: 'this_week',
+    dueAt: '2026-05-16',
+    done: false,
+  },
+  {
+    id: 'task-005',
+    kind: 'verify_documentation',
+    title: 'Verificar aval comunitario',
+    caseId: 'CE-107',
+    caseName: 'Tejido en telar Pasto',
+    applicantName: 'Flor Imbacuán Pantoja',
+    priority: 'this_week',
+    done: false,
+  },
+  {
+    id: 'task-006',
+    kind: 'send_message',
+    title: 'Responder mensaje pendiente',
+    caseId: 'CE-106',
+    caseName: 'Cocina ancestral del NOA',
+    applicantName: 'Mario Tolaba',
+    priority: 'urgent',
+    dueAt: '2026-05-14',
+    done: false,
+  },
+]
+
+// ─── Plantillas de mensajes ──────────────────────────────────────────────────
+
+export const MESSAGE_TEMPLATES: MessageTemplate[] = [
+  {
+    id: 'tpl-evidence',
+    kind: 'request_evidence',
+    title: 'Pedir evidencias adicionales',
+    body: 'Hola {nombre}, para avanzar con el diagnóstico necesito que subas:\n\n• 3 fotos claras del proceso completo\n• 1 video corto (1–2 min) del oficio en acción\n• Aval firmado por un referente de la comunidad\n\nGracias!',
+  },
+  {
+    id: 'tpl-meeting',
+    kind: 'schedule_meeting',
+    title: 'Proponer reunión',
+    body: 'Hola {nombre}, te propongo una videollamada el {fecha} a las {hora} para revisar tu solicitud. Confirmame si te queda cómodo el horario.',
+  },
+  {
+    id: 'tpl-approve',
+    kind: 'approve_stage',
+    title: 'Aprobar etapa',
+    body: '¡Excelente {nombre}! Aprobamos la etapa actual y avanzamos a la siguiente. Te llegará una notificación con los próximos pasos.',
+  },
+  {
+    id: 'tpl-clarify',
+    kind: 'request_clarification',
+    title: 'Pedir aclaración',
+    body: 'Hola {nombre}, necesito una aclaración sobre {detalle}. ¿Podés contarme un poco más?',
+  },
+  {
+    id: 'tpl-reminder',
+    kind: 'reminder',
+    title: 'Recordatorio',
+    body: 'Hola {nombre}, te recuerdo que tenés pendiente: {pendiente}. Si necesitás ayuda, avisame.',
+  },
+  {
+    id: 'tpl-closing',
+    kind: 'closing',
+    title: 'Cierre del proceso',
+    body: '¡Felicitaciones {nombre}! Completaste todas las etapas. Tu certificado se está firmando en blockchain y te llegará por email en las próximas horas.',
+  },
+]
+
+// ─── SLA (días máximos por etapa) ────────────────────────────────────────────
+
+export const STAGE_SLA_DAYS: Record<string, number> = {
+  postulado: 3,
+  'revision-inicial': 5,
+  elegible: 7,
+  diagnostico: 14,
+  auditoria: 21,
+  evaluacion: 10,
+  certificacion: 7,
+}

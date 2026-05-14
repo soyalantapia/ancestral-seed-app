@@ -320,7 +320,7 @@ function CaseCard({
           </button>
         )}
         <Link
-          to={`/mis-certificaciones/${c.id}`}
+          to={`/tutor/casos/${c.id}`}
           className="inline-flex h-8 items-center rounded-full bg-navy-500 px-3 text-[11px] font-bold text-white transition-colors hover:bg-navy-400"
         >
           Ver caso

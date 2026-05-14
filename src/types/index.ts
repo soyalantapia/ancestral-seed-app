@@ -252,6 +252,109 @@ export interface TutorAgendaItem {
   durationMin: number
 }
 
+// ─── Scoring estructurado por criterios (Tutor) ──────────────────────────────
+
+export type ScoringCriterionId =
+  | 'tecnico'
+  | 'ambiental'
+  | 'cultural'
+  | 'tecnologico'
+  | 'social'
+  | 'estrategico'
+  | 'normativo'
+
+export interface ScoringCriterionDef {
+  id: ScoringCriterionId
+  label: string
+  description: string
+  weight: number              // 0-100, suman 100
+  subitems: string[]
+}
+
+export interface ScoringValue {
+  criterionId: ScoringCriterionId
+  score: number               // 0-10
+  comment?: string
+  evaluatedAt?: string
+}
+
+// ─── Evaluación de evidencias ────────────────────────────────────────────────
+
+export type EvidenceVerdict = 'pending' | 'approved' | 'rejected' | 'clarify'
+
+export interface EvidenceEvaluation {
+  evidenceId: string
+  verdict: EvidenceVerdict
+  comment?: string
+  evaluatedAt?: string
+}
+
+// ─── Notas internas (no visibles al solicitante) ─────────────────────────────
+
+export interface InternalNote {
+  id: string
+  caseId: string
+  author: string              // tutor name
+  authorRole: 'tutor' | 'auditor' | 'curador' | 'coordinador'
+  body: string
+  at: string                  // ISO
+  pinned?: boolean
+}
+
+// ─── Tareas del tutor (bandeja Hoy) ──────────────────────────────────────────
+
+export type TutorTaskKind =
+  | 'review_evidence'
+  | 'call_applicant'
+  | 'sign_evaluation'
+  | 'send_message'
+  | 'audit_meeting'
+  | 'verify_documentation'
+  | 'review_case'
+
+export type TutorTaskPriority = 'urgent' | 'today' | 'this_week'
+
+export interface TutorTask {
+  id: string
+  kind: TutorTaskKind
+  title: string
+  caseId: string
+  caseName: string
+  applicantName: string
+  priority: TutorTaskPriority
+  dueAt?: string              // ISO o "hoy"
+  done: boolean
+}
+
+// ─── Cambio de etapa con motivo y log ────────────────────────────────────────
+
+export interface StageChangeLogEntry {
+  id: string
+  caseId: string
+  fromStage: CaseStage
+  toStage: CaseStage
+  reason: string
+  at: string                  // ISO
+  by: string                  // tutor name
+}
+
+// ─── Plantillas de mensajes / acciones rápidas ───────────────────────────────
+
+export type MessageTemplateKind =
+  | 'request_evidence'
+  | 'schedule_meeting'
+  | 'approve_stage'
+  | 'request_clarification'
+  | 'reminder'
+  | 'closing'
+
+export interface MessageTemplate {
+  id: string
+  kind: MessageTemplateKind
+  title: string
+  body: string                // Con {placeholders}
+}
+
 export interface CertificationRequest {
   id: string
   number: string                // "#001"

@@ -4,19 +4,27 @@ import {
   AlertTriangle,
   ArrowRight,
   ArrowUpRight,
+  CheckSquare,
   Clock,
   Download,
+  FileCheck2,
+  MessageSquare,
   MessageSquareWarning,
+  Phone,
   Plus,
+  ShieldCheck,
   TrendingDown,
   TrendingUp,
   Users,
+  Video,
 } from 'lucide-react'
 import {
   mockTutor,
   mockTutorAgenda,
   mockTutorCases,
+  mockTutorTasks,
 } from '@/services/mocks/data'
+import type { TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +41,8 @@ export default function TutorDashboard() {
   const [calendarSelected, setCalendarSelected] = useState<Date | undefined>(
     undefined,
   )
+  const [tasks, setTasks] = useState<TutorTask[]>(mockTutorTasks)
+  const [taskFilter, setTaskFilter] = useState<'all' | 'urgent' | 'today' | 'this_week'>('all')
 
   const cases = mockTutorCases.filter((c) => c.tutorId === mockTutor.id)
   const agenda = mockTutorAgenda
@@ -149,6 +159,18 @@ export default function TutorDashboard() {
               tone="warning"
             />
           </section>
+
+          {/* Mis tareas hoy */}
+          <TasksCard
+            tasks={tasks}
+            filter={taskFilter}
+            onFilter={setTaskFilter}
+            onToggle={(id) =>
+              setTasks((prev) =>
+                prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+              )
+            }
+          />
 
           {/* Charts row */}
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -393,6 +415,162 @@ function TimesCard() {
         ))}
       </ul>
     </div>
+  )
+}
+
+const TASK_ICON: Record<TutorTaskKind, typeof CheckSquare> = {
+  review_evidence: FileCheck2,
+  call_applicant: Phone,
+  sign_evaluation: ShieldCheck,
+  send_message: MessageSquare,
+  audit_meeting: Video,
+  verify_documentation: FileCheck2,
+  review_case: CheckSquare,
+}
+
+const PRIORITY_META = {
+  urgent: { label: 'Urgente', cls: 'bg-error-100 text-error-400 ring-error-300/40' },
+  today: { label: 'Hoy', cls: 'bg-warning-100 text-warning-400 ring-warning-300/40' },
+  this_week: { label: 'Esta semana', cls: 'bg-info-100 text-info-400 ring-info-300/40' },
+}
+
+function TasksCard({
+  tasks,
+  filter,
+  onFilter,
+  onToggle,
+}: {
+  tasks: TutorTask[]
+  filter: 'all' | 'urgent' | 'today' | 'this_week'
+  onFilter: (f: 'all' | 'urgent' | 'today' | 'this_week') => void
+  onToggle: (id: string) => void
+}) {
+  const filtered = tasks.filter((t) => {
+    if (filter === 'all') return true
+    return t.priority === filter
+  })
+  const pending = tasks.filter((t) => !t.done)
+  const counts = {
+    all: tasks.length,
+    urgent: tasks.filter((t) => t.priority === 'urgent').length,
+    today: tasks.filter((t) => t.priority === 'today').length,
+    this_week: tasks.filter((t) => t.priority === 'this_week').length,
+  }
+
+  return (
+    <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-bold text-navy-500">Mis tareas hoy</h3>
+          <p className="mt-0.5 text-xs text-navy-300">
+            {pending.length === 0
+              ? 'Todo al día. Nada pendiente.'
+              : `${pending.length} pendientes · prioridad por urgencia.`}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {(['all', 'urgent', 'today', 'this_week'] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => onFilter(f)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-colors',
+                filter === f
+                  ? 'bg-navy-500 text-white'
+                  : 'border border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100',
+              )}
+            >
+              {f === 'all'
+                ? 'Todas'
+                : f === 'urgent'
+                  ? 'Urgentes'
+                  : f === 'today'
+                    ? 'Hoy'
+                    : 'Esta semana'}
+              <span
+                className={cn(
+                  'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px]',
+                  filter === f ? 'bg-gold-500 text-navy-500' : 'bg-neutral-200 text-navy-500',
+                )}
+              >
+                {counts[f]}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-dashed border-neutral-300 p-6 text-center text-xs text-navy-300">
+          No hay tareas en este filtro.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {filtered.map((t) => {
+            const Icon = TASK_ICON[t.kind]
+            const prio = PRIORITY_META[t.priority]
+            return (
+              <li
+                key={t.id}
+                className={cn(
+                  'flex items-start gap-3 rounded-2xl border p-3 transition-colors',
+                  t.done
+                    ? 'border-neutral-200 bg-neutral-100 opacity-60'
+                    : 'border-neutral-200 bg-white hover:bg-neutral-100',
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => onToggle(t.id)}
+                  aria-label={t.done ? 'Reabrir tarea' : 'Marcar hecha'}
+                  className={cn(
+                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                    t.done
+                      ? 'border-success-300 bg-success-300 text-white'
+                      : 'border-neutral-400 hover:border-success-300',
+                  )}
+                >
+                  {t.done && <CheckSquare className="h-3 w-3" strokeWidth={3} />}
+                </button>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={cn(
+                      'text-sm font-bold text-navy-500',
+                      t.done && 'line-through',
+                    )}
+                  >
+                    {t.title}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-navy-300">
+                    {t.caseName} · {t.applicantName}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-bold ring-1',
+                      prio.cls,
+                    )}
+                  >
+                    {prio.label}
+                  </span>
+                  <Link
+                    to={`/tutor/casos/${t.caseId}`}
+                    className="text-[11px] font-bold text-gold-700 hover:underline"
+                  >
+                    Abrir →
+                  </Link>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
   )
 }
 
