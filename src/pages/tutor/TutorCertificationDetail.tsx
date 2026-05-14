@@ -1970,6 +1970,139 @@ function IncidentModal({
 
 // ─── Drawer: Más acciones (menú) ──────────────────────────────────────────────
 
+// ─── Acciones reales de "Más acciones" ────────────────────────────────────────
+
+/** Mapea el ID del cert emitido al slug del cert público para la ficha. */
+const CERT_PUBLIC_SLUG: Record<string, string> = {
+  'CE-001': 'tecnica-ancestral-filigrana',
+  'CE-002': 'libro-sabores-cosmicos',
+  'CE-003': 'tejido-textil-tradicional',
+  'CE-004': 'ecodestinos-turismo-ancestral',
+}
+
+function publicSlugFor(certId: string): string {
+  return CERT_PUBLIC_SLUG[certId] ?? 'tecnica-ancestral-filigrana'
+}
+
+function publicCertUrl(certId: string): string {
+  if (typeof window === 'undefined') return '#'
+  const base = `${window.location.origin}${import.meta.env.BASE_URL || '/'}`.replace(/\/$/, '')
+  return `${base}/certificado/${publicSlugFor(certId)}`
+}
+
+function blockchainHashFor(certId: string): string {
+  return `0x${certId.toLowerCase().repeat(8).slice(0, 60)}`
+}
+
+/** Genera el contenido del acta en texto plano para descargar. */
+function buildActaContent(
+  cert: (typeof mockIssuedCertifications)[number],
+  extra: ReturnType<typeof getExpedienteData>,
+): string {
+  const hash = blockchainHashFor(cert.id)
+  const lines = [
+    '═══════════════════════════════════════════════════════════════',
+    '         ANCESTRAL SEED — ACTA DE CERTIFICACIÓN',
+    '═══════════════════════════════════════════════════════════════',
+    '',
+    `Identificador del expediente: ${cert.id}`,
+    `Estado: ${cert.status.toUpperCase()}`,
+    `Puntaje final: ${cert.scoreLabel}`,
+    `Fecha de emisión: ${cert.issuedAt}`,
+    `Fecha de vencimiento: ${cert.expiresAt}`,
+    '',
+    '───────────────────────────────────────────────────────────────',
+    'AUTOR',
+    '───────────────────────────────────────────────────────────────',
+    `Nombre: ${cert.authorName}`,
+    `Rol: ${extra.authorRole ?? '—'}`,
+    `Comunidad: ${extra.community ?? '—'}`,
+    `País / región: ${cert.country} · ${cert.region}`,
+    `Teléfono: ${extra.authorPhone ?? '—'}`,
+    `Email: ${extra.authorEmail ?? '—'}`,
+    '',
+    '───────────────────────────────────────────────────────────────',
+    'PRODUCTO / SERVICIO CERTIFICADO',
+    '───────────────────────────────────────────────────────────────',
+    `Nombre: ${cert.productName}`,
+    `Tipo: ${extra.productType ?? '—'}`,
+    `Sector: ${extra.productSector ?? '—'}`,
+    `Categoría: ${cert.category}`,
+    `Subcategoría: ${extra.productSubcategory ?? '—'}`,
+    '',
+    'Descripción de la producción:',
+    extra.productionDescription ?? '—',
+    '',
+    `Responsable de producción: ${extra.productionResponsible ?? '—'}`,
+    `Capacidad productiva: ${extra.productionCapacity ?? '—'}`,
+    `Modalidad de producción: ${extra.productionMode ?? '—'}`,
+    `Identificación de lotes: ${extra.batchIdentifier ?? '—'}`,
+    '',
+    '───────────────────────────────────────────────────────────────',
+    'RENOVACIÓN',
+    '───────────────────────────────────────────────────────────────',
+    `Última renovación: ${extra.lastRenewalAt ?? '—'}`,
+    `Próxima renovación: ${extra.nextRenewalAt ?? '—'}`,
+    `Ciclo: cada ${extra.renewalCycleMonths ?? '—'} meses`,
+    '',
+    '───────────────────────────────────────────────────────────────',
+    'REGISTRO EN BLOCKCHAIN',
+    '───────────────────────────────────────────────────────────────',
+    `Red: Polygon Mainnet`,
+    `Hash de transacción: ${hash}`,
+    `Verificable en: https://polygonscan.com/search?q=${hash}`,
+    `Ficha pública: ${publicCertUrl(cert.id)}`,
+    '',
+    '═══════════════════════════════════════════════════════════════',
+    `Acta generada el ${new Date().toLocaleString('es-AR')}`,
+    'Documento de validez oficial — Ancestral Seed Foundation',
+    '═══════════════════════════════════════════════════════════════',
+  ]
+  return lines.join('\n')
+}
+
+function downloadActa(
+  cert: (typeof mockIssuedCertifications)[number],
+  extra: ReturnType<typeof getExpedienteData>,
+) {
+  const content = buildActaContent(cert, extra)
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `acta-${cert.id}.txt`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+function buildMailtoForAuthor(
+  cert: (typeof mockIssuedCertifications)[number],
+  extra: ReturnType<typeof getExpedienteData>,
+): string {
+  const to = extra.authorEmail ?? 'contacto@ancestralseed.io'
+  const subject = `Ancestral Seed — Tu certificado ${cert.id} (${cert.productName})`
+  const body = [
+    `Hola ${cert.authorName.split(' ')[0]},`,
+    '',
+    `Te escribo desde el equipo de tutoría de Ancestral Seed por tu certificado:`,
+    '',
+    `· Expediente: ${cert.id}`,
+    `· Producto: ${cert.productName}`,
+    `· Estado: ${cert.status}`,
+    `· Vencimiento: ${cert.expiresAt}`,
+    '',
+    `Ficha pública verificable: ${publicCertUrl(cert.id)}`,
+    '',
+    `Quedo atento para cualquier consulta.`,
+    '',
+    `Saludos,`,
+    `Equipo Ancestral Seed`,
+  ].join('\n')
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+}
+
 function MoreActionsDrawer({
   cert,
   onClose,
@@ -1980,22 +2113,28 @@ function MoreActionsDrawer({
   onIncident: () => void
 }) {
   useEscape(true, onClose)
+  const extra = getExpedienteData(cert.id)
+  const hash = blockchainHashFor(cert.id)
+  const publicUrl = publicCertUrl(cert.id)
+
   const actions = [
     {
       icon: Eye,
       label: 'Ver ficha pública',
       sub: 'Cómo lo ve el público',
       onClick: () => {
-        toast.info('Abriendo ficha pública…')
+        window.open(publicUrl, '_blank', 'noopener,noreferrer')
+        toast.success('Ficha pública abierta en nueva pestaña')
         onClose()
       },
     },
     {
       icon: Download,
-      label: 'Descargar acta (PDF)',
-      sub: 'Documento oficial firmado',
+      label: 'Descargar acta',
+      sub: 'Documento oficial · TXT',
       onClick: () => {
-        toast.success('Descargando acta…')
+        downloadActa(cert, extra)
+        toast.success(`acta-${cert.id}.txt descargada`)
         onClose()
       },
     },
@@ -2004,28 +2143,37 @@ function MoreActionsDrawer({
       label: 'Ver en explorador blockchain',
       sub: 'Polygon · transacción inmutable',
       onClick: () => {
-        toast.info('Abriendo Polygonscan…')
+        window.open(
+          `https://polygonscan.com/search?q=${hash}`,
+          '_blank',
+          'noopener,noreferrer',
+        )
+        toast.success('Abriendo Polygonscan…')
         onClose()
       },
     },
     {
       icon: MessageSquare,
       label: 'Notificar al autor',
-      sub: `Mensaje a ${cert.authorName}`,
+      sub: `Email a ${cert.authorName}`,
       onClick: () => {
-        toast.success('Notificación enviada')
+        const mailto = buildMailtoForAuthor(cert, extra)
+        window.location.href = mailto
+        toast.success('Abriendo tu cliente de email…')
         onClose()
       },
     },
     {
       icon: ArrowRight,
       label: 'Compartir link de validación',
-      sub: 'Copiar enlace público',
-      onClick: () => {
-        navigator.clipboard.writeText(
-          `https://soyalantapia.github.io/ancestral-seed-app/certificado/${cert.id.toLowerCase()}`,
-        )
-        toast.success('Link copiado')
+      sub: publicUrl.replace(/^https?:\/\//, ''),
+      onClick: async () => {
+        try {
+          await navigator.clipboard.writeText(publicUrl)
+          toast.success('Link copiado al portapapeles')
+        } catch {
+          toast.error('No se pudo copiar el link')
+        }
         onClose()
       },
     },
