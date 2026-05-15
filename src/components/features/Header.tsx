@@ -107,6 +107,7 @@ export function Header() {
         {isDashboardRoute && (
           <Link
             to="/"
+            data-tour="public-site"
             className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500 lg:inline-flex"
             title="Ver sitio público"
           >

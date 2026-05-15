@@ -246,7 +246,11 @@ export default function TutorCases() {
       )}
 
       {/* Kanban */}
-      <div ref={kanbanRef} className="mt-6 -mx-4 overflow-x-auto pb-4 sm:-mx-6 md:-mx-8">
+      <div
+        ref={kanbanRef}
+        data-tour="kanban-board"
+        className="mt-6 -mx-4 overflow-x-auto pb-4 sm:-mx-6 md:-mx-8"
+      >
         <div className="flex gap-4 px-4 sm:px-6 md:px-8" style={{ minWidth: 'max-content' }}>
           {STAGES.map((stage) => {
             const items = byStage.get(stage.id) ?? []

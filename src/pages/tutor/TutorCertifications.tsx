@@ -197,7 +197,10 @@ export default function TutorCertifications() {
       </div>
 
       {/* Tabla desktop */}
-      <section className="mt-6 hidden overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm md:block">
+      <section
+        data-tour="certs-table"
+        className="mt-6 hidden overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm md:block"
+      >
         <table className="w-full text-left text-sm">
           <thead className="border-b border-neutral-200 bg-neutral-100/50 text-xs uppercase tracking-widest text-navy-300">
             <tr>

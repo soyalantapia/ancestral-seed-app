@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Headphones, Mail, Phone, Search, X } from 'lucide-react'
+import { Compass, Headphones, Mail, Phone, Search, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { useOnboardingStore } from '@/store/onboarding'
 
 interface Topic {
   id: string
@@ -123,6 +124,7 @@ export default function Help() {
   const [query, setQuery] = useState('')
   const [topic, setTopic] = useState<Topic | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
+  const resetTour = useOnboardingStore((s) => s.reset)
 
   const filtered = query
     ? topics.filter(
@@ -150,6 +152,49 @@ export default function Help() {
             placeholder="Buscar por tema o palabra clave..."
             className="h-14 w-full rounded-full border border-neutral-300 bg-white pl-14 pr-5 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
           />
+        </div>
+      </section>
+
+      {/* Re-iniciar tours */}
+      <section className="mt-6 rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-500 text-navy-500">
+              <Compass className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-navy-500">
+                ¿Te perdiste? Volvé al tour guiado
+              </p>
+              <p className="mt-0.5 text-xs text-navy-300">
+                8 pasos con spotlight que te muestran qué hace cada sección.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                resetTour('solicitante')
+                toast.success('Tour del solicitante iniciado')
+              }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm hover:bg-navy-400"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              Tour solicitante
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                resetTour('tutor')
+                toast.success('Tour del tutor iniciado')
+              }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 hover:bg-neutral-100"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              Tour tutor
+            </button>
+          </div>
         </div>
       </section>
 

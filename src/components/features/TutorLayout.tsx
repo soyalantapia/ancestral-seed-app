@@ -28,6 +28,7 @@ import { Logo } from './Logo'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
+import { GuidedTour } from './GuidedTour'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import {
@@ -505,6 +506,7 @@ export function TutorLayout() {
       </div>
 
       <CommandPalette />
+      <GuidedTour />
 
       {/* Logout confirm */}
       <AnimatePresence>

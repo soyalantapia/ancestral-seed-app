@@ -32,6 +32,7 @@ import {
 } from '@/services/mocks/data'
 import type { ApprovalSignature, TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
+import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import { cn } from '@/lib/utils'
 
 const periods = [
@@ -43,6 +44,8 @@ const periods = [
 type PeriodId = (typeof periods)[number]['id']
 
 export default function TutorDashboard() {
+  // Tour guiado de 8 pasos en primera visita
+  useAutoStartTour('tutor')
   const [period, setPeriod] = useState<PeriodId>('7d')
   const [calendarSelected, setCalendarSelected] = useState<Date | undefined>(
     undefined,
@@ -136,7 +139,10 @@ export default function TutorDashboard() {
         {/* LEFT */}
         <div className="space-y-6 lg:col-span-8">
           {/* KPIs */}
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <section
+            data-tour="tutor-kpis"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+          >
             <KpiCard
               icon={Users}
               label="Casos asignados"
@@ -251,7 +257,7 @@ export default function TutorDashboard() {
         </div>
 
         {/* RIGHT — Agenda */}
-        <aside className="space-y-3 lg:col-span-4">
+        <aside data-tour="tutor-agenda" className="space-y-3 lg:col-span-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
               Agenda
@@ -472,7 +478,10 @@ function TasksCard({
   }
 
   return (
-    <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
+    <section
+      data-tour="tutor-tareas"
+      className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-bold text-navy-500">Mis tareas hoy</h3>

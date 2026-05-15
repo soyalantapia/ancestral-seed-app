@@ -34,7 +34,7 @@ import {
   mockCertificationRequests,
 } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
-import { OnboardingTour } from '@/components/features/OnboardingTour'
+import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import type { CertificationRequest, RequestStage, TutorMessage } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -136,6 +136,8 @@ const STAGE_TIPS: Record<RequestStage, { title: string; body: string }> = {
 
 export default function DashboardHome() {
   const user = useAuthStore((s) => s.user)
+  // Tour guiado de 8 pasos en primera visita
+  useAutoStartTour('solicitante')
   const dismissed = useUiStore((s) => s.dismissedBanners['welcome-info'])
   const dismissBanner = useUiStore((s) => s.dismissBanner)
   const notifs = useNotificationsStore((s) => s.items)
@@ -191,7 +193,6 @@ export default function DashboardHome() {
   if (requests.length === 0) {
     return (
       <div className="mx-auto max-w-[1100px] px-4 py-10 sm:px-6 sm:py-12 md:px-10 md:py-20">
-        <OnboardingTour />
         <div className="relative overflow-hidden rounded-3xl bg-pattern-aztec p-10 text-center text-white shadow-xl md:p-16">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gold-500 text-navy-500 shadow-lg">
             <FileText className="h-8 w-8" />
@@ -253,7 +254,6 @@ export default function DashboardHome() {
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
-      <OnboardingTour />
 
       {/* ─── Saludo contextual ─────────────────────────────────────────── */}
       <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -344,7 +344,7 @@ export default function DashboardHome() {
       {/* ─── Main grid 2-col ──────────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         {/* LEFT */}
-        <div className="space-y-6 lg:col-span-8">
+        <div data-tour="solicitudes-list" className="space-y-6 lg:col-span-8">
           {/* Tu certificación en proceso */}
           {inProgress && (
             <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
@@ -636,8 +636,11 @@ function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
     },
   ]
   return (
-    <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
-      {actions.map(({ icon: Icon, label, to, tone }) => {
+    <div
+      data-tour="quick-actions"
+      className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4"
+    >
+      {actions.map(({ icon: Icon, label, to, tone }, idx) => {
         const styles =
           tone === 'gold'
             ? 'bg-gold-500 text-navy-500 hover:bg-gold-400 shadow-sm'
@@ -648,6 +651,7 @@ function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
           <Link
             key={label}
             to={to}
+            data-tour={idx === 0 ? 'cta-nueva-cert' : undefined}
             className={cn(
               'inline-flex items-center gap-2 rounded-2xl px-3 py-3 text-xs font-bold transition-all sm:gap-3 sm:px-4 sm:text-sm',
               styles,

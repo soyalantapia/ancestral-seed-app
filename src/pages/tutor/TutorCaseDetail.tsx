@@ -280,7 +280,10 @@ export default function TutorCaseDetail() {
         {/* MAIN */}
         <div className="lg:col-span-8">
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-1 border-b border-neutral-200">
+          <div
+            data-tour="case-tabs"
+            className="flex flex-wrap items-center gap-1 border-b border-neutral-200"
+          >
             {TABS.map(({ id: tid, label, icon: Icon }) => {
               const active = tab === tid
               return (
@@ -1484,7 +1487,10 @@ function SidebarAI({
   ]
   return (
     <>
-      <section className="rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-5 shadow-sm">
+      <section
+        data-tour="ia-summary"
+        className="rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-5 shadow-sm"
+      >
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gold-700">
           <Sparkles className="h-3.5 w-3.5" />
           Asistente IA

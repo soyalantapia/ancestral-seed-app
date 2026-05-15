@@ -22,6 +22,7 @@ import { HelpBubble } from './HelpBubble'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
+import { GuidedTour } from './GuidedTour'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
@@ -133,13 +134,17 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           Mi cuenta
         </p>
         {accountItems.map((item) => (
-          <SidebarLink
+          <div
             key={item.to}
-            to={item.to}
-            icon={item.icon}
-            label={item.label}
-            onClose={closeOnNav}
-          />
+            data-tour={item.to === '/ayuda' ? 'help-link' : undefined}
+          >
+            <SidebarLink
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              onClose={closeOnNav}
+            />
+          </div>
         ))}
       </nav>
       <button
@@ -174,7 +179,10 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
 
       <div className="flex flex-1">
         {/* Desktop sidebar */}
-        <aside className="hidden w-64 shrink-0 flex-col bg-navy-500 text-white md:flex">
+        <aside
+          data-tour="sidebar"
+          className="hidden w-64 shrink-0 flex-col bg-navy-500 text-white md:flex"
+        >
           {SidebarBody}
         </aside>
 
@@ -233,6 +241,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
 
       <HelpBubble />
       <CommandPalette />
+      <GuidedTour />
 
       {/* Logout confirm */}
       <AnimatePresence>
