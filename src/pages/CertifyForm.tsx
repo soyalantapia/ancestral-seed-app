@@ -293,13 +293,13 @@ export default function CertifyForm() {
               <div className="space-y-4 lg:sticky lg:top-6">
                 <VideoPanel />
                 <div className="flex justify-center lg:justify-end">
-                  <button
-                    type="button"
+                  <a
+                    href="mailto:soporte@ancestralseed.org?subject=Necesito%20ayuda%20con%20el%20formulario%20de%20certificación"
                     className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-navy-400"
                   >
                     Necesito ayuda
                     <Headphones className="h-4 w-4" />
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
