@@ -28,7 +28,16 @@ export function RequireTutor() {
     )
   }
 
+  // Legacy bypass: si el user no tiene `role` ni `roles` (persistido antes
+  // de Sprint A o de un backend que no incluye el campo), permitimos acceso
+  // — en la demo el único usuario es mockUser que es multi-rol. La migración
+  // del store ya backfillea estos campos al rehidratar, así que este branch
+  // solo cubre el race window entre carga del bundle nuevo y rehidratación.
+  const hasNoRoleInfo =
+    !!user && user.role === undefined && (user.roles?.length ?? 0) === 0
+
   const isTutor =
+    hasNoRoleInfo ||
     user?.role === 'tutor' ||
     user?.role === 'admin' ||
     user?.roles?.includes('tutor') === true ||
