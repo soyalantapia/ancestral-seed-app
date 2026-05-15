@@ -13,6 +13,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   useAuthor,
   useAuthorCertifications,
@@ -96,10 +97,43 @@ export default function AuthorProfile() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="navy" size="md">
+                  <a
+                    href={author.email ? `mailto:${author.email}?subject=${encodeURIComponent(`Hola ${author.name}`)}` : '#'}
+                    onClick={(e) => {
+                      if (!author.email) {
+                        e.preventDefault()
+                        toast.info('El autor no tiene email público')
+                      }
+                    }}
+                    className={cn(
+                      'inline-flex h-11 items-center justify-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400',
+                    )}
+                  >
                     <Mail className="h-4 w-4" /> Contactar
-                  </Button>
-                  <Button variant="ghost" size="icon" aria-label="Compartir">
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Compartir perfil"
+                    onClick={async () => {
+                      const url = typeof window !== 'undefined' ? window.location.href : ''
+                      const shareData = {
+                        title: `${author.name} en Ancestral Seed`,
+                        text: `Mirá el perfil de ${author.name} — ${author.title}`,
+                        url,
+                      }
+                      try {
+                        if (navigator.share) {
+                          await navigator.share(shareData)
+                        } else {
+                          await navigator.clipboard?.writeText(url)
+                          toast.success('Link del perfil copiado')
+                        }
+                      } catch {
+                        // Usuario canceló el share — no-op
+                      }
+                    }}
+                  >
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
