@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Lightbulb, Sparkles, X } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboarding'
 import { TOURS, type TourStep } from '@/lib/tours'
@@ -82,6 +82,13 @@ export function GuidedTour() {
     if (!el) return null
     const r = el.getBoundingClientRect()
     if (r.width === 0 && r.height === 0) return null
+    // Si el target es más grande que el 85% del viewport en CUALQUIER dimensión,
+    // el spotlight cubriría casi toda la pantalla y el "agujero" terminaría
+    // dejando todo el contenido visible — perdiendo el sentido del highlight.
+    // En ese caso, devolvemos null para que el step caiga a modal centrado.
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    if (r.height > vh * 0.85 || r.width > vw * 0.85) return null
     return { top: r.top, left: r.left, width: r.width, height: r.height }
   }, [])
 
@@ -112,7 +119,14 @@ export function GuidedTour() {
       if (cancelled) return
       const rect = measure(currentStep.target!)
       if (rect) {
-        if (currentStep.scrollIntoView !== false) {
+        // Solo scrollear si el target NO está suficientemente visible.
+        // Margen mínimo: 80px arriba/abajo del viewport para que el tooltip
+        // tenga lugar para abrirse sin tapar el target.
+        const vh = window.innerHeight
+        const needsScroll =
+          currentStep.scrollIntoView !== false &&
+          (rect.top < 80 || rect.top + rect.height > vh - 80)
+        if (needsScroll) {
           const el = document.querySelector(currentStep.target!)
           if (el && 'scrollIntoView' in el) {
             ;(el as HTMLElement).scrollIntoView({
@@ -269,18 +283,22 @@ export function GuidedTour() {
   const hasSpotlight = !!targetRect && currentStep.placement !== 'center'
   const PAD = currentStep.spotlightPadding ?? 8
 
+  // Sin AnimatePresence wrapper: cada cambio de step desmonta el viejo y
+  // monta el nuevo inmediatamente, sin animaciones de exit que dejen el
+  // contenido viejo visible mientras el store ya avanzó. Las animaciones
+  // de enter (initial → animate) siguen funcionando.
   return (
-    <AnimatePresence>
-      <motion.div
-        key={`${tour.id}-${step}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[70]"
-        aria-live="polite"
-        aria-label={`${tour.label}: paso ${step + 1} de ${totalSteps}`}
-      >
+    <motion.div
+      key={`${tour.id}-${step}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-[70]"
+      role="dialog"
+      aria-modal="true"
+      aria-live="polite"
+      aria-label={`${tour.label}: paso ${step + 1} de ${totalSteps}`}
+    >
         {/* Overlays oscuros (4 paneles que dejan un agujero sobre el target) */}
         {hasSpotlight ? (
           <SpotlightCutout rect={targetRect!} padding={PAD} onClick={pause} />
@@ -420,8 +438,7 @@ export function GuidedTour() {
             </div>
           </div>
         </motion.div>
-      </motion.div>
-    </AnimatePresence>
+    </motion.div>
   )
 }
 

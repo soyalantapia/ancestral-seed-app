@@ -344,10 +344,13 @@ export default function DashboardHome() {
       {/* ─── Main grid 2-col ──────────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         {/* LEFT */}
-        <div data-tour="solicitudes-list" className="space-y-6 lg:col-span-8">
+        <div className="space-y-6 lg:col-span-8">
           {/* Tu certificación en proceso */}
           {inProgress && (
-            <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+            <section
+              data-tour="solicitudes-list"
+              className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
