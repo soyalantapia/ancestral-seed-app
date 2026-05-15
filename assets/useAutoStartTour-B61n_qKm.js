@@ -1,0 +1,1 @@
+import{c as e,r as t}from"./jsx-runtime-wPaO85xm.js";import{n}from"./index-BkNvEBP7.js";var r=e(t(),1);function i(e,t=800){let i=n(t=>t.completed[e]),a=n(e=>e.activeTour),o=n(e=>e.start);(0,r.useEffect)(()=>{if(i||a)return;let r=setTimeout(()=>{let t=n.getState();!t.completed[e]&&!t.activeTour&&o(e)},t);return()=>clearTimeout(r)},[e,i,a,o,t])}export{i as t};
