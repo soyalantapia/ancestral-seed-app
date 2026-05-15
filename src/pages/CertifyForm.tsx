@@ -315,7 +315,7 @@ function VideoPanel() {
     <div className="relative overflow-hidden rounded-3xl bg-gold-300 shadow-md">
       <div
         className="relative aspect-[16/10] w-full bg-cover bg-center md:aspect-[4/5]"
-        style={{ backgroundImage: `url('${import.meta.env.BASE_URL}hero-image.png')` }}
+        style={{ backgroundImage: `url('${import.meta.env.BASE_URL}hero-image.webp')` }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <button

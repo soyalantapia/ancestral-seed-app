@@ -14,6 +14,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet } from '@/components/ui/sheet'
 import { CertificationCard } from '@/components/features/CertificationCard'
+import { PageMeta } from '@/components/features/PageMeta'
 import { useCategories, useCertifications } from '@/hooks/useCertifications'
 import type { CertificationStatus, DirectoryFilters } from '@/types'
 import { cn } from '@/lib/utils'
@@ -63,6 +64,10 @@ export default function Directory() {
 
   return (
     <>
+      <PageMeta
+        title="Directorio de certificaciones auténticas"
+        description="Explorá productos y saberes ancestrales certificados de toda Latinoamérica. Filtros por país, categoría y técnica."
+      />
       <section className="bg-pattern-gold pb-12 pt-8 md:pb-16 md:pt-10">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
           <div className="rounded-3xl bg-white px-6 py-8 text-center shadow-sm sm:px-8 sm:py-10 md:px-16 md:py-12">
@@ -336,7 +341,7 @@ export default function Directory() {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
+              backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.webp')`,
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-navy-500/85 via-navy-500/70 to-navy-500/85" />

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSettingsStore } from '@/store/settings'
+import { ThemeToggle } from '@/components/features/ThemeToggle'
 import { cn } from '@/lib/utils'
 
 // ─── Tab schema (extensible) ─────────────────────────────────────────────────
@@ -306,6 +307,11 @@ function AccountSection() {
             </button>
           </div>
         </div>
+      </Group>
+
+      {/* Apariencia */}
+      <Group title="Apariencia" hint="Elegí el tema. Sistema usa la preferencia de tu dispositivo.">
+        <ThemeToggle variant="segmented" />
       </Group>
 
       {/* Danger */}

@@ -89,7 +89,7 @@ export const mockCertifications: Certification[] = [
     category: 'Caribe colombiano',
     description:
       'Filigrana, una técnica de orfebrería que aprendió y desarrolló a partir de una herencia cultural transmitida en su familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
-    coverUrl: '/cards/card-filigrana.png',
+    coverUrl: '/cards/card-filigrana.webp',
     hash: '0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6',
     location: 'Colombia · Caribe colombiano',
     mapQuery: 'Sierra Nevada de Santa Marta, Colombia',
@@ -117,7 +117,7 @@ export const mockCertifications: Certification[] = [
     category: 'Córdoba',
     description:
       'Sabores Cósmicos es una obra de investigación y reflexión que reúne conocimientos vinculados a la alimentación consciente, los ciclos naturales y las tradiciones cosmológicas presentes en diversas culturas. El libro recupera prácticas como la observación de las fases lunares, las dietas asociadas a estos ciclos y algunos principios vinculados a la astromedicina, una disciplina antigua que estudiaba la relación entre los movimientos celestes y el funcionamiento del cuerpo humano.',
-    coverUrl: '/cards/card-sabores.png',
+    coverUrl: '/cards/card-sabores.webp',
     hash: '0xC8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1C2',
     location: 'Argentina · Córdoba',
     mapQuery: 'Córdoba, Argentina',
@@ -145,7 +145,7 @@ export const mockCertifications: Certification[] = [
     category: 'Nariño',
     description:
       'Tradición textil del pueblo Pasto, con motivos y técnicas heredadas de la familia y la comunidad.',
-    coverUrl: '/cards/card-tejido.png',
+    coverUrl: '/cards/card-tejido.webp',
     hash: '0xB7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8A2B7C1D6F5E3A0B4C9D1E7F2',
     location: 'Colombia · Nariño',
     mapQuery: 'Nariño, Colombia',
@@ -165,7 +165,7 @@ export const mockCertifications: Certification[] = [
     category: 'Colombia',
     description:
       'Operador de turismo ancestral certificado, con experiencias diseñadas en alianza con comunidades originarias del territorio.',
-    coverUrl: '/cards/card-ecodestinos.png',
+    coverUrl: '/cards/card-ecodestinos.webp',
     hash: '0xD9E4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1',
     location: 'Colombia',
     mapQuery: 'Colombia',
@@ -183,7 +183,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Joyería elaborada con la técnica de filigrana, herencia cultural de orfebres tradicionales.',
-    coverUrl: '/cards/card-joyeria.png',
+    coverUrl: '/cards/card-joyeria.webp',
     hash: '0xE0F5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0',
   },
   {
@@ -199,7 +199,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Técnica artesanal del barniz de Pasto, originaria del territorio andino, declarada patrimonio cultural inmaterial.',
-    coverUrl: '/cards/card-mopa.png',
+    coverUrl: '/cards/card-mopa.webp',
     hash: '0xF1A6E5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9',
   },
   {
@@ -215,7 +215,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Tejido en chaquira ceremonial, con simbolismo y cosmovisión propios de comunidades indígenas.',
-    coverUrl: '/cards/card-chaquira.png',
+    coverUrl: '/cards/card-chaquira.webp',
     hash: '0xA2B7C1D6F5E3A0B4C9D1E7F2B7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8',
   },
   {
@@ -231,7 +231,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Sahumerio elaborado con hierbas y resinas tradicionales utilizadas en rituales de limpieza espiritual.',
-    coverUrl: '/cards/card-sahumerio.png',
+    coverUrl: '/cards/card-sahumerio.webp',
     hash: '0xB1A2F3E4D5C6B7A8F9E0D1C2C8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0',
   },
   {
@@ -247,7 +247,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Café cultivado y procesado de forma artesanal en montañas de origen, con trazabilidad completa.',
-    coverUrl: '/cards/card-cafe.png',
+    coverUrl: '/cards/card-cafe.webp',
     hash: '0xC7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1A2F3E4D5C6B7A8F9',
   },
 ]
@@ -265,6 +265,9 @@ export const mockUser = {
   name: 'Camila Montes',
   avatarUrl: 'https://i.pravatar.cc/300?img=47',
   authorSlug: 'camila-montes',
+  // Postulante + tutor (multi-rol): puede entrar a /tutor sin perder el panel de solicitante.
+  role: 'postulante' as const,
+  roles: ['postulante', 'tutor'] as const,
 }
 
 export const PLACEHOLDER_TOKEN = PLACEHOLDER
@@ -311,7 +314,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
     ],
     scheduledMeetings: [],
     evidences: [
-      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana.png' },
+      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana.webp' },
       { id: 'e-002', name: 'pieza-reverso.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-02-02T10:16:00-03:00' },
       { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image', sizeKb: 2100, uploadedAt: '2026-02-02T10:18:00-03:00' },
       { id: 'e-004', name: 'video-proceso.mp4', kind: 'video', sizeKb: 18200, uploadedAt: '2026-02-02T10:20:00-03:00' },
@@ -386,7 +389,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
       },
     ],
     evidences: [
-      { id: 'e-101', name: 'manto-completo.jpg', kind: 'image', sizeKb: 1500, uploadedAt: '2025-11-09T12:00:00-03:00', thumbUrl: '/cards/card-tejido.png' },
+      { id: 'e-101', name: 'manto-completo.jpg', kind: 'image', sizeKb: 1500, uploadedAt: '2025-11-09T12:00:00-03:00', thumbUrl: '/cards/card-tejido.webp' },
       { id: 'e-102', name: 'detalle-telar.jpg', kind: 'image', sizeKb: 1100, uploadedAt: '2025-11-09T12:05:00-03:00' },
     ],
     payments: [
@@ -1290,7 +1293,7 @@ export function getExpedienteData(certId: string) {
 export function getEvidenciasByCert(certId: string): CertExpedienteEvidence[] {
   // Default 3 imágenes + 1 video + 1 documento (matchea el Figma)
   return [
-    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana.png' },
+    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana.webp' },
     { id: `${certId}-img-2`, kind: 'image', name: 'pieza-reverso.jpg', sizeKb: 980 },
     { id: `${certId}-img-3`, kind: 'image', name: 'proceso-detalle.jpg', sizeKb: 2100 },
     { id: `${certId}-vid-1`, kind: 'video', name: 'proceso-completo.mp4', sizeKb: 18_200 },

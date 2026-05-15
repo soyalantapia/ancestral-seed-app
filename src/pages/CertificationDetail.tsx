@@ -33,6 +33,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet } from '@/components/ui/sheet'
 import { Label } from '@/components/ui/label'
+import { PageMeta } from '@/components/features/PageMeta'
 import { api } from '@/services/api'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -107,8 +108,43 @@ export default function CertificationDetail() {
     toast.success('Certificado descargado')
   }
 
+  const ogImage =
+    cert.coverUrl?.startsWith('http')
+      ? cert.coverUrl
+      : typeof window !== 'undefined'
+        ? `${window.location.origin}${import.meta.env.BASE_URL}${(cert.coverUrl ?? '').replace(/^\//, '')}`
+        : undefined
+
   return (
     <>
+      <PageMeta
+        title={cert.title}
+        description={
+          cert.description?.slice(0, 160) ??
+          `Certificado ${cert.title} por ${authorName} — ${region}.`
+        }
+        image={ogImage}
+        canonical={typeof window !== 'undefined' ? window.location.href : undefined}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: cert.title,
+          description: cert.description,
+          image: ogImage,
+          brand: { '@type': 'Brand', name: authorName },
+          countryOfOrigin: region,
+          award: cert.issuedBy ? `Certificado por ${cert.issuedBy}` : undefined,
+          additionalProperty: cert.hash
+            ? [
+                {
+                  '@type': 'PropertyValue',
+                  name: 'Blockchain Hash',
+                  value: cert.hash,
+                },
+              ]
+            : undefined,
+        }}
+      />
       {/* Decorative chevron pattern strip */}
       <div className="bg-pattern-strip h-16 md:h-24" aria-hidden />
 
@@ -482,7 +518,7 @@ function MethodologySection() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
+          backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.webp')`,
         }}
         aria-hidden
       />

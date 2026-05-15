@@ -292,7 +292,7 @@ export default function Nosotros() {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
+              backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.webp')`,
             }}
           />
           <div className="absolute inset-0 bg-navy-500/80" />

@@ -26,6 +26,8 @@ import {
 import { toast } from 'sonner'
 import { Logo } from './Logo'
 import { ErrorBoundary } from './ErrorBoundary'
+import { SkipToContent } from './SkipToContent'
+import { CommandPalette } from './CommandPalette'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import {
@@ -172,6 +174,7 @@ export function TutorLayout() {
 
   return (
     <div className="flex min-h-screen bg-white">
+      <SkipToContent />
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col bg-navy-500 text-white md:flex">
         {Sidebar}
@@ -490,12 +493,18 @@ export function TutorLayout() {
           </div>
         </header>
 
-        <main className="flex-1">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 focus:outline-none"
+        >
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>
         </main>
       </div>
+
+      <CommandPalette />
 
       {/* Logout confirm */}
       <AnimatePresence>

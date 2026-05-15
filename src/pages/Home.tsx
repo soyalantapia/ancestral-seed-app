@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useFeaturedCertifications } from '@/hooks/useCertifications'
 import { CertificationCard } from '@/components/features/CertificationCard'
+import { PageMeta } from '@/components/features/PageMeta'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Accordion, type AccordionItem } from '@/components/ui/accordion'
@@ -17,6 +18,17 @@ import { cn } from '@/lib/utils'
 export default function Home() {
   return (
     <>
+      <PageMeta
+        description="Validamos la autenticidad de productos y saberes originarios mediante certificación cultural, auditoría y tecnología blockchain. Encontrá artesanos y comunidades certificados en Latinoamérica."
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Ancestral Seed',
+          description:
+            'Plataforma de certificación digital de productos y saberes ancestrales.',
+          url: 'https://soyalantapia.github.io/ancestral-seed-app/',
+        }}
+      />
       <Hero />
       <Pillars />
       <AncestralVision />
@@ -69,7 +81,7 @@ function Hero() {
           </div>
           <div className="flex justify-center lg:col-span-5">
             <img
-              src={`${import.meta.env.BASE_URL}logo-large.png`}
+              src={`${import.meta.env.BASE_URL}logo-large.webp`}
               alt="Ancestral Seed"
               className="h-44 w-44 object-contain sm:h-56 sm:w-56 md:h-80 md:w-80 lg:h-96 lg:w-96"
             />
@@ -138,7 +150,7 @@ function AncestralVision() {
         <div className="mt-10 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
           <div className="overflow-hidden rounded-3xl">
             <img
-              src={`${import.meta.env.BASE_URL}hero-image.png`}
+              src={`${import.meta.env.BASE_URL}hero-image.webp`}
               alt="Ceremonia ancestral"
               className="h-full w-full object-cover"
             />
@@ -340,14 +352,14 @@ function BlockchainSection() {
           <div className="relative h-[420px] hidden lg:block">
             <div className="absolute left-0 top-0 h-64 w-80 overflow-hidden rounded-3xl shadow-xl">
               <img
-                src={`${import.meta.env.BASE_URL}blockchain-1.png`}
+                src={`${import.meta.env.BASE_URL}blockchain-1.webp`}
                 alt="Comunidad ancestral compartiendo saberes"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="absolute right-4 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
               <img
-                src={`${import.meta.env.BASE_URL}blockchain-2.png`}
+                src={`${import.meta.env.BASE_URL}blockchain-2.webp`}
                 alt="Producto ancestral certificado"
                 className="h-full w-full object-cover"
               />
@@ -355,12 +367,12 @@ function BlockchainSection() {
           </div>
           <div className="grid grid-cols-2 gap-3 lg:hidden">
             <img
-              src={`${import.meta.env.BASE_URL}blockchain-1.png`}
+              src={`${import.meta.env.BASE_URL}blockchain-1.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
             <img
-              src={`${import.meta.env.BASE_URL}blockchain-2.png`}
+              src={`${import.meta.env.BASE_URL}blockchain-2.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
@@ -492,7 +504,7 @@ function CTASection() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.jpg')`,
+            backgroundImage: `url('${import.meta.env.BASE_URL}methodology-bg.webp')`,
           }}
         />
         <div className="absolute inset-0 bg-navy-500/70" />

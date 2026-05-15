@@ -20,6 +20,8 @@ import { Header } from './Header'
 import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
 import { ErrorBoundary } from './ErrorBoundary'
+import { SkipToContent } from './SkipToContent'
+import { CommandPalette } from './CommandPalette'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
@@ -153,6 +155,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <SkipToContent />
       <Header />
 
       {/* Mobile toolbar */}
@@ -214,7 +217,11 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         </AnimatePresence>
 
         {/* Main */}
-        <main className="flex flex-1 flex-col bg-white">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex flex-1 flex-col bg-white focus:outline-none"
+        >
           <div className="flex-1">
             <ErrorBoundary key={location.pathname}>
               {children ?? <Outlet />}
@@ -225,6 +232,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
       </div>
 
       <HelpBubble />
+      <CommandPalette />
 
       {/* Logout confirm */}
       <AnimatePresence>

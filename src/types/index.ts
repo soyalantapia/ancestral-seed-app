@@ -60,12 +60,18 @@ export interface ApiError {
   code?: string
 }
 
+export type UserRole = 'postulante' | 'tutor' | 'evaluador' | 'coordinador' | 'admin'
+
 export interface User {
   id: string
   email: string
   name: string
   avatarUrl?: string
   authorSlug?: string
+  /** Rol funcional en la plataforma. Default: postulante. */
+  role?: UserRole
+  /** Roles secundarios — un usuario puede ser postulante Y tutor a la vez. */
+  roles?: UserRole[]
 }
 
 export interface LoginCredentials {

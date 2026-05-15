@@ -58,7 +58,7 @@ export default function AuthorProfile() {
     <>
       <div className="relative h-56 overflow-hidden md:h-72">
         <img
-          src={`${import.meta.env.BASE_URL}perfil-cover.png`}
+          src={`${import.meta.env.BASE_URL}perfil-cover.webp`}
           alt=""
           className="h-full w-full object-cover"
         />
