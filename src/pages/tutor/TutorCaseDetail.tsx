@@ -506,8 +506,17 @@ function DaysBadge({
   stage: CaseStage
 }) {
   const sla = STAGE_SLA_DAYS[stage] ?? 14
+  const overdue = days - sla
+  const tooltip =
+    tone === 'red'
+      ? `Llevás ${days} días en esta etapa. El plazo máximo es ${sla}. Estás atrasado ${overdue} día${overdue === 1 ? '' : 's'}.`
+      : tone === 'yellow'
+        ? `Llevás ${days} días en esta etapa. El plazo máximo es ${sla}. Quedan ${Math.max(0, sla - days)} día${sla - days === 1 ? '' : 's'} para avanzar.`
+        : `Llevás ${days} días en esta etapa de un plazo máximo de ${sla}. Vas en tiempo.`
   return (
     <span
+      title={tooltip}
+      aria-label={tooltip}
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
         tone === 'red'
@@ -518,7 +527,7 @@ function DaysBadge({
       )}
     >
       <Clock className="h-3 w-3" />
-      {days}d / SLA {sla}d
+      {tone === 'red' ? `+${overdue}d vencido` : `${days}/${sla}d`}
     </span>
   )
 }
@@ -544,8 +553,9 @@ function ResumenTab({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <MiniStat label="Scoring IA" value={`${caseData.scoringIA}/100`} icon={Sparkles} />
         <MiniStat
-          label="Score final"
-          value={`${finalScore}/100`}
+          label="Score tutor"
+          value={finalScore > 0 ? `${finalScore}/100` : '—'}
+          subValue={finalScore > 0 ? undefined : 'Pendiente de evaluación'}
           icon={Star}
           tone={finalScore >= 70 ? 'success' : finalScore > 0 ? 'warning' : 'muted'}
         />
@@ -612,11 +622,14 @@ function ResumenTab({
 function MiniStat({
   label,
   value,
+  subValue,
   icon: Icon,
   tone = 'muted',
 }: {
   label: string
   value: string | number
+  /** Caption opcional debajo del valor (ej. "Pendiente de evaluación"). */
+  subValue?: string
   icon: typeof Star
   tone?: 'success' | 'warning' | 'muted'
 }) {
@@ -637,6 +650,9 @@ function MiniStat({
         </span>
       </div>
       <p className="mt-2 text-xl font-bold text-navy-500">{value}</p>
+      {subValue && (
+        <p className="mt-0.5 text-[11px] font-medium text-navy-300">{subValue}</p>
+      )}
     </div>
   )
 }
@@ -1474,16 +1490,34 @@ function SidebarAI({
     0,
     (evidencesTotal || 3) - evidencesApproved,
   )
-  const suggestions = [
-    `El scoring IA (${caseData.scoringIA}) sugiere riesgo ${caseData.scoringIA >= 80 ? 'bajo' : caseData.scoringIA >= 60 ? 'medio' : 'alto'}.`,
+  /**
+   * Cada sugerencia tiene un CTA opcional accionable.
+   * El user puede ir directo del insight a la acción sin tener que
+   * recordar dónde estaba el botón.
+   */
+  const suggestions: Array<{ text: string; cta?: { label: string; href?: string; onClick?: () => void } }> = [
+    {
+      text: `El scoring IA (${caseData.scoringIA}) sugiere riesgo ${caseData.scoringIA >= 80 ? 'bajo' : caseData.scoringIA >= 60 ? 'medio' : 'alto'}.`,
+    },
     evidenceShortfall > 0
-      ? `Faltan ${evidenceShortfall} ${evidenceShortfall === 1 ? 'evidencia' : 'evidencias'} por aprobar — pedir al solicitante lo que necesites.`
-      : 'Todas las evidencias esperadas fueron aprobadas.',
+      ? {
+          text: `Faltan ${evidenceShortfall} ${evidenceShortfall === 1 ? 'evidencia' : 'evidencias'} por aprobar.`,
+          cta: {
+            label: 'Pedir al solicitante',
+            href: `https://wa.me/5491145678901?text=${encodeURIComponent(`Hola ${caseData.applicantName.split(' ')[0]}, necesito ${evidenceShortfall} evidencia${evidenceShortfall === 1 ? '' : 's'} más para avanzar tu certificación.`)}`,
+          },
+        }
+      : { text: 'Todas las evidencias esperadas fueron aprobadas.' },
     slaTone === 'red'
-      ? `SLA excedido: lleva ${daysInStage}d sobre ${sla}d permitidos. Priorizar avance o cambio de etapa.`
+      ? {
+          text: `SLA excedido: ${daysInStage}d sobre ${sla}d permitidos.`,
+          cta: { label: 'Ver resumen IA', onClick: () => setSummaryOpen(true) },
+        }
       : slaTone === 'yellow'
-        ? `SLA en zona amarilla: quedan ${Math.max(0, sla - daysInStage)}d antes de exceder el límite.`
-        : 'Tiempo en etapa actual dentro del SLA estándar.',
+        ? {
+            text: `SLA en zona amarilla: quedan ${Math.max(0, sla - daysInStage)}d.`,
+          }
+        : { text: 'Tiempo en etapa actual dentro del SLA estándar.' },
   ]
   return (
     <>
@@ -1499,10 +1533,34 @@ function SidebarAI({
           {suggestions.map((s, i) => (
             <li
               key={i}
-              className="flex items-start gap-2 rounded-xl bg-white/70 px-3 py-2 text-xs leading-relaxed text-navy-500 shadow-sm"
+              className="rounded-xl bg-white/70 px-3 py-2 text-xs leading-relaxed text-navy-500 shadow-sm"
             >
-              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
-              {s}
+              <div className="flex items-start gap-2">
+                <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
+                <span className="flex-1">{s.text}</span>
+              </div>
+              {s.cta && (
+                <div className="mt-1.5 pl-5">
+                  {s.cta.href ? (
+                    <a
+                      href={s.cta.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-gold-700 hover:underline"
+                    >
+                      {s.cta.label} →
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={s.cta.onClick}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-gold-700 hover:underline"
+                    >
+                      {s.cta.label} →
+                    </button>
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>

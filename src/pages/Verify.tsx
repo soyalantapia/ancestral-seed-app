@@ -143,7 +143,7 @@ function HashModal({
           Ingresa el ID o Hash
         </h2>
         <p className="mt-1 text-sm text-navy-300">
-          Escribe o pega el código único del certificado.
+          Escribí o pegá el código único del certificado.
         </p>
       </div>
 

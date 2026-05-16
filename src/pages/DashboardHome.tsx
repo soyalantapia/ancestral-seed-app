@@ -15,7 +15,6 @@ import {
   Eye,
   FileCheck2,
   FileText,
-  Headphones,
   Info,
   Lightbulb,
   MessageSquare,
@@ -333,8 +332,10 @@ export default function DashboardHome() {
         />
       </section>
 
-      {/* ─── Pago urgente banner ──────────────────────────────────────── */}
-      {urgentPayment && (
+      {/* ─── Pago urgente banner ──────────────────────────────────────────
+          Solo mostramos si el "Tu próximo paso" arriba NO es ya este mismo
+          pago. Evita duplicar el mismo CTA en la misma vista (auditoría UX). */}
+      {urgentPayment && nextBestAction?.icon !== CreditCard && (
         <UrgentPaymentBanner
           payment={urgentPayment}
           daysLeft={daysUntil(urgentPayment.dueDate)}
@@ -610,38 +611,48 @@ function buildUpcomingEvents(requests: CertificationRequest[]) {
 // ─── sub-componentes ─────────────────────────────────────────────────────────
 
 function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
-  const actions = [
-    {
-      icon: Plus,
-      label: 'Nueva certificación',
-      to: '/certificar',
-      tone: 'gold' as const,
-    },
-    {
-      icon: Upload,
-      label: 'Subir evidencias',
-      to: inProgressId
-        ? `/mis-certificaciones/${inProgressId}?tab=evidencias`
-        : '/mis-certificaciones',
-      tone: 'navy' as const,
-    },
-    {
-      icon: ShieldCheck,
-      label: 'Verificar certificado',
-      to: '/verificar',
-      tone: 'outline' as const,
-    },
-    {
-      icon: Headphones,
-      label: 'Contactar soporte',
-      to: '/ayuda',
-      tone: 'outline' as const,
-    },
-  ]
+  /**
+   * Auditoría UX: bajamos de 4 a 2 CTAs principales.
+   * - "Verificar certificado" es acción de COMPRADOR, no del postulante
+   *   → vive en el header público y en Cmd+K, no acá.
+   * - "Contactar soporte" ya está en el sidebar (Ayuda) y en el header
+   *   → no duplicamos.
+   * Si el user tiene una solicitud en proceso, ordenamos "Subir evidencias"
+   * primero (es la acción más frecuente día a día).
+   */
+  const actions = inProgressId
+    ? [
+        {
+          icon: Upload,
+          label: 'Subir evidencias',
+          to: `/mis-certificaciones/${inProgressId}?tab=evidencias`,
+          tone: 'gold' as const,
+        },
+        {
+          icon: Plus,
+          label: 'Nueva certificación',
+          to: '/certificar',
+          tone: 'navy' as const,
+        },
+      ]
+    : [
+        {
+          icon: Plus,
+          label: 'Empezar una certificación',
+          to: '/certificar',
+          tone: 'gold' as const,
+        },
+        {
+          icon: ShieldCheck,
+          label: 'Verificar un certificado',
+          to: '/verificar',
+          tone: 'navy' as const,
+        },
+      ]
   return (
     <div
       data-tour="quick-actions"
-      className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4"
+      className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2"
     >
       {actions.map(({ icon: Icon, label, to, tone }, idx) => {
         const styles =
@@ -656,7 +667,7 @@ function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
             to={to}
             data-tour={idx === 0 ? 'cta-nueva-cert' : undefined}
             className={cn(
-              'inline-flex items-center gap-2 rounded-2xl px-3 py-3 text-xs font-bold transition-all sm:gap-3 sm:px-4 sm:text-sm',
+              'inline-flex items-center justify-center gap-3 rounded-2xl px-5 py-4 text-sm font-bold transition-all sm:text-base',
               styles,
             )}
           >

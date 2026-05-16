@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  ArrowRight,
   Award,
   Copy,
   Download,
-  ExternalLink,
   Eye,
   FileCheck2,
   FileText,
@@ -85,14 +85,8 @@ export default function Documentos() {
         </div>
       </header>
 
-      {/* KPIs */}
+      {/* KPIs — orden por relevancia: lo que SÍ hay primero, "0 emitidos" al final */}
       <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-        <SmallStat
-          icon={ShieldCheck}
-          label="Certificados emitidos"
-          value={certificates.filter((c) => c.isIssued).length}
-          tone="gold"
-        />
         <SmallStat
           icon={FileCheck2}
           label="En proceso"
@@ -104,6 +98,12 @@ export default function Documentos() {
           label="Evidencias subidas"
           value={allEvidences.length}
           tone="info"
+        />
+        <SmallStat
+          icon={ShieldCheck}
+          label="Certificados emitidos"
+          value={certificates.filter((c) => c.isIssued).length}
+          tone="gold"
         />
         <SmallStat
           icon={Receipt}
@@ -288,8 +288,8 @@ function CertificatesGrid({
                 to={`/mis-certificaciones/${req.id}`}
                 className="inline-flex h-9 w-fit items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white transition-colors hover:bg-navy-400"
               >
-                Ver progreso
-                <ExternalLink className="h-3 w-3" />
+                Continuar
+                <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           )}

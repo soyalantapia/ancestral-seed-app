@@ -195,7 +195,7 @@ export default function CertifyForm() {
               Formulario de Certificación Ancestral
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-navy-300 md:text-base">
-              Ingresa la información solicitada para certificar la autenticidad
+              Ingresá la información solicitada para certificar la autenticidad
               ancestral de tu trabajo
             </p>
           </div>
@@ -897,7 +897,7 @@ function StepEvidencias() {
     <div>
       <StepHeader
         title="Evidencias"
-        description="Sube fotos, videos y documentos que respalden tu producto."
+        description="Subí fotos, videos y documentos que respalden tu producto."
       />
       <div className="space-y-7">
         <EvidenceSection

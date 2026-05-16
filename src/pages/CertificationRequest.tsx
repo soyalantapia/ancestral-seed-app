@@ -1763,7 +1763,7 @@ function RescheduleSheet({
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <h2 className="text-xl font-bold text-navy-500">Reprogramar reunión</h2>
           <p className="mt-1 text-sm text-navy-300">
-            Elige una fecha alternativa y enviá la solicitud al tutor.
+            Elegí una fecha alternativa y enviá la solicitud al tutor.
           </p>
 
           {/* Calendar */}

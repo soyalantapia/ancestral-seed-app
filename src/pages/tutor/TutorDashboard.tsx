@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuthStore } from '@/store/auth'
 import {
   AlertTriangle,
   ArrowRight,
@@ -43,9 +44,18 @@ const periods = [
 ] as const
 type PeriodId = (typeof periods)[number]['id']
 
+function greetingByHour(name: string): string {
+  const h = new Date().getHours()
+  if (h < 12) return `Buenos días, ${name}`
+  if (h < 20) return `Buenas tardes, ${name}`
+  return `Buenas noches, ${name}`
+}
+
 export default function TutorDashboard() {
   // Tour guiado de 8 pasos en primera visita
   useAutoStartTour('tutor')
+  const user = useAuthStore((s) => s.user)
+  const firstName = user?.name?.split(' ')[0] ?? 'Tutor'
   const [period, setPeriod] = useState<PeriodId>('7d')
   const [calendarSelected, setCalendarSelected] = useState<Date | undefined>(
     undefined,
@@ -87,10 +97,19 @@ export default function TutorDashboard() {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">
-            Dashboard
+            {greetingByHour(firstName)}
           </h1>
           <p className="mt-1 text-sm text-navy-300">
-            Vista general de tu actividad como tutor.
+            Tenés {inProgress} {inProgress === 1 ? 'caso' : 'casos'} en curso
+            {overdue > 0 && (
+              <>
+                {', '}
+                <strong className="text-error-400">
+                  {overdue} {overdue === 1 ? 'atrasado' : 'atrasados'}
+                </strong>
+              </>
+            )}
+            {' '}y {tasks.filter((t) => !t.done).length} tareas pendientes.
           </p>
         </div>
         <Link
@@ -548,13 +567,13 @@ function TasksCard({
                   onClick={() => onToggle(t.id)}
                   aria-label={t.done ? 'Reabrir tarea' : 'Marcar hecha'}
                   className={cn(
-                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                    'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors',
                     t.done
-                      ? 'border-success-300 bg-success-300 text-white'
-                      : 'border-neutral-400 hover:border-success-300',
+                      ? 'bg-success-300 text-white ring-1 ring-success-300'
+                      : 'border-2 border-neutral-400 bg-white hover:border-success-300 hover:bg-success-100',
                   )}
                 >
-                  {t.done && <CheckSquare className="h-3 w-3" strokeWidth={3} />}
+                  {t.done && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                 </button>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
                   <Icon className="h-4 w-4" />
