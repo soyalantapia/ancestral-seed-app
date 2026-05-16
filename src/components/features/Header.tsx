@@ -104,18 +104,6 @@ export function Header() {
           <Logo />
         </Link>
 
-        {isDashboardRoute && (
-          <Link
-            to="/"
-            data-tour="public-site"
-            className="hidden items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500 lg:inline-flex"
-            title="Ver sitio público"
-          >
-            <ExternalLink className="h-3 w-3" />
-            Ver sitio público
-          </Link>
-        )}
-
         {!isAuthenticated && (
           <nav className="hidden flex-1 items-center gap-7 lg:flex">
             {navItems.map((item) => (
@@ -136,8 +124,21 @@ export function Header() {
           </nav>
         )}
 
-
-        <div className={cn('hidden items-center gap-2 lg:flex', !isDashboardRoute && 'ml-auto')}>
+        {/* Grupo derecho: el ml-auto siempre lo empuja al borde, ya sea
+            que esté presente el nav central (publico/no auth) o no
+            (dashboard logueado). */}
+        <div className="ml-auto hidden items-center gap-2 lg:flex">
+          {isDashboardRoute && (
+            <Link
+              to="/"
+              data-tour="public-site"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500"
+              title="Ver sitio público"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ver sitio público
+            </Link>
+          )}
           <ThemeToggle />
           {!isAuthenticated && (
             <>
