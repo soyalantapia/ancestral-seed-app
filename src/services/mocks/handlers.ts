@@ -80,9 +80,21 @@ export const handlers = [
 
   http.get('*/api/certifications/featured', async () => {
     await realisticDelay()
-    return HttpResponse.json(
-      mockCertifications.filter((c) => c.status === 'verified').slice(0, 4),
-    )
+    // Orden específico curado para la home (feedback Mario/Raúl):
+    // 1. Producto Ancestral auténtico  → Tejido
+    // 2. Producto Tradicional con raíces ancestrales → Filigrana
+    // 3. Producto de Inspiración Cultural → Sabores cósmicos
+    // 4. Servicio Ancestral → Ecodestinos
+    const FEATURED_SLUGS = [
+      'tejido-textil-tradicional',
+      'tecnica-ancestral-filigrana',
+      'libro-sabores-cosmicos',
+      'ecodestinos-turismo-ancestral',
+    ]
+    const ordered = FEATURED_SLUGS
+      .map((slug) => mockCertifications.find((c) => c.slug === slug))
+      .filter((c): c is NonNullable<typeof c> => !!c)
+    return HttpResponse.json(ordered)
   }),
 
   http.get('*/api/certifications/:slug', async ({ params }) => {

@@ -4,6 +4,8 @@ import {
   Eye,
   FileText,
   Leaf,
+  Play,
+  Shield,
   Sparkles,
   Users,
 } from 'lucide-react'
@@ -51,14 +53,14 @@ function Hero() {
               <Sparkles className="h-3.5 w-3.5" />
               Certificación cultural blockchain
             </span>
-            <h1 className="mt-4 text-[28px] font-bold leading-[1.1] tracking-tight text-navy-500 sm:text-4xl md:mt-5 md:text-5xl lg:text-[56px]">
-              Autenticidad ancestral,<br className="hidden md:inline" />{' '}
-              certificada digitalmente
+            <h1 className="mt-4 text-[28px] font-bold leading-[1.15] tracking-tight text-navy-500 sm:text-4xl md:mt-5 md:text-5xl lg:text-[56px]">
+              <span className="block">Autenticidad Ancestral</span>
+              <span className="block">Certificada Digitalmente</span>
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
-              Validamos la autenticidad de productos y saberes originarios
-              mediante un sistema de certificación cultural, auditoría y
-              tecnología blockchain.
+              Validamos la autenticidad de productos, servicios y saberes
+              ancestrales, mediante un sistema de certificación cultural,
+              auditoría y tecnología blockchain.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
               <Button
@@ -80,15 +82,56 @@ function Hero() {
             </div>
           </div>
           <div className="flex justify-center lg:col-span-5">
-            <img
-              src={`${import.meta.env.BASE_URL}logo-large.webp`}
-              alt="Ancestral Seed"
-              className="h-44 w-44 object-contain sm:h-56 sm:w-56 md:h-80 md:w-80 lg:h-96 lg:w-96"
-            />
+            <HeroVideoPlaceholder />
           </div>
         </div>
       </div>
     </section>
+  )
+}
+
+/**
+ * Hero del Home: card con logo chico arriba como anchor de marca + área grande
+ * para el video institucional de 1 minuto. Mientras no haya video subido,
+ * muestra un placeholder con poster del logo + botón Play centrado.
+ *
+ * Cuando se suba el video real, reemplazar el bloque <button> placeholder por
+ * un <video> con poster y controls, o un wrapper con onClick que dispare un
+ * modal/lightbox con el mp4.
+ */
+function HeroVideoPlaceholder() {
+  return (
+    <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
+      <img
+        src={`${import.meta.env.BASE_URL}logo-large.webp`}
+        alt="Ancestral Seed"
+        className="h-16 w-16 object-contain sm:h-20 sm:w-20"
+      />
+      <button
+        type="button"
+        aria-label="Reproducir video institucional de 1 minuto"
+        className="group relative aspect-video w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-navy-500 to-navy-400 shadow-lg transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+        onClick={() => {
+          // Placeholder: cuando esté el video, abrir modal con <video controls autoplay>
+          // o reemplazar este botón por <video src="..." controls poster="..." />
+        }}
+      >
+        {/* Pattern decorativo de fondo (aztec style) */}
+        <div className="absolute inset-0 bg-pattern-aztec opacity-30" aria-hidden />
+        {/* Overlay degradado para legibilidad del play button */}
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-500/60 to-transparent" aria-hidden />
+
+        {/* Play button centrado */}
+        <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-xl transition-transform group-hover:scale-110 md:h-20 md:w-20">
+            <Play className="h-7 w-7 translate-x-0.5 fill-current md:h-9 md:w-9" />
+          </span>
+          <span className="text-xs font-bold uppercase tracking-widest opacity-90 md:text-sm">
+            Mirá el video · 1 min
+          </span>
+        </span>
+      </button>
+    </div>
   )
 }
 
@@ -102,7 +145,7 @@ function Pillars() {
     {
       icon: CheckCircle2,
       title: 'Auditoría cultural',
-      copy: 'Validamos con curadores expertos en cada territorio.',
+      copy: 'Validamos con auditores expertos en cada territorio.',
     },
     {
       icon: Eye,
@@ -111,8 +154,8 @@ function Pillars() {
     },
     {
       icon: Users,
-      title: 'Comunidad protegida',
-      copy: 'Reconocimiento y defensa frente al fraude cultural.',
+      title: 'Reconocimiento y Protección cultural',
+      copy: 'Defensa frente al fraude y visibilidad del valor cultural.',
     },
   ]
   return (
@@ -157,20 +200,21 @@ function AncestralVision() {
           </div>
           <div className="rounded-3xl bg-pattern-aztec p-6 text-white sm:p-8 md:p-10">
             <p className="text-sm leading-relaxed text-neutral-300 md:text-base">
-              Durante siglos, los saberes de nuestras comunidades originarias
-              se transmitieron de generación en generación sin un registro que
-              los protegiera frente al fraude, la apropiación o el olvido.
+              Durante generaciones, los saberes de nuestras comunidades
+              originarias viajaron de voz en voz, preservando una conexión
+              profunda con la tierra, la identidad y la memoria colectiva.
             </p>
             <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
-              Ancestral Seed nace de una mirada compartida: documentar,
-              validar y proteger el origen de los productos y prácticas
-              ancestrales, devolviendo a sus creadores el reconocimiento que
-              les corresponde.
+              Ancestral Seed nace con el propósito de honrar ese legado:
+              registrar, validar y dar visibilidad al origen de productos y
+              servicios ancestrales, reconociendo el valor cultural de
+              quienes los mantienen vivos.
             </p>
             <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
-              Trabajamos junto a curadores, auditores y referentes
-              territoriales para que cada certificación cuente con el respaldo
-              de la comunidad y la transparencia de la blockchain.
+              Junto a comunidades, especialistas y referentes territoriales,
+              impulsamos certificaciones transparentes y trazables mediante
+              tecnología blockchain, fortaleciendo la confianza, la
+              autenticidad y el reconocimiento de cada historia compartida.
             </p>
           </div>
         </div>
@@ -275,8 +319,8 @@ function BlockchainSection() {
               </span>
               <span>
                 <strong className="text-navy-500">No depende de nosotros.</strong>{' '}
-                Aunque mañana Ancestral Seed dejara de existir, tu certificado
-                sigue vivo en la red.
+                Tu certificado sigue vivo en la red de manera inalterable en
+                el tiempo.
               </span>
             </li>
             <li className="flex gap-3">
@@ -347,32 +391,39 @@ function BlockchainSection() {
             la explicamos sin tecnicismos.
           </p>
         </div>
+        {/*
+         * Feedback Mario/Raúl: las fotos blockchain-1 (cerveza) y blockchain-2
+         * (meditación) no representan correctamente el oficio ancestral.
+         * Reemplazadas temporalmente por productos certificados reales del
+         * directorio (mopa + chaquira). Sustituir por fotos institucionales
+         * cuando estén disponibles.
+         */}
         <div className="mt-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
           <Accordion items={items} />
           <div className="relative h-[420px] hidden lg:block">
             <div className="absolute left-0 top-0 h-64 w-80 overflow-hidden rounded-3xl shadow-xl">
               <img
-                src={`${import.meta.env.BASE_URL}blockchain-1.webp`}
-                alt="Comunidad ancestral compartiendo saberes"
+                src={`${import.meta.env.BASE_URL}cards/card-mopa.webp`}
+                alt="Tejido en mopa, técnica ancestral certificada"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="absolute right-4 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
               <img
-                src={`${import.meta.env.BASE_URL}blockchain-2.webp`}
-                alt="Producto ancestral certificado"
+                src={`${import.meta.env.BASE_URL}cards/card-chaquira.webp`}
+                alt="Joyería en chaquira, oficio ancestral certificado"
                 className="h-full w-full object-cover"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 lg:hidden">
             <img
-              src={`${import.meta.env.BASE_URL}blockchain-1.webp`}
+              src={`${import.meta.env.BASE_URL}cards/card-mopa.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
             <img
-              src={`${import.meta.env.BASE_URL}blockchain-2.webp`}
+              src={`${import.meta.env.BASE_URL}cards/card-chaquira.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
@@ -384,21 +435,38 @@ function BlockchainSection() {
 }
 
 function ProcessSection() {
+  /*
+   * Feedback Mario/Raúl: el "Proceso de Verificación" (3 pasos del visitante
+   * que verifica un certificado) era correcto pero no se entendía en la
+   * landing como primer mensaje. Reemplazado por el "modelo completo" del
+   * journey del postulante: 4 pasos de cómo se construye una certificación
+   * Ancestral Seed. Cuando llegue el diagrama oficial gráfico, sustituir
+   * este bloque por la SVG/imagen institucional.
+   */
   const steps = [
     {
       num: '1',
-      title: 'Elegí un método',
-      copy: 'Escaneá el código QR o ingresá el ID/Hash para acceder al certificado.',
+      icon: FileText,
+      title: 'Postulación',
+      copy: 'Una comunidad, autor o artesano presenta su producto o servicio ancestral con su historia y evidencias.',
     },
     {
       num: '2',
-      title: 'Validamos la información',
-      copy: 'Confirmamos que los datos coincidan con los registros oficiales.',
+      icon: Eye,
+      title: 'Auditoría cultural',
+      copy: 'Auditores y referentes territoriales validan el origen, la técnica y el vínculo con la comunidad.',
     },
     {
       num: '3',
-      title: 'Accedé al certificado',
-      copy: 'Te mostramos la ficha pública del certificado en segundos.',
+      icon: Shield,
+      title: 'Registro en blockchain',
+      copy: 'La certificación se firma e inscribe de forma pública y permanente en una red descentralizada.',
+    },
+    {
+      num: '4',
+      icon: CheckCircle2,
+      title: 'Ficha pública',
+      copy: 'El certificado vive en una ficha verificable por QR o hash. Cualquiera puede comprobarlo.',
     },
   ]
   return (
@@ -410,36 +478,56 @@ function ProcessSection() {
             ¿Cómo funciona?
           </p>
           <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
-            Proceso de Verificación
+            El camino de cada certificación
           </h2>
         </div>
         <div className="mt-10 rounded-3xl bg-pattern-aztec p-6 md:p-10">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-4">
-            {steps.map((s, i) => (
-              <div
-                key={s.num}
-                className={cn(
-                  'flex flex-col items-center text-center md:items-start md:text-left md:px-4',
-                  i > 0 && 'md:border-l md:border-navy-300/40',
-                )}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-base font-bold text-navy-500">
-                  {s.num}
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-6 lg:grid-cols-4">
+            {steps.map((s, i) => {
+              const Icon = s.icon
+              return (
+                <div
+                  key={s.num}
+                  className={cn(
+                    'flex flex-col items-center text-center md:items-start md:text-left md:px-4',
+                    i > 0 && 'lg:border-l lg:border-navy-300/40',
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-500 text-base font-bold text-navy-500">
+                      {s.num}
+                    </span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-400/30 text-gold-400">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                  </div>
+                  <p className="mt-4 text-base font-bold text-white">
+                    {s.title}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-neutral-400 md:text-sm">
+                    {s.copy}
+                  </p>
                 </div>
-                <p className="mt-4 text-base font-bold text-white">
-                  {s.title}
-                </p>
-                <p className="mt-2 text-xs leading-relaxed text-neutral-400 md:text-sm">
-                  {s.copy}
-                </p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
     </section>
   )
 }
+
+/**
+ * Etiquetas de tipología cultural mostradas arriba de cada card del
+ * directorio en el orden curado del feedback (Mario/Raúl, 2026-05-16).
+ * El orden viene fijo desde el handler MSW de /api/certifications/featured.
+ */
+const FEATURED_LABELS = [
+  'Producto Ancestral auténtico',
+  'Producto Tradicional con raíces ancestrales',
+  'Producto de Inspiración Cultural',
+  'Servicio Ancestral',
+] as const
 
 function FeaturedCertifications() {
   const { data, isLoading, error } = useFeaturedCertifications()
@@ -478,8 +566,14 @@ function FeaturedCertifications() {
 
         {data && (
           <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {data.map((c) => (
-              <CertificationCard key={c.id} certification={c} />
+            {data.map((c, i) => (
+              <div key={c.id} className="flex flex-col gap-2">
+                {/* Etiqueta de tipología cultural por posición (feedback Mario/Raúl) */}
+                <p className="text-center text-[11px] font-bold uppercase tracking-[0.14em] text-gold-700">
+                  {FEATURED_LABELS[i] ?? ''}
+                </p>
+                <CertificationCard certification={c} />
+              </div>
             ))}
           </div>
         )}

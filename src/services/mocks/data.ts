@@ -145,6 +145,8 @@ export const mockCertifications: Certification[] = [
     category: 'Nariño',
     description:
       'Tradición textil del pueblo Pasto, con motivos y técnicas heredadas de la familia y la comunidad.',
+    // TODO: card-tejido.webp actual muestra una Ex Alcaldesa (feedback Mario/Raúl).
+    // Reemplazar por foto real de Flor Imbacuán Pantoja cuando esté disponible.
     coverUrl: '/cards/card-tejido.webp',
     hash: '0xB7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8A2B7C1D6F5E3A0B4C9D1E7F2',
     location: 'Colombia · Nariño',

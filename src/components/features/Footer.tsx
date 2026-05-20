@@ -34,9 +34,9 @@ export function Footer() {
 
           <div className="md:col-span-3">
             <p className="text-base leading-relaxed text-white">
-              Validamos la autenticidad de productos y saberes originarios
-              mediante un sistema de certificación cultural, auditoría y
-              tecnología blockchain.
+              Validamos la autenticidad de productos, servicios y saberes
+              ancestrales, mediante un sistema de certificación cultural,
+              auditoría y tecnología blockchain.
             </p>
           </div>
 
