@@ -18,12 +18,12 @@ export default defineConfig(({ command }) => ({
      */
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo-mark.png', 'logo-large.png'],
+      includeAssets: ['favicon.svg', 'logo-mark.png'],
       manifest: {
         name: 'Ancestral Seed · Certificación digital',
         short_name: 'Ancestral Seed',
         description:
-          'Validamos la autenticidad de productos y saberes originarios mediante certificación cultural, auditoría y tecnología blockchain.',
+          'Validamos la autenticidad de productos, servicios y saberes ancestrales, mediante un sistema de certificación cultural, auditoría y tecnología blockchain.',
         theme_color: '#001c38',
         background_color: '#f7f5ee',
         display: 'standalone',
@@ -33,7 +33,9 @@ export default defineConfig(({ command }) => ({
         lang: 'es-AR',
         icons: [
           { src: 'logo-mark.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'logo-large.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          // Nota: logo-large fue migrado a .webp pero los iconos PWA deben ser
+          // PNG/JPEG para máxima compatibilidad. Reutilizamos logo-mark a 512.
+          { src: 'logo-mark.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
         categories: ['business', 'productivity', 'lifestyle'],
       },
@@ -44,6 +46,14 @@ export default defineConfig(({ command }) => ({
         globIgnores: ['**/mockServiceWorker.js'],
         // Páginas SPA: fallback al index.html
         navigateFallback: `${BASE}index.html`,
+        // Auto-update: el SW nuevo toma control sin esperar cierre de pestañas.
+        // Crítico para evitar bundle stale tras deploy → pantalla blanca por
+        // chunks viejos que ya no existen en /assets/.
+        skipWaiting: true,
+        clientsClaim: true,
+        // Limpia caches viejos en cada activación (evita persistir chunks de
+        // builds anteriores)
+        cleanupOutdatedCaches: true,
         // Cache de imágenes con stale-while-revalidate
         runtimeCaching: [
           {
