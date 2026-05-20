@@ -18,7 +18,7 @@ export default defineConfig(({ command }) => ({
      */
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo-mark.png'],
+      includeAssets: ['favicon.svg', 'logo-mark.png', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
         name: 'Ancestral Seed · Certificación digital',
         short_name: 'Ancestral Seed',
@@ -32,10 +32,8 @@ export default defineConfig(({ command }) => ({
         scope: BASE,
         lang: 'es-AR',
         icons: [
-          { src: 'logo-mark.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          // Nota: logo-large fue migrado a .webp pero los iconos PWA deben ser
-          // PNG/JPEG para máxima compatibilidad. Reutilizamos logo-mark a 512.
-          { src: 'logo-mark.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
         categories: ['business', 'productivity', 'lifestyle'],
       },
