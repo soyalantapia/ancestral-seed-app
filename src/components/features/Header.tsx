@@ -106,29 +106,26 @@ export function Header() {
           <Logo />
         </Link>
 
-        {/* Nav de la landing pública: visible cuando NO estoy en una ruta
-            del dashboard, independientemente de si estoy logueado o no.
-            Esto permite que un usuario auth pueda volver a la landing y
-            seguir viendo las pestañas de navegación. */}
-        {!isDashboardRoute && (
-          <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                end={false}
-                className={({ isActive }) =>
-                  cn(
-                    'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
-                    isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        )}
+        {/* Nav con las pestañas de la landing — visible SIEMPRE en desktop
+            (incluso en rutas de dashboard logueado). Clickear navega a la
+            landing pública con el anchor correspondiente. */}
+        <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={false}
+              className={({ isActive }) =>
+                cn(
+                  'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
+                  isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
+                )
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
 
         {/* Grupo derecho: el ml-auto siempre lo empuja al borde, ya sea
             que esté presente el nav central (publico/no auth) o no
