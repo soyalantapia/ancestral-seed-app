@@ -18,7 +18,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { Logo } from './Logo'
-import { ThemeToggle } from './ThemeToggle'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useEscape } from '@/hooks/useEscape'
 import { useUiStore } from '@/store/ui'
@@ -151,7 +150,6 @@ export function Header() {
               Ver sitio público
             </Link>
           )}
-          <ThemeToggle />
           {!isAuthenticated && (
             <>
               <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
