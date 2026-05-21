@@ -12,6 +12,12 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react'
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+} from 'react-simple-maps'
 import { useFeaturedCertifications } from '@/hooks/useCertifications'
 import { CertificationCard } from '@/components/features/CertificationCard'
 import { PageMeta } from '@/components/features/PageMeta'
@@ -274,224 +280,137 @@ function LatamAlMundo() {
 }
 
 /**
- * Mapa SVG minimal: silueta estilizada pero reconocible de Latinoamérica
- * (México + Yucatán + Centroamérica + Sudamérica completa, incluyendo
- * Baja California, el bulge de Brasil, el filo de Chile y Tierra del Fuego).
- * Dots de origen sobre los países con certificaciones; arcos hacia 4
- * destinos cardinales (NA, EU, Asia, Oceanía).
+ * Mapa REAL de Latinoamérica usando GeoJSON de Natural Earth (via
+ * world-atlas + d3-geo). Filtra los 25 países latinoamericanos por
+ * ISO id y los renderiza con proyección Mercator centrada en LATAM.
+ * Encima de los países dibujamos los dots de origen (sobre lat/long
+ * real) y arcos hacia el mundo.
  */
+const LATAM_ISO_IDS = new Set([
+  '484', // México
+  '320', // Guatemala
+  '084', // Belize
+  '340', // Honduras
+  '222', // El Salvador
+  '558', // Nicaragua
+  '188', // Costa Rica
+  '591', // Panamá
+  '192', // Cuba
+  '214', // Rep. Dominicana
+  '332', // Haití
+  '388', // Jamaica
+  '630', // Puerto Rico
+  '170', // Colombia
+  '862', // Venezuela
+  '328', // Guyana
+  '740', // Suriname
+  '254', // French Guiana (FR overseas)
+  '218', // Ecuador
+  '604', // Perú
+  '068', // Bolivia
+  '076', // Brasil
+  '600', // Paraguay
+  '858', // Uruguay
+  '032', // Argentina
+  '152', // Chile
+])
+
 function LatamWorldMap() {
-  // Coords aproximadas (viewBox 600x800) de países con comunidades activas.
-  const cities = [
-    { x: 350, y: 295 }, // Colombia
-    { x: 285, y: 340 }, // Ecuador
-    { x: 300, y: 420 }, // Perú
-    { x: 445, y: 420 }, // Brasil (centro)
-    { x: 370, y: 470 }, // Bolivia
-    { x: 335, y: 660 }, // Argentina
-    { x: 165, y: 110 }, // México
+  // Coords reales [lng, lat] de comunidades con certificaciones activas.
+  const cities: Array<{ coords: [number, number]; label: string }> = [
+    { coords: [-74, 5], label: 'Colombia' },
+    { coords: [-78, -1], label: 'Ecuador' },
+    { coords: [-77, -10], label: 'Perú' },
+    { coords: [-53, -10], label: 'Brasil' },
+    { coords: [-65, -17], label: 'Bolivia' },
+    { coords: [-65, -33], label: 'Argentina' },
+    { coords: [-99, 22], label: 'México' },
   ]
 
   return (
-    <div className="relative mx-auto aspect-[3/4] w-full max-w-[440px]">
+    <div className="relative mx-auto aspect-[3/4] w-full max-w-[460px]">
       {/* Halo dorado suave detrás del continente */}
       <div
         aria-hidden
         className="absolute left-1/2 top-1/2 h-3/4 w-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-100/70 blur-3xl"
       />
 
-      <svg
-        viewBox="0 0 600 800"
-        className="relative h-full w-full"
-        role="img"
-        aria-label="Mapa estilizado de Latinoamérica con conexiones al mundo"
+      <ComposableMap
+        projection="geoMercator"
+        projectionConfig={{
+          // Centrado en Latam, escala calibrada para que entre todo
+          // (Tijuana 33°N → Cabo de Hornos -56°S) en el aspect 3/4.
+          scale: 380,
+          center: [-72, -16],
+        }}
+        width={600}
+        height={800}
+        style={{ width: '100%', height: '100%' }}
       >
         <defs>
-          {/* Gradiente del continente */}
           <linearGradient id="latam-grad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#D2A958" stopOpacity="1" />
-            <stop offset="100%" stopColor="#A8842F" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#A8842F" stopOpacity="0.95" />
           </linearGradient>
-          {/* Gradiente para los arcos hacia el mundo (gold → fade) */}
-          <linearGradient id="arc-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#A8842F" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#A8842F" stopOpacity="0" />
-          </linearGradient>
-          {/* Halo radial para los puntos */}
           <radialGradient id="dot-halo">
-            <stop offset="0%" stopColor="#D2A958" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#D2A958" stopOpacity="0.55" />
             <stop offset="100%" stopColor="#D2A958" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        {/*
-          Silueta de Latinoamérica con proyección equirectangular
-          (lng/lat real) sobre 30 puntos clave. Recorrido clockwise:
-          Tijuana → costa golfo y Yucatán → Centroamérica → caribe SA
-          → bulge atlántico de Brasil → Argentina y Tierra del Fuego
-          → costa pacífica subiendo (Chile / Perú / Ecuador / CA) → norte
-          Pacífico de México → Tijuana.
-          Stroke con linejoin redondeado para suavizar los vértices L
-          sin caer en curvas bezier mal calibradas.
-        */}
-        <path
-          fill="url(#latam-grad)"
-          stroke="url(#latam-grad)"
-          strokeWidth="14"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          d="
-            M 90 85
-            L 195 80
-            L 245 105
-            L 260 135
-            L 270 145
-            L 290 145
-            L 282 168
-            L 260 178
-            L 252 200
-            L 258 225
-            L 270 250
-            L 285 268
-            L 310 275
-            L 365 275
-            L 425 285
-            L 475 320
-            L 510 370
-            L 525 425
-            L 515 480
-            L 490 530
-            L 455 575
-            L 410 610
-            L 380 640
-            L 358 670
-            L 345 700
-            L 335 730
-            L 320 758
-            L 312 758
-            L 305 730
-            L 295 690
-            L 285 645
-            L 275 595
-            L 268 540
-            L 262 482
-            L 262 425
-            L 268 372
-            L 268 330
-            L 258 308
-            L 248 305
-            L 240 318
-            L 232 318
-            L 222 305
-            L 222 285
-            L 230 268
-            L 240 250
-            L 235 228
-            L 218 205
-            L 200 180
-            L 175 150
-            L 145 120
-            L 115 100
-            L 90 85
-            Z
-          "
-        />
-
-        {/* Baja California — península larga al W de México */}
-        <path
-          fill="url(#latam-grad)"
-          stroke="url(#latam-grad)"
-          strokeWidth="10"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          d="
-            M 70 92
-            L 60 130
-            L 65 168
-            L 80 180
-            L 88 170
-            L 82 145
-            L 78 115
-            L 74 95
-            L 70 92
-            Z
-          "
-        />
-
-        {/* Islas del Caribe (decorativas, entre Yucatán y Colombia) */}
-        <g fill="url(#latam-grad)">
-          <circle cx="305" cy="200" r="6" />
-          <circle cx="335" cy="208" r="5" />
-          <circle cx="362" cy="218" r="4" />
-          <circle cx="385" cy="230" r="3.5" />
-        </g>
-
-        {/* Arcos al mundo (4 direcciones cardinales) */}
-        <g fill="none" strokeWidth="2" strokeLinecap="round">
-          {/* Norteamérica */}
-          <path d="M 150 100 Q 90 70, 40 50" stroke="url(#arc-grad)" />
-          {/* Europa / África */}
-          <path d="M 510 380 Q 555 360, 580 340" stroke="url(#arc-grad)" />
-          {/* Asia / Pacífico */}
-          <path d="M 165 380 Q 90 400, 30 420" stroke="url(#arc-grad)" />
-          {/* Oceanía */}
-          <path d="M 340 700 Q 460 740, 560 770" stroke="url(#arc-grad)" />
-        </g>
-
-        {/* Destinos del mundo (4 dots) */}
-        <g>
-          {[
-            { x: 40, y: 50 },
-            { x: 580, y: 340 },
-            { x: 30, y: 420 },
-            { x: 560, y: 770 },
-          ].map((d, i) => (
-            <g key={i}>
-              <circle cx={d.x} cy={d.y} r="14" fill="url(#dot-halo)" />
-              <circle
-                cx={d.x}
-                cy={d.y}
-                r="5"
-                fill="#fff"
-                stroke="#A8842F"
-                strokeWidth="2"
-              />
-            </g>
-          ))}
-        </g>
-
-        {/* Puntos de origen (comunidades) — pulse sutil */}
-        <g>
-          {cities.map((c, i) => (
-            <g key={i}>
-              <circle cx={c.x} cy={c.y} r="12" fill="url(#dot-halo)">
-                <animate
-                  attributeName="r"
-                  values="8;14;8"
-                  dur="3s"
-                  repeatCount="indefinite"
-                  begin={`${i * 0.4}s`}
+        {/* Países de Latinoamérica desde Natural Earth (110m). Filtramos
+            por ISO id; el resto del mundo no se renderiza. */}
+        <Geographies geography={`${import.meta.env.BASE_URL}countries-110m.json`}>
+          {({ geographies }) =>
+            geographies
+              .filter((d: { id?: string }) =>
+                d.id ? LATAM_ISO_IDS.has(d.id) : false,
+              )
+              .map((geo: { rsmKey: string }) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="url(#latam-grad)"
+                  stroke="#fff"
+                  strokeWidth={0.6}
+                  style={{
+                    default: { outline: 'none' },
+                    hover: { outline: 'none', fill: '#E5C36C' },
+                    pressed: { outline: 'none' },
+                  }}
                 />
-                <animate
-                  attributeName="opacity"
-                  values="0.6;0.15;0.6"
-                  dur="3s"
-                  repeatCount="indefinite"
-                  begin={`${i * 0.4}s`}
-                />
-              </circle>
-              <circle
-                cx={c.x}
-                cy={c.y}
-                r="3.5"
-                fill="#fff"
-                stroke="#A8842F"
-                strokeWidth="1.5"
+              ))
+          }
+        </Geographies>
+
+        {/* Puntos de origen sobre coordenadas reales de cada país */}
+        {cities.map((c, i) => (
+          <Marker key={c.label} coordinates={c.coords}>
+            <circle r={12} fill="url(#dot-halo)">
+              <animate
+                attributeName="r"
+                values="8;16;8"
+                dur="3s"
+                repeatCount="indefinite"
+                begin={`${i * 0.4}s`}
               />
-            </g>
-          ))}
-        </g>
-      </svg>
+              <animate
+                attributeName="opacity"
+                values="0.7;0.15;0.7"
+                dur="3s"
+                repeatCount="indefinite"
+                begin={`${i * 0.4}s`}
+              />
+            </circle>
+            <circle
+              r={4}
+              fill="#fff"
+              stroke="#A8842F"
+              strokeWidth={1.8}
+            />
+          </Marker>
+        ))}
+      </ComposableMap>
     </div>
   )
 }
