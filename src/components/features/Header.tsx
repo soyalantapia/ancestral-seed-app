@@ -27,10 +27,11 @@ import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/nosotros', label: 'Nosotros' },
   { to: '/#beneficios', label: 'Beneficios' },
   { to: '/#latam-al-mundo', label: 'LATAM al mundo' },
-  { to: '/#como-funciona', label: '¿Cómo funciona?' },
+  { to: '/#nosotros', label: 'Nosotros' },
+  { to: '/#como-funciona', label: 'Blockchain' },
+  { to: '/#proceso', label: 'Proceso' },
   { to: '/directorio', label: 'Certificados' },
 ]
 
@@ -105,8 +106,12 @@ export function Header() {
           <Logo />
         </Link>
 
-        {!isAuthenticated && (
-          <nav className="hidden flex-1 items-center gap-7 lg:flex">
+        {/* Nav de la landing pública: visible cuando NO estoy en una ruta
+            del dashboard, independientemente de si estoy logueado o no.
+            Esto permite que un usuario auth pueda volver a la landing y
+            seguir viendo las pestañas de navegación. */}
+        {!isDashboardRoute && (
+          <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
             {navItems.map((item) => (
               <NavLink
                 key={item.label}
@@ -114,7 +119,7 @@ export function Header() {
                 end={false}
                 className={({ isActive }) =>
                   cn(
-                    'text-sm font-medium transition-colors',
+                    'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
                     isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
                   )
                 }

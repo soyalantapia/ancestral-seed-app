@@ -103,7 +103,7 @@ function LandingNav() {
   }
 
   return (
-    <div className="sticky top-16 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:top-20">
+    <div className="sticky top-16 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:hidden">
       <nav
         aria-label="Secciones de la portada"
         className="mx-auto max-w-[1320px] overflow-x-auto px-4 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

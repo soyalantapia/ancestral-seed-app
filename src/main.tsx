@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import { Toaster } from 'sonner'
 import { router } from './routes'
 import { useThemeEffect } from './hooks/useThemeEffect'
-import { InstallPrompt } from './components/features/InstallPrompt'
 import './index.css'
 
 /**
@@ -19,7 +18,6 @@ function AppShell() {
     <HelmetProvider>
       <RouterProvider router={router} />
       <Toaster richColors position="top-right" />
-      <InstallPrompt />
     </HelmetProvider>
   )
 }
