@@ -114,24 +114,39 @@ export function Header() {
 
         {/* Pestañas de la landing — visibles SOLO en rutas públicas.
             Dentro del dashboard/tutor se ocultan para no contaminar
-            la nav con anchors de la landing pública. */}
+            la nav con anchors de la landing pública.
+
+            NOTA: NavLink default matchea por pathname incluso si el
+            link incluye un hash → todos los links `/#anchor` se marcan
+            active simultáneamente en `/`. Solución: usar <Link> normal
+            y calcular el active manualmente comparando hash. */}
         {showLandingNav && (
           <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                end={false}
-                className={({ isActive }) =>
-                  cn(
+            {navItems.map((item) => {
+              // El active state se calcula así:
+              // - Si el link tiene hash (#beneficios), solo es active si
+              //   location.hash coincide con ese hash.
+              // - Si es un link a otra ruta (/directorio), active si
+              //   location.pathname coincide.
+              const hashMatch = item.to.match(/#(.+)$/)
+              const isActive = hashMatch
+                ? location.hash === `#${hashMatch[1]}`
+                : location.pathname === item.to ||
+                  location.pathname.startsWith(item.to + '/')
+              return (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
                     'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
                     isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
+                  )}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
           </nav>
         )}
 
