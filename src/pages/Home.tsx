@@ -274,23 +274,26 @@ function LatamAlMundo() {
 }
 
 /**
- * Mapa SVG minimal: silueta estilizada de Latinoamérica en dorado,
- * con 4 arcos curvos hacia los puntos cardinales (NA, EU, Asia, Oceanía).
- * Sin meridianos ni grids para no competir con el resto del Home.
- * Origin dots con pulse sutil para dar vida sin distraer.
+ * Mapa SVG minimal: silueta estilizada pero reconocible de Latinoamérica
+ * (México + Yucatán + Centroamérica + Sudamérica completa, incluyendo
+ * Baja California, el bulge de Brasil, el filo de Chile y Tierra del Fuego).
+ * Dots de origen sobre los países con certificaciones; arcos hacia 4
+ * destinos cardinales (NA, EU, Asia, Oceanía).
  */
 function LatamWorldMap() {
+  // Coords aproximadas (viewBox 600x800) de países con comunidades activas.
   const cities = [
-    { x: 410, y: 220 },
-    { x: 365, y: 290 },
-    { x: 380, y: 380 },
-    { x: 440, y: 310 },
-    { x: 410, y: 460 },
-    { x: 380, y: 560 },
+    { x: 350, y: 295 }, // Colombia
+    { x: 285, y: 340 }, // Ecuador
+    { x: 300, y: 420 }, // Perú
+    { x: 445, y: 420 }, // Brasil (centro)
+    { x: 370, y: 470 }, // Bolivia
+    { x: 335, y: 660 }, // Argentina
+    { x: 165, y: 110 }, // México
   ]
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[520px]">
+    <div className="relative mx-auto aspect-[3/4] w-full max-w-[440px]">
       {/* Halo dorado suave detrás del continente */}
       <div
         aria-hidden
@@ -298,7 +301,7 @@ function LatamWorldMap() {
       />
 
       <svg
-        viewBox="0 0 800 800"
+        viewBox="0 0 600 800"
         className="relative h-full w-full"
         role="img"
         aria-label="Mapa estilizado de Latinoamérica con conexiones al mundo"
@@ -314,71 +317,134 @@ function LatamWorldMap() {
             <stop offset="0%" stopColor="#A8842F" stopOpacity="0.7" />
             <stop offset="100%" stopColor="#A8842F" stopOpacity="0" />
           </linearGradient>
-          {/* Halo para los puntos de origen */}
+          {/* Halo radial para los puntos */}
           <radialGradient id="dot-halo">
             <stop offset="0%" stopColor="#D2A958" stopOpacity="0.5" />
             <stop offset="100%" stopColor="#D2A958" stopOpacity="0" />
           </radialGradient>
         </defs>
 
-        {/* Silueta estilizada de Latinoamérica */}
+        {/*
+          Silueta de Latinoamérica con proyección equirectangular
+          (lng/lat real) sobre 30 puntos clave. Recorrido clockwise:
+          Tijuana → costa golfo y Yucatán → Centroamérica → caribe SA
+          → bulge atlántico de Brasil → Argentina y Tierra del Fuego
+          → costa pacífica subiendo (Chile / Perú / Ecuador / CA) → norte
+          Pacífico de México → Tijuana.
+          Stroke con linejoin redondeado para suavizar los vértices L
+          sin caer en curvas bezier mal calibradas.
+        */}
         <path
           fill="url(#latam-grad)"
+          stroke="url(#latam-grad)"
+          strokeWidth="14"
+          strokeLinejoin="round"
+          strokeLinecap="round"
           d="
-            M 330 165
-            C 340 158, 355 158, 365 165
-            L 380 175
-            C 395 178, 410 175, 420 178
-            C 432 182, 440 195, 442 210
-            L 445 230
-            C 448 245, 460 252, 465 268
-            C 470 285, 462 300, 458 318
-            C 455 338, 463 358, 460 378
-            C 456 400, 445 418, 432 432
-            C 422 446, 410 458, 405 478
-            C 400 502, 410 525, 405 548
-            C 400 568, 388 585, 380 605
-            C 372 625, 368 645, 358 658
-            C 348 668, 335 670, 325 660
-            C 318 650, 320 635, 322 622
-            C 325 605, 332 590, 332 572
-            C 332 555, 322 540, 320 522
-            C 318 502, 328 482, 328 462
-            C 328 442, 318 424, 318 405
-            C 318 388, 328 372, 328 355
-            C 328 338, 318 322, 318 305
-            C 318 290, 322 275, 318 260
-            C 314 245, 305 232, 308 218
-            C 312 200, 322 185, 330 165
+            M 90 85
+            L 195 80
+            L 245 105
+            L 260 135
+            L 270 145
+            L 290 145
+            L 282 168
+            L 260 178
+            L 252 200
+            L 258 225
+            L 270 250
+            L 285 268
+            L 310 275
+            L 365 275
+            L 425 285
+            L 475 320
+            L 510 370
+            L 525 425
+            L 515 480
+            L 490 530
+            L 455 575
+            L 410 610
+            L 380 640
+            L 358 670
+            L 345 700
+            L 335 730
+            L 320 758
+            L 312 758
+            L 305 730
+            L 295 690
+            L 285 645
+            L 275 595
+            L 268 540
+            L 262 482
+            L 262 425
+            L 268 372
+            L 268 330
+            L 258 308
+            L 248 305
+            L 240 318
+            L 232 318
+            L 222 305
+            L 222 285
+            L 230 268
+            L 240 250
+            L 235 228
+            L 218 205
+            L 200 180
+            L 175 150
+            L 145 120
+            L 115 100
+            L 90 85
             Z
           "
         />
 
-        {/* Centroamérica */}
+        {/* Baja California — península larga al W de México */}
         <path
           fill="url(#latam-grad)"
-          d="M 295 200 C 285 195, 270 200, 265 215 C 260 230, 270 248, 285 248 C 300 248, 312 235, 312 220 C 312 208, 305 202, 295 200 Z"
+          stroke="url(#latam-grad)"
+          strokeWidth="10"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          d="
+            M 70 92
+            L 60 130
+            L 65 168
+            L 80 180
+            L 88 170
+            L 82 145
+            L 78 115
+            L 74 95
+            L 70 92
+            Z
+          "
         />
 
-        {/* Arcos al mundo (4 direcciones) */}
+        {/* Islas del Caribe (decorativas, entre Yucatán y Colombia) */}
+        <g fill="url(#latam-grad)">
+          <circle cx="305" cy="200" r="6" />
+          <circle cx="335" cy="208" r="5" />
+          <circle cx="362" cy="218" r="4" />
+          <circle cx="385" cy="230" r="3.5" />
+        </g>
+
+        {/* Arcos al mundo (4 direcciones cardinales) */}
         <g fill="none" strokeWidth="2" strokeLinecap="round">
           {/* Norteamérica */}
-          <path d="M 390 320 Q 250 200, 130 100" stroke="url(#arc-grad)" />
+          <path d="M 150 100 Q 90 70, 40 50" stroke="url(#arc-grad)" />
           {/* Europa / África */}
-          <path d="M 440 360 Q 600 340, 740 290" stroke="url(#arc-grad)" />
+          <path d="M 510 380 Q 555 360, 580 340" stroke="url(#arc-grad)" />
           {/* Asia / Pacífico */}
-          <path d="M 360 360 Q 200 360, 60 380" stroke="url(#arc-grad)" />
+          <path d="M 165 380 Q 90 400, 30 420" stroke="url(#arc-grad)" />
           {/* Oceanía */}
-          <path d="M 400 600 Q 520 700, 660 730" stroke="url(#arc-grad)" />
+          <path d="M 340 700 Q 460 740, 560 770" stroke="url(#arc-grad)" />
         </g>
 
         {/* Destinos del mundo (4 dots) */}
         <g>
           {[
-            { x: 130, y: 100 },
-            { x: 740, y: 290 },
-            { x: 60, y: 380 },
-            { x: 660, y: 730 },
+            { x: 40, y: 50 },
+            { x: 580, y: 340 },
+            { x: 30, y: 420 },
+            { x: 560, y: 770 },
           ].map((d, i) => (
             <g key={i}>
               <circle cx={d.x} cy={d.y} r="14" fill="url(#dot-halo)" />
@@ -424,22 +490,6 @@ function LatamWorldMap() {
               />
             </g>
           ))}
-        </g>
-
-        {/* Etiqueta del centro */}
-        <g transform="translate(385, 420)">
-          <text
-            x="0"
-            y="0"
-            textAnchor="middle"
-            fontSize="13"
-            fontWeight="700"
-            letterSpacing="2"
-            fill="#fff"
-            fontFamily="ui-sans-serif, system-ui, sans-serif"
-          >
-            LATAM
-          </text>
         </g>
       </svg>
     </div>
