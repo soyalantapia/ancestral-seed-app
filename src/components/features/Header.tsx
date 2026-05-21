@@ -139,8 +139,8 @@ export function Header() {
                   to={item.to}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
-                    isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
+                    'whitespace-nowrap text-xs font-medium text-navy-500 transition-colors md:text-sm',
+                    isActive ? 'font-bold' : 'hover:text-gold-700',
                   )}
                 >
                   {item.label}
