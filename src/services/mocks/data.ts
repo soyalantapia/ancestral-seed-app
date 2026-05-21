@@ -789,110 +789,312 @@ export const mockTutorAgenda: TutorAgendaItem[] = [
 
 // ─── Tutor scoring criteria definitions ──────────────────────────────────────
 
+/**
+ * Variables de evaluación del Tutor, definidas por el antropólogo del
+ * proyecto (Variables Finales.xlsx, 2026-05).
+ *
+ * Estructura:
+ *   - 14 variables agrupadas en 5 dimensiones
+ *   - Pesos individuales que suman exactamente 100
+ *   - Cada variable incluye sub-ítems observables y medios de verificación
+ *
+ * Dimensiones y pesos:
+ *   Cultural (37%): transmision 10 + simbolos 12 + practicas 15
+ *   Sociales y Comunitaria (14%): organizacion 8 + beneficio 6
+ *   Ambiental (18%): territorio 6 + biodiversidad 6 + agua 6
+ *   Ética y Cosmovisión (12%): cosmovision 8 + apropiacion 4
+ *   Gestión y técnica (19%): tecnicas 8 + reconocimiento 3 + asociatividad
+ *     4 + consentimiento 4
+ *
+ * Ranges interpretativos del antropólogo (último renglón del Excel):
+ *   - 100 / 80–100 → Producto/Servicio Ancestral Auténtico (Categoría 1)
+ *   - 60 – 80      → Producto/Servicio Tradicional con Raíces Ancestrales (2)
+ *   - 40 – 60      → Producto/Servicio de Inspiración Cultural (3)
+ */
 export const SCORING_CRITERIA: ScoringCriterionDef[] = [
+  // ─── Dimensión Cultural (37%) ──────────────────────────────────────────
   {
-    id: 'tecnico',
-    label: 'Conocimiento técnico',
+    id: 'transmision',
+    dimension: 'cultural',
+    label: 'Transmisión intergeneracional de conocimientos',
     description:
-      'Capacidad de evaluar productos y servicios bajo estándares de calidad, eficiencia y sostenibilidad ancestral.',
-    weight: 18,
-    subitems: [
-      'Dominio del oficio y la técnica',
-      'Calidad del proceso productivo',
-      'Reproducibilidad del proceso',
-    ],
-  },
-  {
-    id: 'ambiental',
-    label: 'Conocimiento ambiental',
-    description:
-      'Gestión responsable de los recursos naturales y prácticas sustentables.',
-    weight: 14,
-    subitems: [
-      'Origen de materias primas',
-      'Impacto ambiental del proceso',
-      'Trazabilidad del recurso',
-    ],
-  },
-  {
-    id: 'cultural',
-    label: 'Conocimiento cultural y ancestral',
-    description:
-      'Valoración y preservación de saberes tradicionales como parte fundamental de la identidad.',
-    weight: 20,
-    subitems: [
-      'Vínculo con la comunidad de origen',
-      'Continuidad generacional del saber',
-      'Aval de referentes culturales',
-    ],
-  },
-  {
-    id: 'tecnologico',
-    label: 'Conocimiento tecnológico',
-    description:
-      'Aplicación de herramientas innovadoras, digitalización y trazabilidad.',
+      'Enseñanza formal o informal de prácticas y conocimientos ancestrales. Guardianes del conocimiento.',
     weight: 10,
     subitems: [
-      'Trazabilidad digital del producto',
-      'Adopción de tecnología sin perder identidad',
+      'Talleres y material pedagógico',
+      'Entrevistas y testimonios orales',
+      'Conservación o adaptación del conocimiento',
     ],
+    verification:
+      'Material pedagógico, entrevistas, fotos, testimonios, experiencias de conservación.',
   },
   {
-    id: 'social',
-    label: 'Conocimiento social y territorial',
+    id: 'simbolos',
+    dimension: 'cultural',
+    label: 'Símbolos y rituales',
     description:
-      'Dinámicas comunitarias, impacto social y arraigo territorial.',
-    weight: 14,
-    subitems: [
-      'Impacto social del proyecto',
-      'Vínculo territorial declarado',
-      'Participación de la comunidad',
-    ],
-  },
-  {
-    id: 'estrategico',
-    label: 'Conocimiento estratégico y empresarial',
-    description:
-      'Planificación, liderazgo, integración comercial y posicionamiento.',
+      'Símbolos tangibles e intangibles, rituales o ceremonias ancestrales.',
     weight: 12,
     subitems: [
-      'Plan de comercialización',
-      'Sustentabilidad económica',
+      'Patrimonio material',
+      'Patrimonio inmaterial',
+      'Rituales y ceremonias activas',
     ],
+    verification:
+      'Observación en campo, testimonios o evidencias de patrimonio material e inmaterial.',
   },
   {
-    id: 'normativo',
-    label: 'Conocimiento normativo y de certificación',
+    id: 'practicas',
+    dimension: 'cultural',
+    label: 'Prácticas ancestrales',
     description:
-      'Manejo de estándares, regulaciones y marcos de cumplimiento.',
-    weight: 12,
+      'Formas de parentesco, asentamiento, supervivencia, intercambio y lenguaje propios.',
+    weight: 15,
     subitems: [
-      'Documentación legal',
-      'Cumplimiento de marco normativo local',
+      'Formas de parentesco',
+      'Patrón de asentamiento',
+      'Estrategias de supervivencia',
+      'Formas alternativas de intercambio económico',
+      'Lenguaje propio',
     ],
+    verification:
+      'Árbol genealógico, cartografía social, observación de campo, testimonios locales, evidencias orales o escritas.',
+  },
+
+  // ─── Dimensión Sociales y Comunitaria (14%) ────────────────────────────
+  {
+    id: 'organizacion',
+    dimension: 'social',
+    label: 'Organización comunitaria',
+    description:
+      'Participación equilibrada de mujeres, hombres, ancianos en la vida cotidiana y política.',
+    weight: 8,
+    subitems: [
+      'Estrategias locales de organización social y política',
+      'Estatutos internos de la comunidad',
+      'Participación abierta en reuniones',
+    ],
+    verification:
+      'Actas de reuniones, fotografías, testimonios, estatutos internos.',
+  },
+  {
+    id: 'beneficio',
+    dimension: 'social',
+    label: 'Beneficio colectivo',
+    description:
+      'Distribución justa de beneficios económicos y trabajo colectivo.',
+    weight: 6,
+    subitems: [
+      'Distribución justa de beneficios económicos',
+      'Trabajo colectivo en el territorio',
+    ],
+    verification:
+      'Estados financieros, convenios internos, observación de campo, testimonios.',
+  },
+
+  // ─── Dimensión Ambiental (18%) ─────────────────────────────────────────
+  {
+    id: 'territorio',
+    dimension: 'ambiental',
+    label: 'Uso sostenible del territorio',
+    description:
+      'Extracción y producción sin degradación + estímulo al uso sostenible.',
+    weight: 6,
+    subitems: [
+      'Extracción y producción sin degradación',
+      'Estímulo comunitario al uso sostenible',
+    ],
+    verification:
+      'Cartografía social, informes técnicos, fotos, observación de campo.',
+  },
+  {
+    id: 'biodiversidad',
+    dimension: 'ambiental',
+    label: 'Protección de biodiversidad',
+    description:
+      'Uso de semillas o materiales locales y protección de bosque y plantas sagradas.',
+    weight: 6,
+    subitems: [
+      'Uso de semillas/materiales locales',
+      'Preservación de especies',
+      'Protección de bosque y plantas sagradas',
+    ],
+    verification:
+      'Inventarios, registros de origen, cartografía social, estrategias de conservación.',
+  },
+  {
+    id: 'agua',
+    dimension: 'ambiental',
+    label: 'Cuidado del agua',
+    description:
+      'Uso responsable y estrategias locales para la gestión de fuentes de agua.',
+    weight: 6,
+    subitems: [
+      'Uso responsable del agua',
+      'Estrategias locales de gestión de ríos y manantiales',
+    ],
+    verification:
+      'Cartografía social, testimonios, observación de campo, material testimonial de estrategias.',
+  },
+
+  // ─── Dimensión Ética y Cosmovisión (12%) ───────────────────────────────
+  {
+    id: 'cosmovision',
+    dimension: 'etica',
+    label: 'Cosmovisión',
+    description:
+      'Promoción de valores culturales y espirituales ancestrales.',
+    weight: 8,
+    subitems: [
+      'Valores culturales presentes en la práctica',
+      'Valores espirituales y ceremoniales',
+      'Articulación con la identidad colectiva',
+    ],
+    verification: 'Entrevistas, observación directa, testimonios.',
+  },
+  {
+    id: 'apropiacion',
+    dimension: 'etica',
+    label: 'No apropiación material e inmaterial',
+    description:
+      'Reconocimiento y retribución a la comunidad de origen.',
+    weight: 4,
+    subitems: [
+      'Reconocimiento explícito de la comunidad de origen',
+      'Retribución pactada con la comunidad',
+    ],
+    verification: 'Contratos, acuerdos comunitarios.',
+  },
+
+  // ─── Dimensión Gestión y técnica (19%) ─────────────────────────────────
+  {
+    id: 'tecnicas',
+    dimension: 'gestion',
+    label: 'Uso de técnicas y herramientas tradicionales',
+    description:
+      'Registro completo del proceso e impacto, con técnicas heredadas.',
+    weight: 8,
+    subitems: [
+      'Registro del proceso productivo',
+      'Uso de herramientas tradicionales',
+      'Documentación del impacto',
+    ],
+    verification: 'Manuales, registros, cuadernos, memorias o testimonios.',
+  },
+  {
+    id: 'reconocimiento',
+    dimension: 'gestion',
+    label: 'Reconocimiento institucional',
+    description:
+      'Reconocimiento de diferentes actores nacionales o internacionales.',
+    weight: 3,
+    subitems: [
+      'Diplomas o menciones',
+      'Reconocimiento de pares y referentes',
+    ],
+    verification: 'Testimonios, fotos, reconocimientos (diplomas, menciones).',
+  },
+  {
+    id: 'asociatividad',
+    dimension: 'gestion',
+    label: 'Asociatividad e interculturalidad',
+    description:
+      'Trabajos cooperativos con comunidades ancestrales, rurales o urbanas vecinas.',
+    weight: 4,
+    subitems: [
+      'Talleres y actividades cooperativas',
+      'Convenios interculturales',
+      'Impacto territorial',
+    ],
+    verification:
+      'Listas de asistencia, fotos de talleres, actas, testimonios.',
+  },
+  {
+    id: 'consentimiento',
+    dimension: 'gestion',
+    label: 'Consentimiento informado',
+    description:
+      'Autorización de la comunidad para difusión o comercialización.',
+    weight: 4,
+    subitems: [
+      'Actas de consentimiento firmadas',
+      'Grabaciones de aprobación oral',
+      'Acuerdos vigentes y revisables',
+    ],
+    verification: 'Actas de consentimiento, grabaciones, testimonios.',
   },
 ]
+
+// Sanity check en runtime: si alguien edita los pesos y se rompe el 100%,
+// el dev console lo va a marcar. No es bloqueante.
+if (
+  typeof window !== 'undefined' &&
+  SCORING_CRITERIA.reduce((s, c) => s + c.weight, 0) !== 100
+) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[Ancestral Seed] SCORING_CRITERIA pesos no suman 100:',
+    SCORING_CRITERIA.reduce((s, c) => s + c.weight, 0),
+  )
+}
+
+/**
+ * Categoría cultural derivada del score ponderado.
+ * Rangos definidos por el antropólogo (último renglón del Excel).
+ */
+export function categoryFromScore(score: number): {
+  num: 1 | 2 | 3 | null
+  label: string
+} {
+  if (score >= 80) return { num: 1, label: 'Producto Ancestral auténtico' }
+  if (score >= 60)
+    return {
+      num: 2,
+      label: 'Producto Tradicional con raíces ancestrales',
+    }
+  if (score >= 40)
+    return { num: 3, label: 'Producto de Inspiración Cultural' }
+  return { num: null, label: 'Sin categoría asignada' }
+}
 
 // ─── Evaluaciones por caso (scoring + evidencias + notas) ────────────────────
 
 export const mockScoringByCase: Record<string, ScoringValue[]> = {
+  // CE-104: caso muy bien evaluado (rangos cercanos a Categoría 1: Ancestral
+  // auténtico). Scores 7-10.
   'CE-104': [
-    { criterionId: 'tecnico', score: 9, comment: 'Dominio técnico excelente.' },
-    { criterionId: 'ambiental', score: 8, comment: 'Buen uso de fibra natural.' },
-    { criterionId: 'cultural', score: 10, comment: 'Aval comunitario sólido.' },
-    { criterionId: 'tecnologico', score: 6 },
-    { criterionId: 'social', score: 9, comment: 'Fuerte vínculo territorial.' },
-    { criterionId: 'estrategico', score: 7 },
-    { criterionId: 'normativo', score: 8 },
+    { criterionId: 'transmision', score: 9, comment: 'Transmisión oral activa entre tres generaciones.' },
+    { criterionId: 'simbolos', score: 9, comment: 'Rituales documentados y vigentes.' },
+    { criterionId: 'practicas', score: 8 },
+    { criterionId: 'organizacion', score: 8 },
+    { criterionId: 'beneficio', score: 7 },
+    { criterionId: 'territorio', score: 9, comment: 'Sin agroquímicos ni degradación.' },
+    { criterionId: 'biodiversidad', score: 8 },
+    { criterionId: 'agua', score: 8 },
+    { criterionId: 'cosmovision', score: 10, comment: 'Articulación espiritual sólida.' },
+    { criterionId: 'apropiacion', score: 9 },
+    { criterionId: 'tecnicas', score: 9, comment: 'Herramientas heredadas en uso.' },
+    { criterionId: 'reconocimiento', score: 7 },
+    { criterionId: 'asociatividad', score: 7 },
+    { criterionId: 'consentimiento', score: 9 },
   ],
+  // CE-108: caso intermedio (rango Categoría 2: Tradicional con raíces).
+  // Scores 6-8 con algunos huecos a completar.
   'CE-108': [
-    { criterionId: 'tecnico', score: 7 },
-    { criterionId: 'ambiental', score: 9, comment: 'Sin agroquímicos.' },
-    { criterionId: 'cultural', score: 8 },
-    { criterionId: 'tecnologico', score: 5 },
-    { criterionId: 'social', score: 7 },
-    { criterionId: 'estrategico', score: 8 },
-    { criterionId: 'normativo', score: 6, comment: 'Falta documentación tributaria.' },
+    { criterionId: 'transmision', score: 7 },
+    { criterionId: 'simbolos', score: 8 },
+    { criterionId: 'practicas', score: 7 },
+    { criterionId: 'organizacion', score: 6 },
+    { criterionId: 'beneficio', score: 6 },
+    { criterionId: 'territorio', score: 9, comment: 'Sin agroquímicos.' },
+    { criterionId: 'biodiversidad', score: 7 },
+    { criterionId: 'agua', score: 7 },
+    { criterionId: 'cosmovision', score: 8 },
+    { criterionId: 'apropiacion', score: 7 },
+    { criterionId: 'tecnicas', score: 8 },
+    { criterionId: 'reconocimiento', score: 5 },
+    { criterionId: 'asociatividad', score: 6 },
+    { criterionId: 'consentimiento', score: 7, comment: 'Falta acta firmada actualizada.' },
   ],
 }
 
@@ -1198,7 +1400,7 @@ export const mockImprovementPlans: Record<string, ImprovementPlan> = {
         id: 'a-1',
         title: 'Documentar proceso completo con video',
         detail: '5-7 minutos mostrando hornado, modelado y quemado.',
-        criterionId: 'tecnico',
+        criterionId: 'tecnicas',
         dueDate: '20/06',
         responsible: 'solicitante',
         status: 'pending',
@@ -1206,15 +1408,15 @@ export const mockImprovementPlans: Record<string, ImprovementPlan> = {
       {
         id: 'a-2',
         title: 'Aval firmado por 2 referentes comunitarios',
-        criterionId: 'cultural',
+        criterionId: 'organizacion',
         dueDate: '15/06',
         responsible: 'solicitante',
         status: 'in_progress',
       },
       {
         id: 'a-3',
-        title: 'Plan de comercialización para el próximo año',
-        criterionId: 'estrategico',
+        title: 'Cartografía social del territorio',
+        criterionId: 'territorio',
         dueDate: '01/07',
         responsible: 'solicitante',
         status: 'pending',

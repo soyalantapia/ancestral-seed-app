@@ -33,6 +33,7 @@ import { toast } from 'sonner'
 import {
   MESSAGE_TEMPLATES,
   SCORING_CRITERIA,
+  categoryFromScore,
   STAGE_SLA_DAYS,
   mockEvidenceEvaluations,
   mockInternalNotes,
@@ -45,6 +46,7 @@ import type {
   EvidenceVerdict,
   InternalNote,
   ScoringCriterionId,
+  ScoringDimension,
   ScoringValue,
   TutorCase,
 } from '@/types'
@@ -886,6 +888,34 @@ function EvaluacionTab({
     })
   }
 
+  // Agrupar criterios por dimensión (orden del antropólogo).
+  const dimensionOrder: ScoringDimension[] = [
+    'cultural',
+    'social',
+    'ambiental',
+    'etica',
+    'gestion',
+  ]
+  const dimensionMeta: Record<
+    ScoringDimension,
+    { label: string; accent: string }
+  > = {
+    cultural: { label: 'Cultural', accent: 'bg-gold-100 text-gold-700' },
+    social: {
+      label: 'Sociales y Comunitaria',
+      accent: 'bg-info-100 text-info-400',
+    },
+    ambiental: { label: 'Ambiental', accent: 'bg-success-100 text-success-300' },
+    etica: {
+      label: 'Ética y Cosmovisión',
+      accent: 'bg-warning-100 text-warning-400',
+    },
+    gestion: { label: 'Gestión y técnica', accent: 'bg-neutral-200 text-navy-500' },
+  }
+
+  // Categoría cultural derivada del score (Cat 1/2/3 según antropólogo).
+  const category = categoryFromScore(finalScore)
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-gold-100/50 p-4">
@@ -903,16 +933,26 @@ function EvaluacionTab({
                 ? `Estaba en ${initialFinal}/100`
                 : 'Editá cada criterio para ajustar el score'}
             </p>
+            {category.num && (
+              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-navy-500 ring-1 ring-gold-300">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[10px] text-navy-500">
+                  {category.num}
+                </span>
+                {category.label}
+              </p>
+            )}
           </div>
           <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white sm:w-64">
             <div
               className={cn(
                 'h-full rounded-full transition-all',
-                finalScore >= 70
+                finalScore >= 80
                   ? 'bg-success-300'
-                  : finalScore >= 50
-                    ? 'bg-warning-400'
-                    : 'bg-error-400',
+                  : finalScore >= 60
+                    ? 'bg-info-400'
+                    : finalScore >= 40
+                      ? 'bg-warning-400'
+                      : 'bg-error-400',
               )}
               style={{ width: `${finalScore}%` }}
             />
@@ -920,62 +960,101 @@ function EvaluacionTab({
         </div>
       </div>
 
-      <ul className="space-y-3">
-        {SCORING_CRITERIA.map((c) => {
-          const val = values.find((v) => v.criterionId === c.id)
-          const score = val?.score ?? 0
-          return (
-            <li
-              key={c.id}
-              className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-bold text-navy-500">{c.label}</p>
-                    <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
-                      peso {c.weight}%
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs leading-relaxed text-navy-300">
-                    {c.description}
-                  </p>
-                  <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-navy-300">
-                    {c.subitems.map((s) => (
-                      <li key={s} className="inline-flex items-center gap-1">
-                        <span className="h-1 w-1 rounded-full bg-gold-500" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={0}
-                    max={10}
-                    step={1}
-                    value={score}
-                    onChange={(e) => setScore(c.id, Number(e.target.value))}
-                    className="h-2 w-32 cursor-pointer accent-gold-500 sm:w-40"
-                  />
-                  <span className="inline-flex h-9 w-12 items-center justify-center rounded-full bg-navy-500 text-sm font-bold text-white">
-                    {score}
-                  </span>
-                </div>
-              </div>
-              {/* Comentario */}
-              <textarea
-                value={val?.comment ?? ''}
-                onChange={(e) => setScore(c.id, score, e.target.value)}
-                rows={1}
-                placeholder="Comentario del tutor (opcional)…"
-                className="mt-3 w-full resize-none rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
-              />
-            </li>
-          )
-        })}
-      </ul>
+      {dimensionOrder.map((dim) => {
+        const criteria = SCORING_CRITERIA.filter((c) => c.dimension === dim)
+        if (criteria.length === 0) return null
+        const dimWeight = criteria.reduce((s, c) => s + c.weight, 0)
+        const meta = dimensionMeta[dim]
+        return (
+          <section key={dim} className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-navy-500">
+                {meta.label}
+              </h3>
+              <span
+                className={cn(
+                  'rounded-full px-2.5 py-0.5 text-[10px] font-bold',
+                  meta.accent,
+                )}
+              >
+                {dimWeight}% del total
+              </span>
+            </div>
+            <ul className="space-y-3">
+              {criteria.map((c) => {
+                const val = values.find((v) => v.criterionId === c.id)
+                const score = val?.score ?? 0
+                return (
+                  <li
+                    key={c.id}
+                    className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-bold text-navy-500">
+                            {c.label}
+                          </p>
+                          <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
+                            peso {c.weight}%
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-navy-300">
+                          {c.description}
+                        </p>
+                        <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-navy-300">
+                          {c.subitems.map((s) => (
+                            <li
+                              key={s}
+                              className="inline-flex items-center gap-1"
+                            >
+                              <span className="h-1 w-1 rounded-full bg-gold-500" />
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                        {c.verification && (
+                          <p className="mt-2 rounded-lg bg-neutral-100 px-2.5 py-1.5 text-[11px] leading-relaxed text-navy-400">
+                            <span className="font-bold text-navy-500">
+                              Verificación:{' '}
+                            </span>
+                            {c.verification}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min={0}
+                          max={10}
+                          step={1}
+                          value={score}
+                          onChange={(e) =>
+                            setScore(c.id, Number(e.target.value))
+                          }
+                          aria-label={`Puntaje de ${c.label}`}
+                          className="h-2 w-32 cursor-pointer accent-gold-500 sm:w-40"
+                        />
+                        <span className="inline-flex h-9 w-12 items-center justify-center rounded-full bg-navy-500 text-sm font-bold text-white">
+                          {score}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Comentario */}
+                    <textarea
+                      value={val?.comment ?? ''}
+                      onChange={(e) => setScore(c.id, score, e.target.value)}
+                      rows={1}
+                      placeholder="Comentario del tutor (opcional)…"
+                      className="mt-3 w-full resize-none rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
+                    />
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        )
+      })}
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-neutral-200 pt-4">
         <button

@@ -318,22 +318,58 @@ export interface TutorAgendaItem {
 }
 
 // ─── Scoring estructurado por criterios (Tutor) ──────────────────────────────
+//
+// Variables y ponderaciones definidas por el antropólogo del proyecto
+// (archivo "Variables Finales.xlsx" entregado por Raúl). Las 14 variables
+// están agrupadas en 5 dimensiones que suman 100%.
+//
+// Dimensiones:
+//   - Cultural (37%): transmision + simbolos + practicas
+//   - Sociales y Comunitaria (14%): organizacion + beneficio
+//   - Ambiental (18%): territorio + biodiversidad + agua
+//   - Ética y Cosmovisión (12%): cosmovision + apropiacion
+//   - Gestión y técnica (19%): tecnicas + reconocimiento + asociatividad +
+//     consentimiento
+
+export type ScoringDimension =
+  | 'cultural'
+  | 'social'
+  | 'ambiental'
+  | 'etica'
+  | 'gestion'
 
 export type ScoringCriterionId =
-  | 'tecnico'
-  | 'ambiental'
-  | 'cultural'
-  | 'tecnologico'
-  | 'social'
-  | 'estrategico'
-  | 'normativo'
+  // Cultural
+  | 'transmision'
+  | 'simbolos'
+  | 'practicas'
+  // Sociales y Comunitaria
+  | 'organizacion'
+  | 'beneficio'
+  // Ambiental
+  | 'territorio'
+  | 'biodiversidad'
+  | 'agua'
+  // Ética y Cosmovisión
+  | 'cosmovision'
+  | 'apropiacion'
+  // Gestión y técnica
+  | 'tecnicas'
+  | 'reconocimiento'
+  | 'asociatividad'
+  | 'consentimiento'
 
 export interface ScoringCriterionDef {
   id: ScoringCriterionId
+  /** Dimensión a la que pertenece — para agruparlas visualmente. */
+  dimension: ScoringDimension
   label: string
   description: string
-  weight: number              // 0-100, suman 100
+  /** Peso 0-100. La suma de todos los pesos = 100. */
+  weight: number
   subitems: string[]
+  /** Medios de verificación esperados (del Excel del antropólogo). */
+  verification?: string
 }
 
 export interface ScoringValue {
