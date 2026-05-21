@@ -66,9 +66,9 @@ export default function AuthorProfile() {
         <div className="absolute inset-0 bg-gradient-to-t from-navy-500/40 via-navy-500/10 to-transparent" />
       </div>
 
-      <section className="bg-white">
+      <section className="relative z-10 bg-white">
         <div className="mx-auto max-w-[1320px] px-4 md:px-8">
-          <div className="-mt-20 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg">
+          <div className="relative z-10 -mt-20 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg">
             <div className="p-6 md:p-8">
               <div className="flex flex-col gap-5 md:flex-row md:items-center">
                 <img
