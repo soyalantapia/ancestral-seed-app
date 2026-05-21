@@ -102,11 +102,6 @@ function Hero() {
 function HeroVideoPlaceholder() {
   return (
     <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
-      <img
-        src={`${import.meta.env.BASE_URL}logo-large.webp`}
-        alt="Ancestral Seed"
-        className="h-16 w-16 object-contain sm:h-20 sm:w-20"
-      />
       <button
         type="button"
         aria-label="Reproducir video institucional de 1 minuto"
