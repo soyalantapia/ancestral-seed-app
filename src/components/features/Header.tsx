@@ -54,12 +54,19 @@ export function Header() {
   const menuRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLDivElement>(null)
 
-  // Detect if user is on a dashboard route
+  // Detect if user is on a dashboard route (interior de la plataforma).
+  // Cubre dashboard de postulante (/inicio, /mis-certificaciones, etc.)
+  // y todas las rutas de tutor (/tutor/...).
   const isDashboardRoute =
     isAuthenticated &&
-    /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda|pagos|documentos|calendario)/.test(
+    /^\/(inicio|notificaciones|mis-certificaciones|mi-perfil|configuracion|ayuda|pagos|documentos|calendario|tutor)/.test(
       location.pathname,
     )
+
+  // Las pestañas de la landing aparecen SOLO en rutas públicas (landing,
+  // directorio, perfiles públicos, etc.). En el interior de la plataforma
+  // (dashboard, tutor) se ocultan.
+  const showLandingNav = !isDashboardRoute
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -106,26 +113,28 @@ export function Header() {
           <Logo />
         </Link>
 
-        {/* Nav con las pestañas de la landing — visible SIEMPRE en desktop
-            (incluso en rutas de dashboard logueado). Clickear navega a la
-            landing pública con el anchor correspondiente. */}
-        <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={false}
-              className={({ isActive }) =>
-                cn(
-                  'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
-                  isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        {/* Pestañas de la landing — visibles SOLO en rutas públicas.
+            Dentro del dashboard/tutor se ocultan para no contaminar
+            la nav con anchors de la landing pública. */}
+        {showLandingNav && (
+          <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                end={false}
+                className={({ isActive }) =>
+                  cn(
+                    'whitespace-nowrap text-xs font-medium transition-colors md:text-sm',
+                    isActive ? 'text-navy-500' : 'text-navy-300 hover:text-navy-500',
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        )}
 
         {/* Grupo derecho: el ml-auto siempre lo empuja al borde, ya sea
             que esté presente el nav central (publico/no auth) o no
