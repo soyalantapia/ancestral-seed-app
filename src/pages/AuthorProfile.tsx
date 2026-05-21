@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -83,16 +83,27 @@ export default function AuthorProfile() {
   const { slug } = useParams()
   const { data: author, isLoading: loadingAuthor } = useAuthor(slug)
   const { data: certs, isLoading: loadingCerts } = useAuthorCertifications(slug)
-  const [activeTab, setActiveTab] = useState<TabId>('sobre')
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // Sync scroll a la sección cuando se cambia de tab (sticky nav)
-  useEffect(() => {
-    const el = document.getElementById(`section-${activeTab}`)
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 140
-      window.scrollTo({ top, behavior: 'smooth' })
-    }
-  }, [activeTab])
+  // Tab activa via URL search param (?tab=sobre, certificaciones, territorio, trayectoria)
+  const rawTab = searchParams.get('tab')
+  const activeTab: TabId = (tabs.find((t) => t.id === rawTab)?.id ?? 'sobre')
+
+  const onChangeTab = (id: TabId) => {
+    // Mantener el resto de search params, solo cambiar tab
+    const next = new URLSearchParams(searchParams)
+    if (id === 'sobre') next.delete('tab')
+    else next.set('tab', id)
+    setSearchParams(next, { replace: false })
+    // Scroll al inicio del contenido al cambiar de tab
+    window.requestAnimationFrame(() => {
+      const navEl = document.getElementById('profile-tabs-nav')
+      if (navEl) {
+        const top = navEl.getBoundingClientRect().top + window.scrollY - 80
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    })
+  }
 
   if (loadingAuthor) return <ProfileSkeleton />
 
@@ -115,32 +126,37 @@ export default function AuthorProfile() {
   const country = author.location?.split('·')[0]?.trim()
   const region = author.location?.split('·').pop()?.trim()
 
+  // Cover image: usar la portada del primer certificado del autor, o un
+  // fallback default. Esto le da identidad visual a cada perfil.
+  const coverUrl =
+    certs?.[0]?.coverUrl ||
+    `${import.meta.env.BASE_URL}perfil-cover.webp`
+
   return (
     <div className="bg-white">
-      <ProfileHero author={author} />
+      <ProfileHero author={author} coverUrl={coverUrl} />
       <ProfileStats author={author} certCount={certs?.length ?? 0} />
-      <ProfileTabsNav active={activeTab} onChange={setActiveTab} />
+      <ProfileTabsNav active={activeTab} onChange={onChangeTab} />
 
-      {/* Secciones (scroll-spied) */}
-      <section id="section-sobre" className="scroll-mt-32 bg-white">
-        <SobreSection author={author} />
-      </section>
-
-      <section id="section-certificaciones" className="scroll-mt-32 bg-neutral-100/50">
-        <CertsSection certs={certs ?? []} isLoading={loadingCerts} />
-      </section>
-
-      <section id="section-territorio" className="scroll-mt-32 bg-white">
+      {/* Solo renderizamos la sección activa — cada tab es una "vista" */}
+      {activeTab === 'sobre' && <SobreSection author={author} />}
+      {activeTab === 'certificaciones' && (
+        <div className="bg-neutral-100/50">
+          <CertsSection certs={certs ?? []} isLoading={loadingCerts} />
+        </div>
+      )}
+      {activeTab === 'territorio' && (
         <TerritorioSection
           country={country}
           region={region}
           author={author}
         />
-      </section>
-
-      <section id="section-trayectoria" className="scroll-mt-32 bg-neutral-100/50">
-        <TrayectoriaSection author={author} certs={certs ?? []} />
-      </section>
+      )}
+      {activeTab === 'trayectoria' && (
+        <div className="bg-neutral-100/50">
+          <TrayectoriaSection author={author} certs={certs ?? []} />
+        </div>
+      )}
 
       <ProfileCTA author={author} />
     </div>
@@ -151,18 +167,37 @@ export default function AuthorProfile() {
 // HERO
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ProfileHero({ author }: { author: import('@/types').Author }) {
+function ProfileHero({
+  author,
+  coverUrl,
+}: {
+  author: import('@/types').Author
+  coverUrl: string
+}) {
   return (
-    <section className="relative overflow-hidden bg-pattern-gold pb-10 pt-12 md:pb-16 md:pt-20">
-      <div className="mx-auto max-w-[1240px] px-4 md:px-8">
+    <section className="relative overflow-hidden pb-10 pt-12 md:pb-16 md:pt-20">
+      {/* Cover image como background */}
+      <div aria-hidden className="absolute inset-0 z-0">
+        <img
+          src={coverUrl}
+          alt=""
+          className="h-full w-full object-cover object-center"
+        />
+        {/* Tint navy + degradado para legibilidad del texto */}
+        <div className="absolute inset-0 bg-gradient-to-br from-navy-500/85 via-navy-500/75 to-navy-400/65" />
+        {/* Pattern sutil encima del tint para textura ancestral */}
+        <div className="absolute inset-0 bg-pattern-aztec opacity-20" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-[1240px] px-4 md:px-8">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* Avatar + brand mark side */}
+          {/* Avatar */}
           <div className="lg:col-span-4">
             <div className="relative mx-auto w-fit lg:mx-0">
-              {/* Marco decorativo aztec */}
+              {/* Glow dorado decorativo */}
               <div
                 aria-hidden
-                className="absolute -inset-3 rounded-[2rem] bg-pattern-aztec opacity-30 blur-sm"
+                className="absolute -inset-3 rounded-[2rem] bg-gold-500/30 blur-2xl"
               />
               <div className="relative h-44 w-44 overflow-hidden rounded-[2rem] border-4 border-white bg-white shadow-2xl md:h-56 md:w-56">
                 <img
@@ -172,42 +207,42 @@ function ProfileHero({ author }: { author: import('@/types').Author }) {
                 />
               </div>
               {/* Badge blockchain flotante */}
-              <div className="absolute -bottom-3 -right-3 inline-flex items-center gap-1.5 rounded-full bg-navy-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg ring-4 ring-white">
-                <Shield className="h-3 w-3 text-gold-400" />
+              <div className="absolute -bottom-3 -right-3 inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-navy-500 shadow-lg ring-4 ring-white">
+                <Shield className="h-3 w-3" />
                 Blockchain
               </div>
             </div>
           </div>
 
           {/* Identidad */}
-          <div className="lg:col-span-8">
-            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
-              <Sparkles className="h-3.5 w-3.5 text-gold-500" />
+          <div className="lg:col-span-8 text-white">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-400">
+              <Sparkles className="h-3.5 w-3.5" />
               Perfil verificado
             </p>
-            <h1 className="mt-3 text-3xl font-bold leading-[1.1] tracking-tight text-navy-500 md:text-[44px] md:leading-[1.05]">
+            <h1 className="mt-3 text-3xl font-bold leading-[1.1] tracking-tight md:text-[44px] md:leading-[1.05]">
               {author.name}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-success-100 px-3 py-1 text-xs font-bold text-success-300 ring-1 ring-success-300/30">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-success-300/20 px-3 py-1 text-xs font-bold text-success-100 ring-1 ring-success-100/30 backdrop-blur">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Verificado por auditoría cultural
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-3 py-1 text-xs font-bold text-gold-700">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-500/20 px-3 py-1 text-xs font-bold text-gold-300 ring-1 ring-gold-300/30 backdrop-blur">
                 <Award className="h-3.5 w-3.5" />
                 {author.title}
               </span>
             </div>
 
             {author.location && (
-              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-navy-500">
-                <MapPin className="h-4 w-4 text-gold-700" />
+              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-neutral-200">
+                <MapPin className="h-4 w-4 text-gold-400" />
                 {author.location}
               </p>
             )}
 
             {/* Bio teaser */}
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-300 md:text-lg">
+            <p className="mt-6 max-w-2xl text-base leading-relaxed text-neutral-200 md:text-lg">
               {author.bio}
             </p>
 
@@ -231,8 +266,9 @@ function ProfileHero({ author }: { author: import('@/types').Author }) {
                 Contactar
               </a>
               <Button
-                variant="outlineNavy"
+                variant="ghost"
                 size="lg"
+                className="border border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white/20"
                 onClick={async () => {
                   const url =
                     typeof window !== 'undefined' ? window.location.href : ''
@@ -341,7 +377,10 @@ function ProfileTabsNav({
   onChange: (id: TabId) => void
 }) {
   return (
-    <div className="sticky top-16 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:top-20">
+    <div
+      id="profile-tabs-nav"
+      className="sticky top-16 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:top-20"
+    >
       <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <ul className="flex items-center gap-1">
           {tabs.map((t) => {
