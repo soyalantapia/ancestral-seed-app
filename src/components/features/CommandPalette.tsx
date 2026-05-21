@@ -116,22 +116,22 @@ export function CommandPalette() {
     }
     const all: CommandItem[] = [
       // Navegación pública
-      { id: 'home', label: 'Inicio (landing)', group: 'Navegación', icon: Home, action: go('/'), keywords: ['home', 'landing'] },
-      { id: 'dir', label: 'Directorio público', group: 'Navegación', icon: Search, action: go('/directorio'), keywords: ['certificados', 'productos'] },
-      { id: 'verify', label: 'Verificador de certificado', group: 'Navegación', icon: ShieldCheck, action: go('/verificar'), keywords: ['hash', 'qr', 'blockchain'] },
-      { id: 'about', label: 'Nosotros', group: 'Navegación', icon: Users, action: go('/nosotros') },
-      { id: 'certify', label: 'Certificar producto (form 7 pasos)', group: 'Navegación', icon: FileBadge2, action: go('/certificar'), keywords: ['nuevo', 'crear'] },
+      { id: 'home', label: 'Inicio (landing)', group: 'Navegación', icon: Home, action: go('/'), keywords: ['home', 'landing', 'portada', 'principal'] },
+      { id: 'dir', label: 'Directorio público', group: 'Navegación', icon: Search, action: go('/directorio'), keywords: ['certificados', 'productos', 'buscar', 'encontrar'] },
+      { id: 'verify', label: 'Verificar certificado', group: 'Navegación', icon: ShieldCheck, action: go('/verificar'), keywords: ['verificar', 'verificador', 'validar', 'hash', 'qr', 'blockchain', 'comprobar'] },
+      { id: 'about', label: 'Nosotros', group: 'Navegación', icon: Users, action: go('/nosotros'), keywords: ['equipo', 'misión', 'about'] },
+      { id: 'certify', label: 'Certificar producto', group: 'Navegación', icon: FileBadge2, action: go('/certificar'), keywords: ['nuevo', 'crear', 'iniciar', 'formulario', 'solicitar', 'postular'] },
 
       // Solicitante
-      { id: 'dashboard', label: 'Mi panel', group: 'Cuenta', icon: LayoutDashboard, action: go('/inicio'), requiresAuth: true, keywords: ['dashboard', 'panel'] },
-      { id: 'my-certs', label: 'Mis certificaciones', group: 'Cuenta', icon: FileBadge2, action: go('/mis-certificaciones'), requiresAuth: true },
-      { id: 'docs', label: 'Documentos', group: 'Cuenta', icon: FileText, action: go('/documentos'), requiresAuth: true, keywords: ['pdf', 'evidencias', 'facturas'] },
-      { id: 'pagos', label: 'Pagos y facturas', group: 'Cuenta', icon: CreditCard, action: go('/pagos'), requiresAuth: true },
-      { id: 'cal', label: 'Calendario', group: 'Cuenta', icon: Calendar, action: go('/calendario'), requiresAuth: true },
-      { id: 'notifs', label: 'Notificaciones', group: 'Cuenta', icon: Bell, action: go('/notificaciones'), requiresAuth: true },
-      { id: 'profile', label: 'Mi perfil', group: 'Cuenta', icon: Users, action: go('/mi-perfil'), requiresAuth: true },
-      { id: 'settings', label: 'Configuración', group: 'Cuenta', icon: SettingsIcon, action: go('/configuracion'), requiresAuth: true },
-      { id: 'help', label: 'Ayuda', group: 'Cuenta', icon: HelpCircle, action: go('/ayuda'), requiresAuth: true },
+      { id: 'dashboard', label: 'Mi panel', group: 'Cuenta', icon: LayoutDashboard, action: go('/inicio'), requiresAuth: true, keywords: ['dashboard', 'panel', 'inicio', 'home'] },
+      { id: 'my-certs', label: 'Mis certificaciones', group: 'Cuenta', icon: FileBadge2, action: go('/mis-certificaciones'), requiresAuth: true, keywords: ['certificar', 'solicitudes', 'requests'] },
+      { id: 'docs', label: 'Documentos', group: 'Cuenta', icon: FileText, action: go('/documentos'), requiresAuth: true, keywords: ['pdf', 'evidencias', 'facturas', 'archivos'] },
+      { id: 'pagos', label: 'Pagos y facturas', group: 'Cuenta', icon: CreditCard, action: go('/pagos'), requiresAuth: true, keywords: ['cobros', 'facturación', 'billing'] },
+      { id: 'cal', label: 'Calendario', group: 'Cuenta', icon: Calendar, action: go('/calendario'), requiresAuth: true, keywords: ['agenda', 'reuniones', 'meetings'] },
+      { id: 'notifs', label: 'Notificaciones', group: 'Cuenta', icon: Bell, action: go('/notificaciones'), requiresAuth: true, keywords: ['avisos', 'alertas'] },
+      { id: 'profile', label: 'Mi perfil', group: 'Cuenta', icon: Users, action: go('/mi-perfil'), requiresAuth: true, keywords: ['cuenta', 'datos', 'usuario'] },
+      { id: 'settings', label: 'Configuración', group: 'Cuenta', icon: SettingsIcon, action: go('/configuracion'), requiresAuth: true, keywords: ['ajustes', 'preferencias', 'settings'] },
+      { id: 'help', label: 'Ayuda', group: 'Cuenta', icon: HelpCircle, action: go('/ayuda'), requiresAuth: true, keywords: ['soporte', 'faq', 'preguntas'] },
 
       // Tutor
       { id: 't-dash', label: 'Tutor — Dashboard', group: 'Tutor', icon: LayoutDashboard, action: go('/tutor/dashboard'), requiresAuth: true, requiresTutor: true },
