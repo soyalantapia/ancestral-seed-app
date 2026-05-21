@@ -253,14 +253,14 @@ function LatamAlMundo() {
           </div>
         </div>
 
-        {/* Cinta de stats — separada con divisor sutil */}
+        {/* Cinta de stats — separada con divisor sutil, centrada full-width */}
         <div className="mt-20 border-t border-neutral-200 pt-12 md:mt-28 md:pt-14">
-          <dl className="grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
+          <dl className="mx-auto grid max-w-5xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
             {stats.map((s) => {
               const Icon = s.icon
               return (
-                <div key={s.label} className="text-center md:text-left">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700 md:mx-0">
+                <div key={s.label} className="text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
                     <Icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
                   <dt className="mt-3 text-3xl font-bold text-navy-500 md:text-4xl">
