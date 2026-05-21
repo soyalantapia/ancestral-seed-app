@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { to: '/nosotros', label: 'Nosotros' },
   { to: '/#beneficios', label: 'Beneficios' },
+  { to: '/#latam-al-mundo', label: 'LATAM al mundo' },
   { to: '/#como-funciona', label: '¿Cómo funciona?' },
   { to: '/directorio', label: 'Certificados' },
 ]

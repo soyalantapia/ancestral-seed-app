@@ -3,7 +3,10 @@ import {
   CheckCircle2,
   Eye,
   FileText,
+  Globe2,
+  Languages,
   Leaf,
+  MapPin,
   Play,
   Shield,
   Sparkles,
@@ -33,6 +36,7 @@ export default function Home() {
       />
       <Hero />
       <Pillars />
+      <LatamAlMundo />
       <AncestralVision />
       <BlockchainSection />
       <ProcessSection />
@@ -169,6 +173,372 @@ function Pillars() {
         ))}
       </div>
     </section>
+  )
+}
+
+/**
+ * Sección "La autenticidad ancestral de Latinoamérica al mundo".
+ * Muestra un mapa estilizado de Latinoamérica con arcos que se proyectan
+ * hacia afuera (al resto del mundo), enmarcando el mensaje de proyección
+ * global de las certificaciones ancestrales. Va entre Pillars y
+ * AncestralVision para hacer el puente entre principios y "sobre nosotros".
+ */
+function LatamAlMundo() {
+  const stats = [
+    {
+      icon: MapPin,
+      value: '12+',
+      label: 'países representados',
+    },
+    {
+      icon: Users,
+      value: '85+',
+      label: 'comunidades originarias',
+    },
+    {
+      icon: Globe2,
+      value: '40+',
+      label: 'destinos de exportación',
+    },
+    {
+      icon: Languages,
+      value: '6',
+      label: 'lenguas habladas',
+    },
+  ]
+
+  return (
+    <section
+      id="latam-al-mundo"
+      className="scroll-mt-24 bg-gradient-to-br from-navy-500 via-navy-500 to-navy-400 text-white"
+    >
+      <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-24">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          {/* Columna izquierda: copy */}
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-400 backdrop-blur">
+              <Globe2 className="h-3.5 w-3.5" />
+              Proyección global
+            </p>
+            <h2 className="mt-4 text-2xl font-bold leading-tight md:text-[34px] md:leading-[1.15]">
+              La autenticidad ancestral de
+              <br className="hidden md:block" />{' '}
+              <span className="bg-gradient-to-r from-gold-400 to-gold-500 bg-clip-text text-transparent">
+                Latinoamérica al mundo
+              </span>
+            </h2>
+            <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-300 md:text-base">
+              Cada certificación es un puente: nace en una comunidad originaria
+              de Latinoamérica y viaja —con su historia, su técnica y su
+              territorio— hacia mercados, museos y consumidores del mundo entero.
+              Acompañamos esa proyección sin desconectar el producto de su
+              origen.
+            </p>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-neutral-300 md:text-base">
+              La trazabilidad blockchain permite que un comprador en Tokio,
+              Madrid o Berlín pueda verificar, en segundos, que lo que llevó a
+              casa fue tejido, sahumado o tallado por las manos correctas, en
+              el territorio correcto, con el consentimiento de su pueblo.
+            </p>
+
+            {/* Stats */}
+            <dl className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {stats.map((s) => {
+                const Icon = s.icon
+                return (
+                  <div
+                    key={s.label}
+                    className="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10 backdrop-blur"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-500/15 text-gold-400">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <dt className="mt-2 text-xl font-bold text-white md:text-2xl">
+                      {s.value}
+                    </dt>
+                    <dd className="mt-0.5 text-[11px] leading-snug text-neutral-300">
+                      {s.label}
+                    </dd>
+                  </div>
+                )
+              })}
+            </dl>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/directorio"
+                className={cn(
+                  buttonVariants({ variant: 'gold', size: 'lg' }),
+                  'shadow-lg shadow-gold-500/20',
+                )}
+              >
+                Explorar el directorio
+              </Link>
+              <Link
+                to="/nosotros"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 bg-transparent px-5 text-sm font-bold text-white transition-colors hover:bg-white/10"
+              >
+                Conocé el proyecto
+              </Link>
+            </div>
+          </div>
+
+          {/* Columna derecha: mapa */}
+          <div className="relative">
+            <LatamWorldMap />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/**
+ * SVG decorativo: silueta estilizada de Sudamérica con arcos curvos que
+ * salen del corazón del continente hacia los cuatro extremos del mundo.
+ * Los puntos representan ciudades/comunidades activas. NO es un mapa
+ * cartográficamente preciso — es una representación de proyección global.
+ */
+function LatamWorldMap() {
+  // Coordenadas aproximadas (en el viewBox 800x800) de ciudades con
+  // certificaciones activas: usadas como "puntos de origen".
+  const cities = [
+    { x: 410, y: 220, label: 'Colombia' },
+    { x: 365, y: 290, label: 'Ecuador' },
+    { x: 380, y: 380, label: 'Perú' },
+    { x: 440, y: 310, label: 'Brasil' },
+    { x: 410, y: 460, label: 'Bolivia' },
+    { x: 380, y: 560, label: 'Argentina' },
+    { x: 330, y: 270, label: 'Centroamérica' },
+  ]
+
+  return (
+    <div className="relative aspect-square w-full max-w-[560px] mx-auto">
+      {/* Glow de fondo */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -m-12 rounded-full bg-gold-500/10 blur-3xl"
+      />
+
+      <svg
+        viewBox="0 0 800 800"
+        className="relative h-full w-full"
+        role="img"
+        aria-label="Mapa estilizado de Latinoamérica con conexiones globales"
+      >
+        <defs>
+          {/* Gradiente del continente */}
+          <linearGradient id="latam-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#D2A958" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#A8842F" stopOpacity="0.85" />
+          </linearGradient>
+          {/* Gradiente para los arcos hacia el mundo */}
+          <linearGradient id="arc-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#E5C36C" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#E5C36C" stopOpacity="0" />
+          </linearGradient>
+          {/* Pulse animation para los puntos */}
+          <radialGradient id="dot-glow">
+            <stop offset="0%" stopColor="#FFD97A" stopOpacity="1" />
+            <stop offset="60%" stopColor="#E5C36C" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#E5C36C" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Círculo "mundo" — meridianos */}
+        <g
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="1"
+          aria-hidden
+        >
+          <circle cx="400" cy="400" r="380" />
+          <circle cx="400" cy="400" r="300" />
+          <circle cx="400" cy="400" r="220" />
+          <circle cx="400" cy="400" r="140" />
+          {/* Cruz cardinal */}
+          <line x1="20" y1="400" x2="780" y2="400" />
+          <line x1="400" y1="20" x2="400" y2="780" />
+        </g>
+
+        {/* Silueta estilizada de Latinoamérica (path simplificado).
+            No es geográficamente exacta, es una abstracción reconocible. */}
+        <path
+          fill="url(#latam-grad)"
+          stroke="rgba(255,217,122,0.3)"
+          strokeWidth="1.5"
+          d="
+            M 330 165
+            C 340 158, 355 158, 365 165
+            L 380 175
+            C 395 178, 410 175, 420 178
+            C 432 182, 440 195, 442 210
+            L 445 230
+            C 448 245, 460 252, 465 268
+            C 470 285, 462 300, 458 318
+            C 455 338, 463 358, 460 378
+            C 456 400, 445 418, 432 432
+            C 422 446, 410 458, 405 478
+            C 400 502, 410 525, 405 548
+            C 400 568, 388 585, 380 605
+            C 372 625, 368 645, 358 658
+            C 348 668, 335 670, 325 660
+            C 318 650, 320 635, 322 622
+            C 325 605, 332 590, 332 572
+            C 332 555, 322 540, 320 522
+            C 318 502, 328 482, 328 462
+            C 328 442, 318 424, 318 405
+            C 318 388, 328 372, 328 355
+            C 328 338, 318 322, 318 305
+            C 318 290, 322 275, 318 260
+            C 314 245, 305 232, 308 218
+            C 312 200, 322 185, 330 165
+            Z
+          "
+        />
+
+        {/* Pequeños "anexos" (Centroamérica + Caribe + Norte) */}
+        <g fill="url(#latam-grad)" stroke="rgba(255,217,122,0.3)" strokeWidth="1">
+          {/* Centroamérica */}
+          <path d="M 295 200 C 285 195, 270 200, 265 215 C 260 230, 270 248, 285 248 C 300 248, 312 235, 312 220 C 312 208, 305 202, 295 200 Z" />
+          {/* Caribe puntos */}
+          <circle cx="340" cy="195" r="6" />
+          <circle cx="362" cy="190" r="5" />
+          <circle cx="382" cy="195" r="4" />
+        </g>
+
+        {/* Arcos hacia el mundo (4 direcciones cardinales) */}
+        <g fill="none" strokeWidth="2.5" strokeLinecap="round">
+          {/* Hacia el NORTE (Norteamérica / Europa) */}
+          <path
+            d="M 390 320 Q 250 200, 130 80"
+            stroke="url(#arc-grad)"
+            strokeDasharray="0"
+          />
+          {/* Hacia el ESTE (Europa / África) */}
+          <path
+            d="M 440 360 Q 600 340, 760 290"
+            stroke="url(#arc-grad)"
+          />
+          {/* Hacia el OESTE (Pacífico / Asia) */}
+          <path
+            d="M 360 360 Q 200 360, 40 380"
+            stroke="url(#arc-grad)"
+          />
+          {/* Hacia el SUR (Antártida / Oceanía) */}
+          <path
+            d="M 390 600 Q 500 700, 660 740"
+            stroke="url(#arc-grad)"
+          />
+          {/* Arc adicional Asia */}
+          <path
+            d="M 430 400 Q 650 450, 770 520"
+            stroke="url(#arc-grad)"
+            opacity="0.6"
+          />
+          {/* Arc adicional Norte-Este */}
+          <path
+            d="M 410 280 Q 580 180, 720 130"
+            stroke="url(#arc-grad)"
+            opacity="0.7"
+          />
+        </g>
+
+        {/* Puntos destino (ciudades del mundo) */}
+        <g>
+          {[
+            { x: 130, y: 80, label: 'Nueva York' },
+            { x: 760, y: 290, label: 'Madrid' },
+            { x: 40, y: 380, label: 'Tokio' },
+            { x: 660, y: 740, label: 'Sydney' },
+            { x: 770, y: 520, label: 'Estambul' },
+            { x: 720, y: 130, label: 'Berlín' },
+          ].map((d) => (
+            <g key={d.label}>
+              <circle
+                cx={d.x}
+                cy={d.y}
+                r="12"
+                fill="url(#dot-glow)"
+                opacity="0.7"
+              />
+              <circle
+                cx={d.x}
+                cy={d.y}
+                r="3.5"
+                fill="#FFD97A"
+              />
+            </g>
+          ))}
+        </g>
+
+        {/* Puntos de origen (ciudades de Latam con certificaciones) */}
+        <g>
+          {cities.map((c) => (
+            <g key={c.label}>
+              <circle
+                cx={c.x}
+                cy={c.y}
+                r="14"
+                fill="url(#dot-glow)"
+                opacity="0.85"
+              >
+                <animate
+                  attributeName="r"
+                  values="10;18;10"
+                  dur="2.4s"
+                  repeatCount="indefinite"
+                  begin={`${cities.indexOf(c) * 0.3}s`}
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.85;0.2;0.85"
+                  dur="2.4s"
+                  repeatCount="indefinite"
+                  begin={`${cities.indexOf(c) * 0.3}s`}
+                />
+              </circle>
+              <circle
+                cx={c.x}
+                cy={c.y}
+                r="4"
+                fill="#fff"
+                stroke="#FFD97A"
+                strokeWidth="1.5"
+              />
+            </g>
+          ))}
+        </g>
+
+        {/* Etiqueta del corazón del continente */}
+        <g transform="translate(370, 410)">
+          <rect
+            x="-58"
+            y="-14"
+            width="116"
+            height="28"
+            rx="14"
+            fill="rgba(255,255,255,0.95)"
+          />
+          <text
+            x="0"
+            y="5"
+            textAnchor="middle"
+            fontSize="14"
+            fontWeight="700"
+            fill="#0E1B3A"
+            fontFamily="ui-sans-serif, system-ui, sans-serif"
+          >
+            LATAM
+          </text>
+        </g>
+      </svg>
+
+      {/* Caption decorativa abajo del mapa */}
+      <p className="mt-3 text-center text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+        Trazabilidad blockchain · verificable globalmente
+      </p>
+    </div>
   )
 }
 
