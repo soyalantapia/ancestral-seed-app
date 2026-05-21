@@ -316,7 +316,6 @@ export default function TutorCaseDetail() {
             {tab === 'evaluacion' && (
               <EvaluacionTab
                 values={scoringValues}
-                finalScore={finalScore}
                 caseData={caseData}
                 onSign={(score, category) => {
                   // Side-effects de firmar: avanzar a "evaluacion" si aún no,
@@ -875,15 +874,13 @@ function EvaluacionTab({
   onSign,
 }: {
   values: ScoringValue[]
-  /** Reservado: el valor original también se usa como reference si en el
-   *  futuro se quiere mostrar "Score IA inicial vs ajuste manual". Por
-   *  ahora la evaluación es 100% IA y no editable. */
-  finalScore: number
   caseData: TutorCase
   onSign: (score: number, category: string) => void
 }) {
   const [signOpen, setSignOpen] = useState(false)
   const [signed, setSigned] = useState(false)
+  // La evaluación es 100% IA — el tutor no edita valores individuales,
+  // solo firma. El score se computa con los pesos del antropólogo.
   const finalScore = computeWeightedScore(values)
 
   // Agrupar criterios por dimensión (orden del antropólogo).
