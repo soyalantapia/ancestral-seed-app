@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   CheckCircle2,
@@ -41,6 +42,7 @@ export default function Home() {
         }}
       />
       <Hero />
+      <LandingNav />
       <Pillars />
       <LatamAlMundo />
       <AncestralVision />
@@ -49,6 +51,93 @@ export default function Home() {
       <FeaturedCertifications />
       <CTASection />
     </>
+  )
+}
+
+/**
+ * Sub-nav sticky de la landing con scrollspy.
+ * Se mantiene fijo debajo del header principal (top-16 mobile, top-20 desktop).
+ * Las pestañas hacen smooth-scroll a las secciones y la activa se marca
+ * con underline dorado vía IntersectionObserver.
+ */
+const LANDING_SECTIONS = [
+  { id: 'beneficios', label: 'Beneficios' },
+  { id: 'latam-al-mundo', label: 'LATAM al mundo' },
+  { id: 'nosotros', label: 'Nosotros' },
+  { id: 'como-funciona', label: 'Blockchain' },
+  { id: 'proceso', label: 'Proceso' },
+  { id: 'certificados', label: 'Certificados' },
+] as const
+
+function LandingNav() {
+  const [active, setActive] = useState<string>('beneficios')
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = []
+    LANDING_SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id)
+      if (!el) return
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) setActive(s.id)
+          })
+        },
+        // Section se considera "activa" cuando ocupa el tercio superior
+        // del viewport (debajo del header sticky).
+        { rootMargin: '-30% 0% -60% 0%', threshold: 0 },
+      )
+      obs.observe(el)
+      observers.push(obs)
+    })
+    return () => observers.forEach((o) => o.disconnect())
+  }, [])
+
+  const handleClick = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    const el = document.getElementById(id)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Actualizar hash sin que el browser haga jump (scrollIntoView ya animó)
+    history.replaceState(null, '', `#${id}`)
+  }
+
+  return (
+    <div className="sticky top-16 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:top-20">
+      <nav
+        aria-label="Secciones de la portada"
+        className="mx-auto max-w-[1320px] overflow-x-auto px-4 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <ul className="flex items-center gap-0">
+          {LANDING_SECTIONS.map((s) => {
+            const isActive = active === s.id
+            return (
+              <li key={s.id} className="shrink-0">
+                <a
+                  href={`#${s.id}`}
+                  onClick={handleClick(s.id)}
+                  aria-current={isActive ? 'true' : undefined}
+                  className={cn(
+                    'relative inline-flex h-12 items-center whitespace-nowrap px-3 text-sm font-semibold transition-colors sm:px-4 md:h-14',
+                    isActive
+                      ? 'text-navy-500'
+                      : 'text-navy-300 hover:text-navy-500',
+                  )}
+                >
+                  {s.label}
+                  <span
+                    className={cn(
+                      'absolute inset-x-3 bottom-0 h-0.5 bg-gold-500 transition-opacity sm:inset-x-4',
+                      isActive ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+    </div>
   )
 }
 
@@ -417,7 +506,7 @@ function LatamWorldMap() {
 
 function AncestralVision() {
   return (
-    <section className="bg-white">
+    <section id="nosotros" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
         <div className="text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
@@ -708,7 +797,7 @@ function ProcessSection() {
     },
   ]
   return (
-    <section className="bg-white">
+    <section id="proceso" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
         <div className="text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
@@ -770,7 +859,7 @@ const FEATURED_LABELS = [
 function FeaturedCertifications() {
   const { data, isLoading, error } = useFeaturedCertifications()
   return (
-    <section className="bg-white">
+    <section id="certificados" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
         <div className="text-center">
           <p className="inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-300">
