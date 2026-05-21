@@ -217,7 +217,57 @@ export const tutorTour: TourDefinition = {
   ],
 }
 
+/**
+ * Tour del formulario de certificación.
+ *
+ * Se dispara la primera vez que el postulante entra a /certificar para
+ * orientarlo sobre qué información va a pedir el form y cómo guardar sus
+ * avances. 4 steps cortos — no es invasivo.
+ */
+export const certifyFormTour: TourDefinition = {
+  id: 'certifyForm',
+  label: 'Tour del formulario',
+  steps: [
+    {
+      id: 'welcome',
+      title: 'Bienvenida al formulario de certificación',
+      body:
+        'Te vamos a pedir información sobre vos, tu comunidad y el producto u oficio que querés certificar. Son 7 pasos cortos. Al final firma un auditor cultural y se emite el certificado en blockchain.',
+      placement: 'center',
+      route: '/certificar',
+      nextLabel: 'Mostrame',
+    },
+    {
+      id: 'progress',
+      title: 'Avanzá a tu ritmo',
+      body:
+        'Cada paso se autoguarda automáticamente. Podés salir y volver cuando quieras sin perder lo que cargaste. Cuando estés listo, tocá "Continuar".',
+      target: 'form',
+      placement: 'top',
+      scrollIntoView: false,
+    },
+    {
+      id: 'postergar',
+      title: 'Postergar y volver después',
+      body:
+        'Si te urge salir, "Postergar" guarda todo de manera segura. Lo retomás desde tu panel cuando puedas.',
+      target: 'button',
+      placement: 'bottom',
+      scrollIntoView: false,
+    },
+    {
+      id: 'help',
+      title: '¿Te trabás? Pedí ayuda',
+      body:
+        'En el panel derecho hay un botón "Necesito ayuda" que te conecta con soporte por email. También podés escribirnos por WhatsApp en cualquier momento.',
+      placement: 'center',
+      nextLabel: 'Empezar',
+    },
+  ],
+}
+
 export const TOURS: Record<TourId, TourDefinition> = {
   solicitante: solicitanteTour,
   tutor: tutorTour,
+  certifyForm: certifyFormTour,
 }

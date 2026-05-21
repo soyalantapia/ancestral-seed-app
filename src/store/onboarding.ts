@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type TourId = 'solicitante' | 'tutor'
+export type TourId = 'solicitante' | 'tutor' | 'certifyForm'
 
 interface OnboardingState {
   /** Tour activo en este momento. null si ningún tour está corriendo. */
@@ -9,7 +9,7 @@ interface OnboardingState {
   /** Índice del step actual (0-based). */
   step: number
   /** Tours que el user ya completó o saltó. Para no re-disparar auto. */
-  completed: Record<TourId, boolean>
+  completed: Partial<Record<TourId, boolean>>
 
   /** Arranca un tour desde el step 0. */
   start: (tour: TourId) => void

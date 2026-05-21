@@ -25,6 +25,8 @@ import { Label } from '@/components/ui/label'
 import { Logo } from '@/components/features/Logo'
 import { useCertifyFormStore, type CertifyFormData } from '@/store/certifyForm'
 import { useAuthStore } from '@/store/auth'
+import { useAutoStartTour } from '@/hooks/useAutoStartTour'
+import { GuidedTour } from '@/components/features/GuidedTour'
 import { cn } from '@/lib/utils'
 
 // Per-step zod schemas
@@ -101,6 +103,8 @@ const benefits = [
 ]
 
 export default function CertifyForm() {
+  // Tour guiado de 4 pasos en primera visita al form
+  useAutoStartTour('certifyForm', 1200)
   const navigate = useNavigate()
   const { data, step, setStep, updateData, reset } = useCertifyFormStore()
   const setSession = useAuthStore((s) => s.setSession)
@@ -306,6 +310,9 @@ export default function CertifyForm() {
           </div>
         </div>
       </section>
+      {/* Tour de 4 pasos al primer ingreso al form. Se monta acá para que
+          el spotlight pueda apuntar a elementos del propio form. */}
+      <GuidedTour />
     </div>
   )
 }
@@ -1204,9 +1211,9 @@ function SuccessState({
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-navy-300 md:text-base">
             ¡Gracias por sumarte! Recibimos tu solicitud y nuestro equipo de
-            curaduría va a revisarla. Te vamos a contactar en las próximas{' '}
-            <strong>72 horas hábiles</strong> para coordinar los siguientes
-            pasos de la auditoría.
+            auditoría cultural va a revisarla. Te vamos a contactar en las
+            próximas <strong>72 horas hábiles</strong> para coordinar los
+            siguientes pasos.
           </p>
           <div className="mt-8 grid gap-3 rounded-2xl bg-gold-100/40 p-5 text-left text-sm">
             <p className="flex items-center gap-2 font-semibold text-navy-500">
@@ -1220,7 +1227,7 @@ function SuccessState({
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
-                Un curador te contacta para coordinar la auditoría.
+                Un auditor te contacta para coordinar la auditoría cultural.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />

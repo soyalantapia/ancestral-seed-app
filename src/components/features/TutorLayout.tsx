@@ -11,6 +11,7 @@ import {
   FileCheck2,
   Kanban,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   MessageSquare,
@@ -43,6 +44,7 @@ import { cn } from '@/lib/utils'
 const operationsItems = [
   { to: '/tutor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/tutor/casos', icon: Kanban, label: 'Casos' },
+  { to: '/tutor/tareas', icon: ListChecks, label: 'Mis tareas' },
   { to: '/tutor/agenda', icon: Calendar, label: 'Agenda' },
 ]
 

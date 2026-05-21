@@ -136,6 +136,7 @@ export function CommandPalette() {
       // Tutor
       { id: 't-dash', label: 'Tutor — Dashboard', group: 'Tutor', icon: LayoutDashboard, action: go('/tutor/dashboard'), requiresAuth: true, requiresTutor: true },
       { id: 't-casos', label: 'Tutor — Casos (kanban)', group: 'Tutor', icon: Briefcase, action: go('/tutor/casos'), requiresAuth: true, requiresTutor: true },
+      { id: 't-tareas', label: 'Tutor — Mis tareas', group: 'Tutor', icon: Calendar, action: go('/tutor/tareas'), requiresAuth: true, requiresTutor: true },
       { id: 't-agenda', label: 'Tutor — Agenda', group: 'Tutor', icon: Calendar, action: go('/tutor/agenda'), requiresAuth: true, requiresTutor: true },
       { id: 't-certs', label: 'Tutor — Certificaciones', group: 'Tutor', icon: FileBadge2, action: go('/tutor/certificaciones'), requiresAuth: true, requiresTutor: true },
 

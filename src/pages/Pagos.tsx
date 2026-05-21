@@ -14,7 +14,7 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import type { PaymentStatus } from '@/types'
-import { cn, downloadBlob } from '@/lib/utils'
+import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
 function buildPaymentReceipt(p: FlatPayment): string {
   return [
@@ -187,6 +187,32 @@ export default function Pagos() {
             Historial completo y próximos vencimientos en un solo lugar.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            const rows = filtered.map((p) => ({
+              id: p.id,
+              concepto: p.concept,
+              certificacion: p.requestName,
+              numero: p.requestNumber,
+              monto: p.amount,
+              moneda: p.currency,
+              estado: p.status,
+              vencimiento: p.dueDate,
+              pagado_el: p.paidAt ?? '',
+            }))
+            downloadBlob(
+              `pagos-${new Date().toISOString().slice(0, 10)}.csv`,
+              objectsToCsv(rows),
+              'text/csv;charset=utf-8',
+            )
+            toast.success(`${rows.length} pagos exportados a CSV`)
+          }}
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Exportar
+        </button>
       </header>
 
       {/* KPIs (2 nada más) */}

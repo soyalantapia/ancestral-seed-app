@@ -37,13 +37,13 @@ export function DashboardFooter() {
           <Link to="/ayuda" className="font-medium hover:text-navy-500">
             Ayuda
           </Link>
-          <Link to="/" className="hover:text-navy-500">
+          <Link to="/legal/terminos" className="hover:text-navy-500">
             Términos
           </Link>
-          <Link to="/" className="hover:text-navy-500">
+          <Link to="/legal/privacidad" className="hover:text-navy-500">
             Privacidad
           </Link>
-          <Link to="/" className="hover:text-navy-500">
+          <Link to="/legal/cookies" className="hover:text-navy-500">
             Cookies
           </Link>
           <span className="rounded-full bg-neutral-200 px-2 py-0.5 font-medium text-navy-500">

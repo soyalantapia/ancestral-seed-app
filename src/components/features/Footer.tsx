@@ -116,13 +116,13 @@ export function Footer() {
         <div className="mt-10 flex flex-col gap-3 border-t border-navy-300/40 pt-5 text-xs text-neutral-400 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Ancestral Seeds — Todos los derechos reservados</p>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/" className="hover:text-gold-400">
+            <Link to="/legal/terminos" className="hover:text-gold-400">
               Términos y condiciones
             </Link>
-            <Link to="/" className="hover:text-gold-400">
+            <Link to="/legal/privacidad" className="hover:text-gold-400">
               Políticas y privacidad
             </Link>
-            <Link to="/" className="hover:text-gold-400">
+            <Link to="/legal/cookies" className="hover:text-gold-400">
               Políticas de Cookies
             </Link>
           </div>

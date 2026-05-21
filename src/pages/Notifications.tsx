@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Inbox,
   MessageSquare,
+  Search,
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -58,6 +59,7 @@ export default function Notifications() {
   const markAllRead = useNotificationsStore((s) => s.markAllRead)
   const remove = useNotificationsStore((s) => s.remove)
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [query, setQuery] = useState('')
 
   const selectedFilter = typeFilters.find((f) => f.id === typeFilter)
   let filtered = items
@@ -66,6 +68,13 @@ export default function Notifications() {
   }
   if (selectedFilter && selectedFilter.kinds.length > 0) {
     filtered = filtered.filter((n) => selectedFilter.kinds.includes(n.kind))
+  }
+  if (query.trim()) {
+    const q = query.toLowerCase()
+    filtered = filtered.filter(
+      (n) =>
+        n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q),
+    )
   }
   const unreadCount = items.filter((n) => !n.read).length
 
@@ -97,7 +106,19 @@ export default function Notifications() {
         )}
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      {/* Search bar */}
+      <div className="mt-6 relative">
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar notificación por título o contenido…"
+          className="h-11 w-full rounded-full border border-neutral-300 bg-white pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
         {typeFilters.map((f) => {
           const active = typeFilter === f.id
           const showBadge = f.id === 'unread' && unreadCount > 0

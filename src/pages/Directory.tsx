@@ -468,11 +468,19 @@ function EmptyState({ onClear }: { onClear: () => void }) {
         No encontramos certificaciones con esos filtros
       </p>
       <p className="mt-1 text-sm text-navy-300">
-        Probá ajustar los criterios de búsqueda.
+        Probá ajustar los criterios o sugerinos qué te gustaría encontrar.
       </p>
-      <Button variant="outlineNavy" size="sm" onClick={onClear} className="mt-5">
-        Limpiar filtros
-      </Button>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <Button variant="outlineNavy" size="sm" onClick={onClear}>
+          Limpiar filtros
+        </Button>
+        <a
+          href="mailto:soporte@ancestralseed.org?subject=Sugerencia%20para%20el%20directorio&body=Hola%20equipo%20Ancestral%20Seed%2C%20me%20gustar%C3%ADa%20ver%20certificaciones%20de..."
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm hover:bg-navy-400"
+        >
+          Sugerirnos algo
+        </a>
+      </div>
     </div>
   )
 }
