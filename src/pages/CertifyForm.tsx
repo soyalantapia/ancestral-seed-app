@@ -459,10 +459,13 @@ function Select({
   return (
     <select
       id={id}
+      defaultValue=""
       className="mt-2 h-11 w-full appearance-none rounded-lg border border-neutral-300 bg-white bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_14px_center] bg-no-repeat px-3 pr-10 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
       {...registration}
     >
-      <option value="">{placeholder}</option>
+      <option value="" disabled>
+        {placeholder}
+      </option>
       {options.map((o) => (
         <option key={o} value={o}>
           {o}
@@ -500,12 +503,16 @@ function StepIdentidad() {
             <Label>Documento</Label>
             <div className="mt-2 flex gap-2">
               <select
+                aria-label="Tipo de documento"
+                defaultValue=""
                 className="h-11 w-24 appearance-none rounded-lg border border-neutral-300 bg-white bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_10px_center] bg-no-repeat px-3 pr-8 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
                 {...register('documentType')}
               >
-                <option value="">DNI</option>
+                <option value="" disabled>
+                  Tipo
+                </option>
                 <option value="DNI">DNI</option>
-                <option value="Pasaporte">Pas.</option>
+                <option value="Pasaporte">Pasaporte</option>
                 <option value="CUIT">CUIT</option>
               </select>
               <Input

@@ -8,6 +8,13 @@ export async function startMockWorker() {
   const base = import.meta.env.BASE_URL || '/'
   await worker.start({
     onUnhandledRequest: 'bypass',
-    serviceWorker: { url: `${base}mockServiceWorker.js` },
+    // updateViaCache: 'none' fuerza al browser a no cachear el script del SW,
+    // así si agregamos/movemos handlers no nos quedamos con un worker viejo
+    // que devuelve 404 (caso típico: agregar /api/auth/login y que el SW
+    // anterior no lo conozca).
+    serviceWorker: {
+      url: `${base}mockServiceWorker.js`,
+      options: { updateViaCache: 'none' },
+    },
   })
 }
