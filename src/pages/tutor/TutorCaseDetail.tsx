@@ -14,9 +14,7 @@ import {
   FileCheck2,
   FileText,
   Lightbulb,
-  Lock,
   MessageSquare,
-  Pencil,
   Phone,
   Pin,
   Plus,
@@ -36,16 +34,12 @@ import {
   categoryFromScore,
   STAGE_SLA_DAYS,
   mockEvidenceEvaluations,
-  mockInternalNotes,
   mockScoringByCase,
-  mockTutor,
   mockTutorCases,
 } from '@/services/mocks/data'
 import type {
   CaseStage,
   EvidenceVerdict,
-  InternalNote,
-  ScoringCriterionId,
   ScoringDimension,
   ScoringValue,
   TutorCase,
@@ -72,13 +66,12 @@ const STAGE_ORDER: CaseStage[] = [
   'certificacion',
 ]
 
-type Tab = 'resumen' | 'evidencias' | 'evaluacion' | 'notas' | 'mensajes' | 'historial'
+type Tab = 'resumen' | 'evidencias' | 'evaluacion' | 'mensajes' | 'historial'
 
 const TABS: Array<{ id: Tab; label: string; icon: typeof FileText }> = [
   { id: 'resumen', label: 'Resumen', icon: FileText },
   { id: 'evidencias', label: 'Evidencias', icon: FileCheck2 },
   { id: 'evaluacion', label: 'Evaluación', icon: Star },
-  { id: 'notas', label: 'Notas internas', icon: Lock },
   { id: 'mensajes', label: 'Mensajes', icon: MessageSquare },
   { id: 'historial', label: 'Historial', icon: Clock },
 ]
@@ -150,7 +143,6 @@ export default function TutorCaseDetail() {
   const evidenceEvals = mockEvidenceEvaluations[caseData.id] ?? []
   const evidencesApproved = evidenceEvals.filter((e) => e.verdict === 'approved').length
   const evidencesTotal = evidenceEvals.length
-  const internalNotes = mockInternalNotes.filter((n) => n.caseId === caseData.id)
 
   // Workflow: requirements per stage to advance
   const canAdvance = computeCanAdvance(caseData, evidenceEvals, scoringValues)
@@ -348,9 +340,6 @@ export default function TutorCaseDetail() {
                   )
                 }}
               />
-            )}
-            {tab === 'notas' && (
-              <NotasTab caseId={caseData.id} initial={internalNotes} />
             )}
             {tab === 'mensajes' && (
               <MensajesTab
@@ -622,7 +611,7 @@ function ResumenTab({
       </section>
 
       {/* Quick action cards */}
-      <section className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <QuickActionCard
           icon={FileCheck2}
           title="Revisar evidencias"
@@ -631,15 +620,9 @@ function ResumenTab({
         />
         <QuickActionCard
           icon={Star}
-          title="Completar evaluación"
+          title="Ver evaluación IA"
           sub={`Score: ${finalScore}/100`}
           onClick={() => onJumpTab('evaluacion')}
-        />
-        <QuickActionCard
-          icon={Lock}
-          title="Notas internas"
-          sub="Solo visibles al equipo"
-          onClick={() => onJumpTab('notas')}
         />
       </section>
     </div>
@@ -887,37 +870,21 @@ function VerdictBadge({ verdict }: { verdict: EvidenceVerdict }) {
 // ─── Evaluación tab ───────────────────────────────────────────────────────────
 
 function EvaluacionTab({
-  values: initialValues,
-  finalScore: initialFinal,
+  values,
   caseData,
   onSign,
 }: {
   values: ScoringValue[]
+  /** Reservado: el valor original también se usa como reference si en el
+   *  futuro se quiere mostrar "Score IA inicial vs ajuste manual". Por
+   *  ahora la evaluación es 100% IA y no editable. */
   finalScore: number
   caseData: TutorCase
   onSign: (score: number, category: string) => void
 }) {
-  const [values, setValues] = useState<ScoringValue[]>(initialValues)
   const [signOpen, setSignOpen] = useState(false)
   const [signed, setSigned] = useState(false)
   const finalScore = computeWeightedScore(values)
-
-  const setScore = (id: ScoringCriterionId, score: number, comment?: string) => {
-    setValues((prev) => {
-      const existing = prev.find((v) => v.criterionId === id)
-      if (existing) {
-        return prev.map((v) =>
-          v.criterionId === id
-            ? { ...v, score, comment: comment ?? v.comment, evaluatedAt: new Date().toISOString() }
-            : v,
-        )
-      }
-      return [
-        ...prev,
-        { criterionId: id, score, comment, evaluatedAt: new Date().toISOString() },
-      ]
-    })
-  }
 
   // Agrupar criterios por dimensión (orden del antropólogo).
   const dimensionOrder: ScoringDimension[] = [
@@ -949,20 +916,33 @@ function EvaluacionTab({
 
   return (
     <div className="space-y-4">
+      {/* Banner "Generado por IA · no editable" */}
+      <div className="flex items-start gap-2 rounded-2xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-3">
+        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
+        <div className="text-xs leading-relaxed text-navy-500">
+          <p className="font-bold">
+            Evaluación generada por IA sobre las 14 variables del antropólogo.
+          </p>
+          <p className="mt-0.5 text-navy-300">
+            Los puntajes son calculados automáticamente a partir de las
+            evidencias y datos del caso. El tutor revisa y firma — no edita
+            valores individuales.
+          </p>
+        </div>
+      </div>
+
       <div className="rounded-2xl bg-gold-100/50 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-gold-700">
-              Score ponderado
+              Score ponderado IA
             </p>
             <p className="mt-1 text-3xl font-bold text-navy-500">
               {finalScore}
               <span className="text-base text-navy-300">/100</span>
             </p>
             <p className="mt-0.5 text-xs text-navy-300">
-              {initialFinal !== finalScore && initialFinal > 0
-                ? `Estaba en ${initialFinal}/100`
-                : 'Editá cada criterio para ajustar el score'}
+              Calculado con los pesos del antropólogo (suma = 100%).
             </p>
             {category.num && (
               <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-navy-500 ring-1 ring-gold-300">
@@ -1015,6 +995,12 @@ function EvaluacionTab({
               {criteria.map((c) => {
                 const val = values.find((v) => v.criterionId === c.id)
                 const score = val?.score ?? 0
+                const scoreTone =
+                  score >= 8
+                    ? 'bg-success-300'
+                    : score >= 5
+                      ? 'bg-warning-400'
+                      : 'bg-error-400'
                 return (
                   <li
                     key={c.id}
@@ -1028,6 +1014,10 @@ function EvaluacionTab({
                           </p>
                           <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
                             peso {c.weight}%
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-[10px] font-bold text-gold-700">
+                            <Sparkles className="h-2.5 w-2.5" />
+                            IA
                           </span>
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-navy-300">
@@ -1053,32 +1043,38 @@ function EvaluacionTab({
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="range"
-                          min={0}
-                          max={10}
-                          step={1}
-                          value={score}
-                          onChange={(e) =>
-                            setScore(c.id, Number(e.target.value))
-                          }
-                          aria-label={`Puntaje de ${c.label}`}
-                          className="h-2 w-32 cursor-pointer accent-gold-500 sm:w-40"
-                        />
+                      {/* Score read-only con barra visual + número */}
+                      <div className="flex flex-col items-end gap-1.5">
                         <span className="inline-flex h-9 w-12 items-center justify-center rounded-full bg-navy-500 text-sm font-bold text-white">
                           {score}
+                          <span className="text-[9px] font-medium text-white/60">
+                            /10
+                          </span>
                         </span>
+                        <div
+                          className="h-1.5 w-32 overflow-hidden rounded-full bg-neutral-200 sm:w-40"
+                          aria-label={`Puntaje IA de ${c.label}: ${score} de 10`}
+                          role="img"
+                        >
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all',
+                              scoreTone,
+                            )}
+                            style={{ width: `${score * 10}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                    {/* Comentario */}
-                    <textarea
-                      value={val?.comment ?? ''}
-                      onChange={(e) => setScore(c.id, score, e.target.value)}
-                      rows={1}
-                      placeholder="Comentario del tutor (opcional)…"
-                      className="mt-3 w-full resize-none rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
-                    />
+                    {/* Comentario IA si existe (read-only) */}
+                    {val?.comment && (
+                      <p className="mt-3 rounded-xl bg-gold-100/40 px-3 py-2 text-xs leading-relaxed text-navy-500 ring-1 ring-gold-300/40">
+                        <span className="font-bold text-gold-700">
+                          Análisis IA:{' '}
+                        </span>
+                        {val.comment}
+                      </p>
+                    )}
                   </li>
                 )
               })}
@@ -1087,15 +1083,12 @@ function EvaluacionTab({
         )
       })}
 
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-neutral-200 pt-4">
-        <button
-          type="button"
-          onClick={() => toast.success('Borrador de evaluación guardado')}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-          Guardar borrador
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-4">
+        <p className="max-w-md text-[11px] leading-relaxed text-navy-300">
+          Si encontrás algo a ajustar, dejá una observación en{' '}
+          <strong className="text-navy-500">Mensajes</strong> y la IA reprocesa
+          la evaluación.
+        </p>
         <button
           type="button"
           disabled={signed || values.length === 0}
@@ -1108,7 +1101,7 @@ function EvaluacionTab({
           )}
         >
           <ShieldCheck className="h-3.5 w-3.5" />
-          {signed ? 'Evaluación firmada' : 'Firmar evaluación'}
+          {signed ? 'Evaluación firmada' : 'Aceptar y firmar evaluación IA'}
         </button>
       </div>
 
@@ -1132,140 +1125,6 @@ function EvaluacionTab({
   )
 }
 
-// ─── Notas internas tab ───────────────────────────────────────────────────────
-
-function NotasTab({
-  caseId,
-  initial,
-}: {
-  caseId: string
-  initial: InternalNote[]
-}) {
-  const [notes, setNotes] = useState<InternalNote[]>(initial)
-  const [draft, setDraft] = useState('')
-
-  const addNote = () => {
-    if (!draft.trim()) return
-    const note: InternalNote = {
-      id: `note-${Date.now()}`,
-      caseId,
-      author: mockTutor.name.replace('Lic. ', ''),
-      authorRole: 'tutor',
-      body: draft.trim(),
-      at: new Date().toISOString(),
-    }
-    setNotes([note, ...notes])
-    setDraft('')
-    toast.success('Nota interna agregada')
-  }
-
-  const togglePin = (id: string) => {
-    setNotes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n)),
-    )
-  }
-
-  const sorted = [...notes].sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1
-    if (!a.pinned && b.pinned) return 1
-    return new Date(b.at).getTime() - new Date(a.at).getTime()
-  })
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-2 rounded-2xl bg-warning-100 p-3 ring-1 ring-warning-300/40">
-        <Lock className="h-4 w-4 shrink-0 text-warning-400" />
-        <p className="text-xs leading-relaxed text-navy-500">
-          Las notas de este panel <strong>NO son visibles</strong> al
-          solicitante. Solo el equipo de tutores y curadores puede leerlas.
-        </p>
-      </div>
-
-      {/* Composer */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
-        <textarea
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          rows={2}
-          placeholder="Escribí una nota interna sobre este caso..."
-          className="w-full resize-none rounded-xl border border-transparent bg-neutral-100 px-3 py-2 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:bg-white focus:outline-none"
-        />
-        <div className="mt-2 flex justify-end">
-          <button
-            type="button"
-            onClick={addNote}
-            disabled={!draft.trim()}
-            className="inline-flex h-9 items-center gap-2 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-navy-400 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Agregar nota
-          </button>
-        </div>
-      </div>
-
-      {/* Notes list */}
-      {sorted.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-sm text-navy-300">
-          No hay notas internas todavía.
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {sorted.map((n) => (
-            <li
-              key={n.id}
-              className={cn(
-                'rounded-2xl border bg-white p-4 shadow-sm',
-                n.pinned ? 'border-gold-300 bg-gold-100/30' : 'border-neutral-200',
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-navy-500 text-xs font-bold text-white">
-                  {n.author
-                    .split(' ')
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join('')}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-bold text-navy-500">{n.author}</p>
-                    <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[10px] font-bold text-navy-500">
-                      {n.authorRole}
-                    </span>
-                    <span className="text-[11px] text-navy-300">
-                      {new Date(n.at).toLocaleString('es-AR', {
-                        day: '2-digit',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-                  <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-navy-500">
-                    {n.body}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => togglePin(n.id)}
-                  aria-label={n.pinned ? 'Despinear' : 'Pinear'}
-                  className={cn(
-                    'shrink-0 rounded-full p-2 transition-colors',
-                    n.pinned
-                      ? 'text-gold-700 hover:bg-gold-100'
-                      : 'text-navy-300 hover:bg-neutral-100',
-                  )}
-                >
-                  <Pin className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
 
 // ─── Mensajes (público con el solicitante) ────────────────────────────────────
 
