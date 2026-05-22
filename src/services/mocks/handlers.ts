@@ -9,6 +9,29 @@ import type { Certification, DirectoryFilters } from '@/types'
 
 const realisticDelay = () => delay(300 + Math.random() * 500)
 
+// Bug producción (mayo 2026): el SW de MSW se registra dentro del scope
+// `/ancestral-seed-app/`, así que los fetch del cliente van a
+// `/ancestral-seed-app/api/...`. Los handlers definidos con `*/api/...`
+// usan `*` como wildcard de HOSTNAME — el path tiene que matchear EXACTO.
+// Por eso en dev (path = `/api/...`) matcheaban y en prod (path =
+// `/ancestral-seed-app/api/...`) no → MSW no interceptaba → fetch caía
+// al server real (GH Pages) que devuelve index.html → res.json() falla
+// → "Error inesperado".
+// Fix: usar regex que matchea ambos prefixes en el path final.
+function api(suffix: string): RegExp {
+  // Escapamos `/` y permitimos cualquier cantidad de segmentos antes,
+  // matcheando query string opcional al final.
+  // Ejemplo: api('certifications') → /\/api\/certifications(?:\?.*)?$/
+  return new RegExp(`/api/${suffix}(?:\\?.*)?$`)
+}
+
+// Helper para extraer el último segmento del path (sin query string).
+// Reemplaza el `params.slug` que perdimos al migrar de string a RegExp.
+function extractLastPathSegment(url: string): string {
+  const p = new URL(url).pathname.replace(/\/$/, '')
+  return p.substring(p.lastIndexOf('/') + 1)
+}
+
 function applyFilters(
   items: Certification[],
   filters: DirectoryFilters,
@@ -56,7 +79,7 @@ function applyFilters(
 }
 
 export const handlers = [
-  http.get('*/api/certifications', async ({ request }) => {
+  http.get(api('certifications'), async ({ request }) => {
     await realisticDelay()
     const url = new URL(request.url)
     const filters: DirectoryFilters = {
@@ -78,7 +101,7 @@ export const handlers = [
     })
   }),
 
-  http.get('*/api/certifications/featured', async () => {
+  http.get(api('certifications/featured'), async () => {
     await realisticDelay()
     // Orden específico curado para la home (feedback Mario/Raúl):
     // 1. Producto Ancestral auténtico  → Tejido
@@ -97,9 +120,10 @@ export const handlers = [
     return HttpResponse.json(ordered)
   }),
 
-  http.get('*/api/certifications/:slug', async ({ params }) => {
+  http.get(api('certifications/[^/]+'), async ({ request }) => {
     await realisticDelay()
-    const cert = mockCertifications.find((c) => c.slug === params.slug)
+    const slug = extractLastPathSegment(request.url)
+    const cert = mockCertifications.find((c) => c.slug === slug)
     if (!cert) {
       return HttpResponse.json(
         { message: 'Certificado no encontrado' },
@@ -109,7 +133,7 @@ export const handlers = [
     return HttpResponse.json(cert)
   }),
 
-  http.post('*/api/certifications/verify', async ({ request }) => {
+  http.post(api('certifications/verify'), async ({ request }) => {
     await realisticDelay()
     const { hashOrCode } = (await request.json()) as { hashOrCode: string }
     const found = mockCertifications.find(
@@ -123,14 +147,27 @@ export const handlers = [
     return HttpResponse.json({ valid: false })
   }),
 
-  http.get('*/api/authors', async () => {
+  http.get(api('authors'), async () => {
     await realisticDelay()
     return HttpResponse.json(mockAuthors)
   }),
 
-  http.get('*/api/authors/:slug', async ({ params }) => {
+  // /api/authors/:slug/certifications — debe ir ANTES del :slug solo
+  // (regex matchea de arriba a abajo)
+  http.get(api('authors/[^/]+/certifications'), async ({ request }) => {
     await realisticDelay()
-    const author = mockAuthors.find((a) => a.slug === params.slug)
+    const segments = new URL(request.url).pathname.split('/')
+    const slug = segments[segments.length - 2] // antes de "certifications"
+    const author = mockAuthors.find((a) => a.slug === slug)
+    if (!author) return HttpResponse.json([], { status: 404 })
+    const certs = mockCertifications.filter((c) => c.authorId === author.id)
+    return HttpResponse.json(certs)
+  }),
+
+  http.get(api('authors/[^/]+'), async ({ request }) => {
+    await realisticDelay()
+    const slug = extractLastPathSegment(request.url)
+    const author = mockAuthors.find((a) => a.slug === slug)
     if (!author) {
       return HttpResponse.json(
         { message: 'Autor no encontrado' },
@@ -140,20 +177,12 @@ export const handlers = [
     return HttpResponse.json(author)
   }),
 
-  http.get('*/api/authors/:slug/certifications', async ({ params }) => {
-    await realisticDelay()
-    const author = mockAuthors.find((a) => a.slug === params.slug)
-    if (!author) return HttpResponse.json([], { status: 404 })
-    const certs = mockCertifications.filter((c) => c.authorId === author.id)
-    return HttpResponse.json(certs)
-  }),
-
-  http.get('*/api/categories', async () => {
+  http.get(api('categories'), async () => {
     await realisticDelay()
     return HttpResponse.json(mockCategories)
   }),
 
-  http.post('*/api/auth/login', async ({ request }) => {
+  http.post(api('auth/login'), async ({ request }) => {
     await realisticDelay()
     const { email, password } = (await request.json()) as {
       email: string
@@ -171,12 +200,12 @@ export const handlers = [
     })
   }),
 
-  http.post('*/api/auth/logout', async () => {
+  http.post(api('auth/logout'), async () => {
     await realisticDelay()
     return HttpResponse.json({ ok: true })
   }),
 
-  http.post('*/api/incidents', async ({ request }) => {
+  http.post(api('incidents'), async ({ request }) => {
     await realisticDelay()
     const body = (await request.json()) as Record<string, unknown>
     if (!body.reason) {
