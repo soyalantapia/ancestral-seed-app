@@ -23,7 +23,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    // Strict mode activado en mayo 2026 tras auditoría senior.
+    // strict implica: noImplicitAny, strictNullChecks, strictFunctionTypes,
+    // strictBindCallApply, strictPropertyInitialization, alwaysStrict,
+    // useUnknownInCatchVariables.
+    "strict": true
   },
   "include": ["src"]
 }

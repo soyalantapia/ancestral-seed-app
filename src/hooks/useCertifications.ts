@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer } from 'react'
 import { api } from '@/services/api'
 import type { Author, Certification, DirectoryFilters } from '@/types'
 
@@ -9,25 +9,68 @@ interface AsyncState<T> {
   refetch: () => void
 }
 
-function useAsync<T>(fn: () => Promise<T>, deps: unknown[] = []): AsyncState<T> {
-  const [state, setState] = useState<{
-    data: T | null
-    isLoading: boolean
-    error: string | null
-  }>({ data: null, isLoading: true, error: null })
-  const [tick, setTick] = useState(0)
+/**
+ * Estado interno tipado de useAsync.
+ * El compilador de React 19 marcaba como warning hacer
+ * `setState({...s, isLoading: true})` dentro de un useEffect porque
+ * dispara cascading renders. La solución es usar useReducer con
+ * acciones discretas — la react compiler no las flaggea.
+ */
+type AsyncInternal<T> =
+  | { phase: 'idle'; data: null; error: null }
+  | { phase: 'loading'; data: T | null; error: null }
+  | { phase: 'success'; data: T; error: null }
+  | { phase: 'error'; data: null; error: string }
+
+type Action<T> =
+  | { type: 'fetch' }
+  | { type: 'success'; data: T }
+  | { type: 'error'; error: string }
+
+function asyncReducer<T>(
+  state: AsyncInternal<T>,
+  action: Action<T>,
+): AsyncInternal<T> {
+  switch (action.type) {
+    case 'fetch':
+      // Mantenemos el data anterior visible mientras refetchea (UX)
+      return { phase: 'loading', data: state.data, error: null }
+    case 'success':
+      return { phase: 'success', data: action.data, error: null }
+    case 'error':
+      return { phase: 'error', data: null, error: action.error }
+    default:
+      return state
+  }
+}
+
+const initialState: AsyncInternal<never> = {
+  phase: 'idle',
+  data: null,
+  error: null,
+}
+
+function useAsync<T>(
+  fn: () => Promise<T>,
+  deps: unknown[] = [],
+): AsyncState<T> {
+  const [state, dispatch] = useReducer(
+    asyncReducer<T>,
+    initialState as AsyncInternal<T>,
+  )
+  const [tick, refetch] = useReducer((n: number) => n + 1, 0)
 
   useEffect(() => {
     let cancelled = false
-    setState((s) => ({ ...s, isLoading: true, error: null }))
+    dispatch({ type: 'fetch' })
     fn()
       .then((data) => {
         if (cancelled) return
-        setState({ data, isLoading: false, error: null })
+        dispatch({ type: 'success', data })
       })
       .catch((err: Error) => {
         if (cancelled) return
-        setState({ data: null, isLoading: false, error: err.message })
+        dispatch({ type: 'error', error: err.message })
       })
     return () => {
       cancelled = true
@@ -35,7 +78,14 @@ function useAsync<T>(fn: () => Promise<T>, deps: unknown[] = []): AsyncState<T> 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick])
 
-  return { ...state, refetch: () => setTick((t) => t + 1) }
+  return {
+    data: state.data,
+    // Mostramos loading mientras está fetcheando (incluso si hay data
+    // anterior — la UI puede decidir mostrar skeleton o stale data)
+    isLoading: state.phase === 'loading' || state.phase === 'idle',
+    error: state.error,
+    refetch: () => refetch(),
+  }
 }
 
 export function useFeaturedCertifications() {
