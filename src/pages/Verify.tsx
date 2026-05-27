@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { api } from '@/services/api'
 import { useEscape } from '@/hooks/useEscape'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { cn } from '@/lib/utils'
 import type { Certification } from '@/types'
 
@@ -300,8 +301,13 @@ function ModalShell({
   onClose: () => void
 }) {
   useEscape(true, onClose)
+  // Focus trap: el Tab queda atrapado dentro del modal, devolviendo el
+  // foco al elemento previo al cerrarlo. UX estándar a11y.
+  const trapRef = useFocusTrap<HTMLDivElement>(true)
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -309,6 +315,7 @@ function ModalShell({
       onClick={onClose}
     >
       <motion.div
+        ref={trapRef}
         initial={{ scale: 0.95, y: 10 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 10 }}
