@@ -1261,6 +1261,11 @@ function MiniTimelineCard({
   }>
 }) {
   if (events.length === 0) return null
+  // Snapshot del "ahora" estable durante este render — Date.now() es
+  // impuro y React 19 compiler lo marca cuando se llama dentro del map.
+  // Tomamos un único valor antes del map para que todos los items usen
+  // la misma referencia temporal en este render.
+  const now = Date.now()
   return (
     <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
       <div className="flex items-center gap-2">
@@ -1269,9 +1274,7 @@ function MiniTimelineCard({
       </div>
       <ul className="mt-4 space-y-3">
         {events.map((ev) => {
-          const days = Math.round(
-            (ev.at.getTime() - Date.now()) / 86_400_000,
-          )
+          const days = Math.round((ev.at.getTime() - now) / 86_400_000)
           const tone = urgencyTone(days)
           const Icon =
             ev.kind === 'meeting'

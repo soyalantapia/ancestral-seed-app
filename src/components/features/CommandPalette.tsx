@@ -78,6 +78,16 @@ export function CommandPalette() {
     user?.roles?.includes('tutor') === true ||
     user?.roles?.includes('admin') === true
 
+  // Helper que centraliza la apertura: reset del query + activeIdx +
+  // setOpen(true) en un solo lugar. Declarado ANTES del useEffect que
+  // lo referencia para no chocar con "Cannot access variable before
+  // declared" del linter.
+  const openPalette = () => {
+    setQuery('')
+    setActiveIdx(0)
+    setOpen(true)
+  }
+
   // Toggle con Cmd+K / Ctrl+K (también permite "/" cuando no hay foco en input)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -103,6 +113,7 @@ export function CommandPalette() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Auto-focus al abrir. NOTA: el reset de query/activeIdx ya se hace
@@ -115,14 +126,6 @@ export function CommandPalette() {
       return () => clearTimeout(t)
     }
   }, [open])
-
-  // Helper que centraliza la apertura: reset del query + activeIdx +
-  // setOpen(true) en un solo lugar.
-  const openPalette = () => {
-    setQuery('')
-    setActiveIdx(0)
-    setOpen(true)
-  }
 
   const items = useMemo<CommandItem[]>(() => {
     const close = () => setOpen(false)

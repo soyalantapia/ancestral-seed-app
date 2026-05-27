@@ -244,15 +244,15 @@ export function GuidedTour() {
     left = Math.max(VIEWPORT_MARGIN, Math.min(left, vw - ttRect.width - VIEWPORT_MARGIN))
     top = Math.max(VIEWPORT_MARGIN, Math.min(top, vh - ttRect.height - VIEWPORT_MARGIN))
 
-    // Calcular offset de la flecha (alinea con centro del target)
+    // Calcular offset de la flecha (alinea con centro del target).
+    // Usamos const + ternario para no caer en no-useless-assignment
+    // del linter (initial=0 nunca se usaba — ambas ramas pisaban).
     const targetCenterX = targetRect.left + targetRect.width / 2
     const targetCenterY = targetRect.top + targetRect.height / 2
-    let arrowOffset = 0
-    if (side === 'top' || side === 'bottom') {
-      arrowOffset = Math.max(16, Math.min(ttRect.width - 16, targetCenterX - left))
-    } else {
-      arrowOffset = Math.max(16, Math.min(ttRect.height - 16, targetCenterY - top))
-    }
+    const arrowOffset =
+      side === 'top' || side === 'bottom'
+        ? Math.max(16, Math.min(ttRect.width - 16, targetCenterX - left))
+        : Math.max(16, Math.min(ttRect.height - 16, targetCenterY - top))
 
     setTooltipPos({ top, left, arrow: { side, offset: arrowOffset } })
   }, [currentStep, targetRect, step])
