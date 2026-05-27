@@ -96,22 +96,31 @@ export function PieChart({
   const cx = size / 2
   const cy = size / 2
   const r = size / 2
-  let startAngle = -Math.PI / 2 // 12 o'clock
+  // Pre-compute startAngle de cada slice usando reduce (sin reasignación
+  // mutable, que React 19 compiler flaggea como impure).
+  const slicesWithAngles = slices.reduce<
+    Array<{ start: number; end: number; color: string }>
+  >((acc, s) => {
+    const prevEnd = acc.length > 0 ? acc[acc.length - 1].end : -Math.PI / 2
+    const end = prevEnd + (s.value / total) * Math.PI * 2
+    acc.push({ start: prevEnd, end, color: s.color })
+    return acc
+  }, [])
+
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {slices.map((s, i) => {
-        const angle = (s.value / total) * Math.PI * 2
-        const endAngle = startAngle + angle
-        const x1 = cx + r * Math.cos(startAngle)
-        const y1 = cy + r * Math.sin(startAngle)
-        const x2 = cx + r * Math.cos(endAngle)
-        const y2 = cy + r * Math.sin(endAngle)
+      {slicesWithAngles.map((s, i) => {
+        const angle = s.end - s.start
+        const x1 = cx + r * Math.cos(s.start)
+        const y1 = cy + r * Math.sin(s.start)
+        const x2 = cx + r * Math.cos(s.end)
+        const y2 = cy + r * Math.sin(s.end)
         const largeArc = angle > Math.PI ? 1 : 0
         const d =
           `M ${cx} ${cy} ` +
           `L ${x1} ${y1} ` +
           `A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`
-        const path = (
+        return (
           <path
             key={i}
             d={d}
@@ -120,8 +129,6 @@ export function PieChart({
             strokeWidth={2}
           />
         )
-        startAngle = endAngle
-        return path
       })}
     </svg>
   )

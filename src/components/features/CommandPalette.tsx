@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
@@ -60,6 +61,10 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIdx, setActiveIdx] = useState(0)
+  // Focus trap: cuando abre el modal, atrapamos el Tab dentro del
+  // dialog. Tab al final → vuelve al primero. Shift+Tab al inicio →
+  // salta al último. Al cerrar, foco vuelve al elemento previo.
+  const trapRef = useFocusTrap<HTMLDivElement>(open)
   const inputRef = useRef<HTMLInputElement>(null)
   const isAuth = useAuthStore((s) => s.isAuthenticated)
   const user = useAuthStore((s) => s.user)
@@ -79,7 +84,8 @@ export function CommandPalette() {
       const isMod = e.metaKey || e.ctrlKey
       if (isMod && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setOpen((o) => !o)
+        if (open) setOpen(false)
+        else openPalette()
       }
       if (e.key === 'Escape' && open) {
         e.preventDefault()
@@ -92,21 +98,31 @@ export function CommandPalette() {
         document.activeElement?.tagName !== 'TEXTAREA'
       ) {
         e.preventDefault()
-        setOpen(true)
+        openPalette()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [open])
 
-  // Auto-focus al abrir + reset
+  // Auto-focus al abrir. NOTA: el reset de query/activeIdx ya se hace
+  // en `openPalette()` (helper centralizado), no acá — porque hacer
+  // setState dentro de un useEffect dispara cascading renders que el
+  // compilador de React 19 marca como anti-pattern.
   useEffect(() => {
     if (open) {
-      setQuery('')
-      setActiveIdx(0)
-      setTimeout(() => inputRef.current?.focus(), 50)
+      const t = setTimeout(() => inputRef.current?.focus(), 50)
+      return () => clearTimeout(t)
     }
   }, [open])
+
+  // Helper que centraliza la apertura: reset del query + activeIdx +
+  // setOpen(true) en un solo lugar.
+  const openPalette = () => {
+    setQuery('')
+    setActiveIdx(0)
+    setOpen(true)
+  }
 
   const items = useMemo<CommandItem[]>(() => {
     const close = () => setOpen(false)
@@ -191,10 +207,8 @@ export function CommandPalette() {
       .map((x) => x.item)
   }, [items, query])
 
-  // Reset active index al filtrar
-  useEffect(() => {
-    setActiveIdx(0)
-  }, [query])
+  // Reset active index al filtrar — hecho dentro de setQuery (helper)
+  // en vez de useEffect para evitar el warning de cascading renders.
 
   if (!open) return null
 
@@ -227,6 +241,7 @@ export function CommandPalette() {
       onClick={() => setOpen(false)}
     >
       <div
+        ref={trapRef}
         className="w-full max-w-xl overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -236,7 +251,10 @@ export function CommandPalette() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setActiveIdx(0)
+            }}
             onKeyDown={onKeyDown}
             placeholder="Buscar acciones, páginas, comandos…"
             className="flex-1 bg-transparent text-sm text-navy-500 placeholder:text-navy-300 focus:outline-none"
