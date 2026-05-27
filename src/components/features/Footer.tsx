@@ -77,10 +77,10 @@ export function Footer() {
             <ul className="flex flex-col gap-4 text-base text-white">
               <li>
                 <a
-                  href="mailto:hola@ancestralseed.org?subject=Consulta%20desde%20la%20web"
+                  href="mailto:soporte@ancestralseed.org?subject=Consulta%20desde%20la%20web"
                   className="transition-colors hover:text-gold-400"
                 >
-                  hola@ancestralseed.org
+                  soporte@ancestralseed.org
                 </a>
               </li>
               <li>
