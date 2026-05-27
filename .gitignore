@@ -26,6 +26,7 @@ dist-ssr
 # Vite
 .vite/
 
-# Local env
+# Local env — .env.example sí va commiteado como template
+.env
 .env.local
 .env.*.local

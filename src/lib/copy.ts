@@ -41,6 +41,10 @@ export const STAGES = {
   postulado: { id: 'postulado', label: 'Postulado' },
   revision: { id: 'revision', label: 'Revisión inicial' },
   elegible: { id: 'elegible', label: 'Elegible' },
+  /** Etapa intermedia entre Elegible y Diagnóstico — el tutor revisa
+   *  evidencias preliminares antes de profundizar. Detectado en mock
+   *  data (`mockCertificationRequests`) como estado de Camila. */
+  prediagnostico: { id: 'prediagnostico', label: 'Prediagnóstico' },
   diagnostico: { id: 'diagnostico', label: 'Diagnóstico' },
   auditoria: { id: 'auditoria', label: 'Auditoría' },
   evaluacion: { id: 'evaluacion', label: 'Evaluación' },

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -12,6 +12,7 @@ import {
   Headphones,
   Image as ImageIcon,
   Play,
+  Save,
   Upload,
   X,
 } from 'lucide-react'
@@ -110,6 +111,8 @@ export default function CertifyForm() {
   const setSession = useAuthStore((s) => s.setSession)
   const [submitted, setSubmitted] = useState(false)
   const [postponeOpen, setPostponeOpen] = useState(false)
+  // Autosave UI: timestamp del último guardado para mostrar "Guardado 19:43"
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
 
   const schema = stepSchemas[step]
   const methods = useForm<Partial<CertifyFormData>>({
@@ -124,6 +127,29 @@ export default function CertifyForm() {
     methods.reset({ ...data })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
+
+  // Autosave: cada cambio del form persiste a zustand (debounced 500ms).
+  // Esto evita perder progreso si el user refresca o cierra la pestaña
+  // sin haber clickeado "Siguiente". Antes solo se guardaba en onNext.
+  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const subscription = methods.watch((values) => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current)
+      }
+      autosaveTimeoutRef.current = setTimeout(() => {
+        updateData(values as Partial<CertifyFormData>)
+        setLastSavedAt(new Date())
+      }, 500)
+    })
+    return () => {
+      subscription.unsubscribe()
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [methods.watch, step])
 
   const onNext = methods.handleSubmit((values) => {
     updateData(values)
@@ -187,14 +213,29 @@ export default function CertifyForm() {
       <section className="relative bg-white">
         <div className="mx-auto -mt-6 max-w-[1100px] px-4 md:-mt-10 md:px-8">
           <div className="relative rounded-2xl bg-white px-6 py-8 text-center shadow-md md:px-12 md:py-10">
-            <button
-              type="button"
-              onClick={() => setPostponeOpen(true)}
-              className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[11px] font-bold text-navy-400 transition-colors hover:bg-neutral-100 hover:text-navy-500 md:right-6 md:top-6 md:text-xs"
-            >
-              <Clock className="h-3.5 w-3.5" />
-              Postergar
-            </button>
+            <div className="absolute right-4 top-4 flex items-center gap-2 md:right-6 md:top-6">
+              {/* Badge de autosave — visible cuando ya guardamos al menos
+                  una vez. Comunica al user que su progreso no se pierde
+                  si refresca / cierra la pestaña. */}
+              {lastSavedAt && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-success-100 px-3 py-1.5 text-[11px] font-bold text-success-300 ring-1 ring-success-300/30 md:text-xs">
+                  <Save className="h-3 w-3" />
+                  Borrador guardado ·{' '}
+                  {lastSavedAt.toLocaleTimeString('es-AR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setPostponeOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[11px] font-bold text-navy-400 transition-colors hover:bg-neutral-100 hover:text-navy-500 md:text-xs"
+              >
+                <Clock className="h-3.5 w-3.5" />
+                Postergar
+              </button>
+            </div>
             <h1 className="text-2xl font-bold text-navy-500 md:text-[34px] md:leading-tight">
               Formulario de Certificación Ancestral
             </h1>

@@ -274,9 +274,11 @@ export default function TutorCases() {
                 )}
               >
                 <div className="flex items-center justify-between px-2 pb-3">
-                  <h3 className="text-sm font-bold text-navy-500">
-                    {stage.label}
-                    <span className="ml-2 text-navy-300">{items.length}</span>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-navy-500">
+                    <span>{stage.label}</span>
+                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold text-navy-500 ring-1 ring-neutral-200">
+                      {items.length}
+                    </span>
                   </h3>
                 </div>
                 <ul className="flex flex-col gap-3">
