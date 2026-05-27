@@ -425,7 +425,7 @@ export default function TutorCertifications() {
             toast.success(
               `Incidencia "${kind}" registrada en ${incidentFor.id}`,
             )
-            // eslint-disable-next-line no-console
+             
             console.info('Incidencia detail:', detail)
             setIncidentFor(null)
           }}

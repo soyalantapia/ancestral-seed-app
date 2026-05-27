@@ -52,9 +52,13 @@ export function Logo({
           >
             ANCESTRAL SEED
           </span>
+          {/* Tagline oculta en mobile horizontal — el subtítulo no entra
+              cómodamente al lado del wordmark en 375px. En vertical
+              (footer/aside) sí aparece siempre. */}
           <span
             className={cn(
               'mt-1 text-[10px] font-semibold tracking-[0.32em]',
+              isVertical ? '' : 'hidden sm:inline',
               taglineColor,
             )}
           >

@@ -162,6 +162,8 @@ function Hero() {
               auditoría y tecnología blockchain.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
+              {/* Una sola CTA primaria — reduce decisión. Verificar queda
+                  como link ghost para usuarios que vienen con un QR. */}
               <Button
                 variant="gold"
                 size="lg"
@@ -171,12 +173,12 @@ function Hero() {
                 Certificar Producto
               </Button>
               <Button
-                variant="outlineNavy"
+                variant="ghost"
                 size="lg"
                 onClick={() => navigate('/verificar')}
-                className="w-full sm:w-auto"
+                className="w-full text-navy-500 underline-offset-4 hover:bg-transparent hover:text-gold-700 hover:underline sm:w-auto"
               >
-                Verificar Certificado
+                o verificar un certificado existente
               </Button>
             </div>
           </div>

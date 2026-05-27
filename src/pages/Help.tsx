@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { Compass, Headphones, Mail, Phone, Search, X } from 'lucide-react'
+import {
+  Compass,
+  Headphones,
+  Mail,
+  Phone,
+  RefreshCw,
+  Search,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useOnboardingStore } from '@/store/onboarding'
 
@@ -195,6 +203,65 @@ export default function Help() {
               Tour tutor
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Limpiar caché — fix para el bug crónico de SW stale en producción.
+          Cuando deployamos cambios, a veces el Service Worker viejo cachea
+          chunks JS que ya no existen → pantalla blanca o "Error inesperado".
+          Este botón lo arregla en un click. */}
+      <section className="mt-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-info-100 text-info-300">
+              <RefreshCw className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-navy-500">
+                ¿Ves errores raros o todo se rompe?
+              </p>
+              <p className="mt-0.5 text-xs text-navy-300">
+                A veces el navegador cachea una versión vieja. Tocá este
+                botón para limpiarlo y recargar la app fresca.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              const t = toast.loading('Limpiando caché y service workers...')
+              try {
+                // 1) Unregister TODOS los SWs (PWA y MSW)
+                if ('serviceWorker' in navigator) {
+                  const regs = await navigator.serviceWorker.getRegistrations()
+                  await Promise.all(regs.map((r) => r.unregister()))
+                }
+                // 2) Borrar TODOS los caches (Workbox, MSW, etc.)
+                if ('caches' in window) {
+                  const keys = await caches.keys()
+                  await Promise.all(keys.map((k) => caches.delete(k)))
+                }
+                // 3) Storage local (zustand persist) — solo el zustand de
+                //    onboarding/UI, no auth ni form drafts
+                try {
+                  localStorage.removeItem('ancestral-ui')
+                } catch {
+                  // no-op
+                }
+                toast.success('Caché limpiado · recargando...', { id: t })
+                setTimeout(() => window.location.reload(), 600)
+              } catch (e) {
+                toast.error(
+                  `No pudimos limpiar el caché: ${(e as Error).message}`,
+                  { id: t },
+                )
+              }
+            }}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-info-300 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-info-400"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Limpiar caché y recargar
+          </button>
         </div>
       </section>
 

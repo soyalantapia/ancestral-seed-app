@@ -77,18 +77,20 @@ export function Footer() {
             <ul className="flex flex-col gap-4 text-base text-white">
               <li>
                 <a
-                  href="mailto:ancestralseed@email.com"
+                  href="mailto:hola@ancestralseed.org?subject=Consulta%20desde%20la%20web"
                   className="transition-colors hover:text-gold-400"
                 >
-                  ancestralseed@email.com
+                  hola@ancestralseed.org
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+11243-5678"
+                  href="https://wa.me/5491100000000?text=Hola%20Ancestral%20Seed"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="transition-colors hover:text-gold-400"
                 >
-                  +1 1243-5678
+                  WhatsApp soporte
                 </a>
               </li>
             </ul>

@@ -92,7 +92,9 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'ancestral-seed-settings',
-      partialize: ({ update: _u, reset: _r, ...rest }) => rest,
+      // Persistimos todo MENOS los métodos (update, reset). Spread y borrá.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      partialize: ({ update, reset, ...data }) => data,
     },
   ),
 )

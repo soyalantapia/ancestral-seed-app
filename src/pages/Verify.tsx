@@ -34,14 +34,15 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 type Mode = null | 'hash' | 'qr'
 
+type VerifyResult =
+  | { state: 'idle' }
+  | { state: 'loading' }
+  | { state: 'invalid' }
+  | { state: 'valid'; cert: Certification }
+
 export default function Verify() {
   const [mode, setMode] = useState<Mode>(null)
-  const [result, setResult] = useState<
-    | { state: 'idle' }
-    | { state: 'loading' }
-    | { state: 'invalid' }
-    | { state: 'valid'; cert: Certification }
-  >({ state: 'idle' })
+  const [result, setResult] = useState<VerifyResult>({ state: 'idle' })
 
   return (
     <>
@@ -106,8 +107,8 @@ function HashModal({
   setResult,
 }: {
   onClose: () => void
-  result: any
-  setResult: (r: any) => void
+  result: VerifyResult
+  setResult: (r: VerifyResult) => void
 }) {
   const navigate = useNavigate()
   const {
@@ -154,9 +155,12 @@ function HashModal({
           </Label>
           <Input
             id="hashOrCode"
-            placeholder="ID/Hash"
+            placeholder="Ej.: tecnica-ancestral-filigrana o 0xB7E2A1F0..."
             {...register('hashOrCode')}
           />
+          <p className="mt-2 text-xs text-navy-300">
+            Aceptamos el slug del certificado o su hash en blockchain.
+          </p>
           {errors.hashOrCode && (
             <p className="mt-1 text-xs font-medium text-error-400">
               {errors.hashOrCode.message}

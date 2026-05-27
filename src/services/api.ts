@@ -6,6 +6,7 @@ import type {
   PaginatedResult,
   User,
 } from '@/types'
+import { ERRORS } from '@/lib/copy'
 
 // El sitio se sirve desde el BASE_URL del bundle (por ej. `/ancestral-seed-app/`
 // en GitHub Pages, `/` en dev). El service worker de MSW se registra dentro
@@ -14,14 +15,69 @@ import type {
 const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
 const BASE_URL = `${BASE}/api`
 
+/**
+ * Error tipado con código permite a la UI mostrar mensajes contextuales
+ * en vez del genérico "Error inesperado".
+ */
+export class ApiError extends Error {
+  public readonly code:
+    | 'network'
+    | 'not_found'
+    | 'server'
+    | 'unauthorized'
+    | 'forbidden'
+    | 'unknown'
+  public readonly status?: number
+
+  constructor(
+    code: ApiError['code'],
+    message: string,
+    status?: number,
+  ) {
+    super(message)
+    this.name = 'ApiError'
+    this.code = code
+    this.status = status
+  }
+}
+
+function classifyHttp(status: number): ApiError['code'] {
+  if (status === 404) return 'not_found'
+  if (status === 401) return 'unauthorized'
+  if (status === 403) return 'forbidden'
+  if (status >= 500) return 'server'
+  return 'unknown'
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
+    })
+  } catch {
+    // TypeError → red caída, CORS bloqueado, DNS fallido, etc.
+    throw new ApiError('network', ERRORS.network)
+  }
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: res.statusText }))
-    throw new Error(error.message || 'Error inesperado')
+    const code = classifyHttp(res.status)
+    const fallback =
+      ERRORS[
+        code === 'not_found'
+          ? 'notFound'
+          : code === 'server'
+            ? 'serverError'
+            : code === 'unauthorized'
+              ? 'unauthorized'
+              : code === 'forbidden'
+                ? 'forbidden'
+                : 'unknown'
+      ]
+    const body = await res.json().catch(() => null)
+    const message =
+      (body as { message?: string } | null)?.message || fallback
+    throw new ApiError(code, message, res.status)
   }
   return res.json() as Promise<T>
 }

@@ -333,7 +333,7 @@ export default function TutorCaseDetail() {
                         }
                       : prev,
                   )
-                  // eslint-disable-next-line no-console
+                   
                   console.info(
                     `[Firma] ${caseData.id} firmado por tutor con score ${score} → ${category}`,
                   )
@@ -533,16 +533,18 @@ function DaysBadge({
       title={tooltip}
       aria-label={tooltip}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
+        'inline-flex items-center gap-1.5 rounded-full font-bold',
+        // El vencido se destaca con tamaño + ring más grueso porque es
+        // accionable: el tutor tiene que mover ese caso YA.
         tone === 'red'
-          ? 'bg-error-100 text-error-400 ring-1 ring-error-300/40'
-          : tone === 'yellow'
-            ? 'bg-warning-100 text-warning-400 ring-1 ring-warning-300/40'
-            : 'bg-success-100 text-success-300 ring-1 ring-success-300/30',
+          ? 'animate-pulse bg-error-300 px-3 py-1 text-xs text-white ring-2 ring-error-300/40'
+          : 'px-2 py-0.5 text-[10px] ring-1',
+        tone === 'yellow' && 'bg-warning-100 text-warning-400 ring-warning-300/40',
+        tone === 'green' && 'bg-success-100 text-success-300 ring-success-300/30',
       )}
     >
-      <Clock className="h-3 w-3" />
-      {tone === 'red' ? `+${overdue}d vencido` : `${days}/${sla}d`}
+      <Clock className={tone === 'red' ? 'h-3.5 w-3.5' : 'h-3 w-3'} />
+      {tone === 'red' ? `Vencido ${overdue}d` : `${days}/${sla}d`}
     </span>
   )
 }

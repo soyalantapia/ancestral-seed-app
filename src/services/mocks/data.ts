@@ -1029,7 +1029,7 @@ if (
   typeof window !== 'undefined' &&
   SCORING_CRITERIA.reduce((s, c) => s + c.weight, 0) !== 100
 ) {
-  // eslint-disable-next-line no-console
+   
   console.warn(
     '[Ancestral Seed] SCORING_CRITERIA pesos no suman 100:',
     SCORING_CRITERIA.reduce((s, c) => s + c.weight, 0),
