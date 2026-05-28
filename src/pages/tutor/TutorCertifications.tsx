@@ -49,6 +49,22 @@ const STATUS_META: Record<
 
 type SortKey = 'id' | 'productName' | 'authorName' | 'scoreLabel' | 'status' | 'issuedAt' | 'expiresAt'
 
+/**
+ * Estados de licencia que el filtro "Estado" expone — los 4 que el
+ * tipo IssuedCertStatus admite. Orden por relevancia operativa para
+ * el tutor: vencidos primero (urgentes), denegados al final.
+ */
+const STATUS_OPTIONS: Array<{
+  value: IssuedCertification['status'] | 'all'
+  label: string
+}> = [
+  { value: 'all', label: 'Todos' },
+  { value: 'vencido', label: 'Vencidos' },
+  { value: 'renovacion', label: 'En renovación' },
+  { value: 'vigente', label: 'Vigentes' },
+  { value: 'denegado', label: 'Denegados' },
+]
+
 export default function TutorCertifications() {
   const navigate = useNavigate()
   const all = mockIssuedCertifications
@@ -60,6 +76,17 @@ export default function TutorCertifications() {
     key: 'issuedAt',
     dir: 'desc',
   })
+  /**
+   * Fix SB10 (#TUT-24, auditoría UX): antes los 6 FilterPills no hacían
+   * nada. Ahora "Estado" funciona como filtro real (el más alto valor
+   * operativo: el tutor mirando "Vencidos" puede priorizar trabajo).
+   * Los demás siguen como `disabled` con tooltip "Próximamente" — mismo
+   * tratamiento que QW-C2/C3.
+   */
+  const [statusFilter, setStatusFilter] = useState<
+    IssuedCertification['status'] | 'all'
+  >('all')
+  const [statusOpen, setStatusOpen] = useState(false)
   const [openRow, setOpenRow] = useState<string | null>(null)
   const [renewFor, setRenewFor] = useState<IssuedCertification | null>(null)
   const [incidentFor, setIncidentFor] = useState<IssuedCertification | null>(null)
@@ -74,6 +101,9 @@ export default function TutorCertifications() {
   // Filtered + sorted
   const filtered = useMemo(() => {
     let list = [...all]
+    if (statusFilter !== 'all') {
+      list = list.filter((c) => c.status === statusFilter)
+    }
     if (query.trim()) {
       const q = query.toLowerCase()
       list = list.filter(
@@ -90,7 +120,7 @@ export default function TutorCertifications() {
       return sort.dir === 'asc' ? c : -c
     })
     return list
-  }, [all, query, sort])
+  }, [all, query, sort, statusFilter])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -148,7 +178,58 @@ export default function TutorCertifications() {
       {/* Filters row */}
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <FilterPill label="Categoría" />
-        <FilterPill label="Estado" />
+        {/* Dropdown funcional para Estado — SB10 fix */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setStatusOpen((v) => !v)}
+            className={cn(
+              'inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition-colors',
+              statusFilter === 'all'
+                ? 'border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100'
+                : 'border-gold-500 bg-gold-100 text-gold-700',
+            )}
+          >
+            Estado:{' '}
+            {STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label}
+            <ChevronDown
+              className={cn(
+                'h-3.5 w-3.5 transition-transform',
+                statusOpen && 'rotate-180',
+              )}
+            />
+          </button>
+          {statusOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setStatusOpen(false)}
+              />
+              <ul className="absolute left-0 z-20 mt-2 w-48 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
+                {STATUS_OPTIONS.map((o) => (
+                  <li key={o.value}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter(o.value)
+                        setStatusOpen(false)
+                        setPage(1)
+                      }}
+                      className={cn(
+                        'flex w-full items-center px-3 py-2 text-left text-xs font-semibold transition-colors',
+                        statusFilter === o.value
+                          ? 'bg-gold-100 text-gold-700'
+                          : 'text-navy-500 hover:bg-neutral-100',
+                      )}
+                    >
+                      {o.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
         <FilterPill label="Puntaje" />
         <FilterPill label="País" />
         <FilterPill label="Región" />
@@ -714,11 +795,20 @@ function StatCard({
   )
 }
 
+/**
+ * Pill placeholder — todavía sin lógica conectada. Mismo tratamiento
+ * que QW-C2/C3: disabled + border-dashed + tooltip "Próximamente".
+ * Solo "Estado" tiene su propio dropdown funcional inline en la
+ * página principal.
+ */
 function FilterPill({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+      disabled
+      title="Próximamente"
+      aria-label={`${label} (próximamente)`}
+      className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white/70 px-3 text-xs font-bold text-navy-300 opacity-60"
     >
       {label}
       <ChevronDown className="h-3.5 w-3.5 text-navy-300" />
