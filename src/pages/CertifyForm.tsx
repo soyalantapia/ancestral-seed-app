@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Play,
   Save,
+  Sparkles,
   Upload,
   X,
 } from 'lucide-react'
@@ -111,6 +112,27 @@ const benefits = [
   'Visibilidad en el directorio',
 ]
 
+/**
+ * Detecta si el store de CertifyForm tiene datos significativos (no
+ * solo los defaults iniciales). Si los hay y el user vuelve a entrar
+ * al form sin haber finalizado o reseteado, mostramos el dialog
+ * "¿Continuar o empezar nueva?".
+ *
+ * Significativo = al menos un campo identitario libre tiene contenido.
+ * Los enums vacíos (documentType: '') o los arrays vacíos NO cuentan.
+ */
+function hasSignificantData(d: Partial<CertifyFormData>): boolean {
+  return Boolean(
+    d.applicantName?.trim() ||
+      d.productName?.trim() ||
+      d.communityName?.trim() ||
+      d.communityActivity?.trim() ||
+      d.processDescription?.trim() ||
+      (d.galleryNames && d.galleryNames.length > 0) ||
+      (d.batchIdentifiers && d.batchIdentifiers.length > 0),
+  )
+}
+
 export default function CertifyForm() {
   // Tour guiado de 4 pasos en primera visita al form
   useAutoStartTour('certifyForm', 1200)
@@ -121,6 +143,25 @@ export default function CertifyForm() {
   const [postponeOpen, setPostponeOpen] = useState(false)
   // Autosave UI: timestamp del último guardado para mostrar "Guardado 19:43"
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+
+  /**
+   * Fix SA3 (#POS-21, auditoría UX): el bug crítico era que entrar a
+   * /certificar cargaba silenciosamente los datos de la postulación
+   * anterior. El user podía enviar "Filigrana ancestral" como nombre
+   * cuando quería postular otra cosa.
+   *
+   * Ahora si hay datos persistidos al montar, mostramos un dialog
+   * obligatorio que pide elegir: "Continuar la postulación a medias"
+   * o "Empezar de cero". El initializer lazy se evalúa una sola vez
+   * al montar — navegar entre pasos no re-dispara el dialog.
+   *
+   * Una vez resuelto, el flag queda en false durante esta vida del
+   * componente. Si el user sale y vuelve, se evalúa otra vez (que es
+   * exactamente el comportamiento esperable).
+   */
+  const [showResumeDialog, setShowResumeDialog] = useState<boolean>(() =>
+    hasSignificantData(data),
+  )
 
   const schema = stepSchemas[step]
   const methods = useForm<Partial<CertifyFormData>>({
@@ -276,6 +317,24 @@ export default function CertifyForm() {
           <Stepper current={step} />
         </div>
       </section>
+
+      {/* Resume-or-fresh dialog (SA3 fix) — se muestra una sola vez al
+          montar si hay datos persistidos. No bloquea: el user puede
+          elegir continuar (mantiene store) o empezar nueva (reset()). */}
+      <ResumeOrFreshDialog
+        open={showResumeDialog}
+        currentStep={step}
+        productName={data.productName}
+        applicantName={data.applicantName}
+        onContinue={() => setShowResumeDialog(false)}
+        onStartFresh={() => {
+          reset()
+          // El form reanuda en step 0 con defaults — el useEffect que
+          // sincroniza store↔form lo maneja automáticamente.
+          setShowResumeDialog(false)
+          toast.success('Empezaste una postulación nueva')
+        }}
+      />
 
       {/* Postpone modal */}
       <PostponeModal
@@ -1415,6 +1474,122 @@ function PostponeModal({
                 Seguir completando
               </button>
             </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+/**
+ * Dialog que aparece al entrar al CertifyForm si hay datos persistidos
+ * del último intento. Cierra el bug #POS-21 (auditoría UX): postulación
+ * nueva con datos contaminados.
+ *
+ * Reutiliza el mismo layout que PostponeModal (consistencia visual) pero
+ * con icono Sparkles + tono más "elegir camino" en vez de "confirmar
+ * acción destructiva". El call-to-action principal es "Continuar" porque
+ * en la mayoría de los casos el user va a querer retomar — solo
+ * ocasionalmente quiere empezar de cero.
+ */
+function ResumeOrFreshDialog({
+  open,
+  currentStep,
+  productName,
+  applicantName,
+  onContinue,
+  onStartFresh,
+}: {
+  open: boolean
+  currentStep: number
+  productName?: string
+  applicantName?: string
+  onContinue: () => void
+  onStartFresh: () => void
+}) {
+  // Esc cierra "continuando" (acción menos destructiva — mantiene datos).
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onContinue()
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, onContinue])
+
+  // Descripción contextual: si tenemos nombre del producto, lo mostramos
+  // para que el user identifique de qué postulación habla.
+  const subject = productName || applicantName || 'una postulación a medias'
+  const stepLabel = currentStep > 0 ? ` (paso ${currentStep + 1} de 7)` : ''
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          {/* Backdrop NO clickeable — obliga a elegir explícitamente.
+              Si fuera dismissable por backdrop, el user podría perder
+              datos sin saber qué pasó. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-navy-500/60 backdrop-blur-[2px]"
+          />
+
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resume-title"
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+            className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl md:p-10"
+          >
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold-100 text-gold-700 ring-4 ring-gold-100/60">
+              <Sparkles className="h-7 w-7" />
+            </div>
+
+            <h2
+              id="resume-title"
+              className="mt-5 text-xl font-bold text-navy-500 md:text-2xl"
+            >
+              Tenés una postulación a medias
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-navy-300">
+              Guardamos tus avances de{' '}
+              <strong className="text-navy-500">{subject}</strong>
+              {stepLabel}. ¿Querés continuarla o empezás una nueva?
+            </p>
+
+            <div className="mt-7 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onContinue}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-navy-500 px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
+              >
+                Continuar donde quedé
+              </button>
+              <button
+                type="button"
+                onClick={onStartFresh}
+                className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-300 px-6 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+              >
+                Empezar una nueva
+              </button>
+            </div>
+            <p className="mt-3 text-[11px] text-navy-300">
+              Si elegís empezar nueva, se borra el borrador actual y no
+              podrás recuperarlo.
+            </p>
           </motion.div>
         </motion.div>
       )}
