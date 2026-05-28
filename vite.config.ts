@@ -35,6 +35,18 @@ export default defineConfig(({ command }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // ← NO auto-register; MSW maneja el SW
+      /**
+       * `selfDestroying: true` — el sw.js generado se auto-desregistra al
+       * activarse. Esto es CRÍTICO para usuarios que ya tenían el SW de
+       * Workbox instalado antes del fix: el browser hace `update()` del
+       * SW periódicamente, descarga este sw.js auto-destructivo, lo
+       * activa, y se mata. La próxima vez que carguen la app, MSW puede
+       * registrarse sin conflicto.
+       *
+       * Si en el futuro arranca el backend real (`build:no-msw`), conviene
+       * pasar esto a `false` y reactivar `injectRegister: 'auto'`.
+       */
+      selfDestroying: true,
       includeAssets: ['favicon.svg', 'logo-mark.png', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
         name: 'Ancestral Seed · Certificación digital',
