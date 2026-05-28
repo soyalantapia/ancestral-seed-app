@@ -70,27 +70,22 @@ export default function Legal() {
         </header>
 
         <section className="mt-8 space-y-6 text-sm leading-relaxed text-navy-500">
-          <div className="rounded-2xl border border-warning-300/60 bg-warning-100/30 p-4">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-warning-400">
-              Documento en revisión legal
-            </p>
-            <p className="mt-2 text-sm text-navy-500">
-              Este texto es una versión preliminar para fines demostrativos. La
-              versión definitiva — con vigencia, jurisdicción y régimen
-              sancionatorio — está en revisión por el equipo legal del proyecto.
-              Cuando esté finalizada, reemplaza este contenido en su totalidad.
-            </p>
-            <p className="mt-2 text-xs text-navy-300">
-              Para consultas legales puntuales escribí a{' '}
-              <a
-                href="mailto:legal@ancestralseed.org"
-                className="font-bold text-gold-700 hover:underline"
-              >
-                legal@ancestralseed.org
-              </a>
-              .
-            </p>
-          </div>
+          {/* Fix SM1 (#PUB-29, auditoría UX): el banner amarillo
+              "Documento en revisión legal" minaba la confianza del
+              visitante que venía a aceptar términos. Mantenemos la
+              transparencia (el texto no es definitivo) pero como
+              microcopy discreto, no como warning prominente. */}
+          <p className="text-[11px] text-navy-300">
+            Texto preliminar — la versión definitiva está en revisión por
+            el equipo legal. Consultas a{' '}
+            <a
+              href="mailto:legal@ancestralseed.org"
+              className="font-semibold text-gold-700 hover:underline"
+            >
+              legal@ancestralseed.org
+            </a>
+            .
+          </p>
 
           {key === 'terminos' && <TerminosBody />}
           {key === 'privacidad' && <PrivacidadBody />}

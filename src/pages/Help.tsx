@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useOnboardingStore } from '@/store/onboarding'
+import { useAuthStore } from '@/store/auth'
 
 interface Topic {
   id: string
@@ -133,6 +134,20 @@ export default function Help() {
   const [topic, setTopic] = useState<Topic | null>(null)
   const [contactOpen, setContactOpen] = useState(false)
   const resetTour = useOnboardingStore((s) => s.reset)
+  /**
+   * Fix SM1 (#PUB-26 / #PUB-28, auditoría UX): Tours antes visibles
+   * para CUALQUIER visitante público — incluso sin logueo. Si tocaban
+   * "Tour tutor" sin ser tutor, toast confuso y nada visible. Ahora
+   * solo se muestran si hay sesión iniciada.
+   */
+  const user = useAuthStore((s) => s.user)
+  const isAuthenticated = Boolean(user)
+  // Filtro extra: si el rol del user incluye tutor, mostrar tour tutor;
+  // si es solo postulante, solo tour solicitante.
+  const showTutorTour =
+    isAuthenticated &&
+    (user?.role === 'tutor' || user?.roles?.includes('tutor'))
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   const filtered = query
     ? topics.filter(
@@ -163,66 +178,79 @@ export default function Help() {
         </div>
       </section>
 
-      {/* Re-iniciar tours */}
-      <section className="mt-6 rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-500 text-navy-500">
-              <Compass className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-navy-500">
-                ¿Te perdiste? Volvé al tour guiado
-              </p>
-              <p className="mt-0.5 text-xs text-navy-300">
-                8 pasos con spotlight que te muestran qué hace cada sección.
-              </p>
+      {/* Re-iniciar tours — solo si auth (SM1 fix #PUB-26 + #PUB-28) */}
+      {isAuthenticated && (
+        <section className="mt-6 rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-500 text-navy-500">
+                <Compass className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-bold text-navy-500">
+                  ¿Te perdiste? Volvé al tour guiado
+                </p>
+                <p className="mt-0.5 text-xs text-navy-300">
+                  8 pasos con spotlight que te muestran qué hace cada sección.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  resetTour('solicitante')
+                  toast.success('Tour del solicitante iniciado')
+                }}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm hover:bg-navy-400"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                Tour solicitante
+              </button>
+              {/* Tour tutor solo si el user tiene rol tutor (#PUB-28) */}
+              {showTutorTour && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetTour('tutor')
+                    toast.success('Tour del tutor iniciado')
+                  }}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 hover:bg-neutral-100"
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  Tour tutor
+                </button>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                resetTour('solicitante')
-                toast.success('Tour del solicitante iniciado')
-              }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm hover:bg-navy-400"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              Tour solicitante
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                resetTour('tutor')
-                toast.success('Tour del tutor iniciado')
-              }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 hover:bg-neutral-100"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              Tour tutor
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Limpiar caché — fix para el bug crónico de SW stale en producción.
-          Cuando deployamos cambios, a veces el Service Worker viejo cachea
-          chunks JS que ya no existen → pantalla blanca o "Error inesperado".
-          Este botón lo arregla en un click. */}
-      <section className="mt-4 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      {/* Limpiar caché — herramienta avanzada para usuarios con
+          problemas técnicos. Fix SM1 (#PUB-27): antes estaba siempre
+          visible y generaba ansiedad ("¿hay algo roto?"). Ahora va en
+          un disclosure cerrado por default. */}
+      <details
+        className="mt-4 rounded-2xl border border-neutral-200 bg-white px-5 py-3 text-sm"
+        open={advancedOpen}
+        onToggle={(e) => setAdvancedOpen((e.target as HTMLDetailsElement).open)}
+      >
+        <summary className="cursor-pointer list-none text-xs font-bold text-navy-300 hover:text-navy-500">
+          ¿Tenés problemas técnicos? Herramientas avanzadas
+        </summary>
+        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-info-100 text-info-300">
               <RefreshCw className="h-5 w-5" />
             </span>
             <div>
               <p className="text-sm font-bold text-navy-500">
-                ¿Ves errores raros o todo se rompe?
+                Limpiar caché y recargar
               </p>
               <p className="mt-0.5 text-xs text-navy-300">
-                A veces el navegador cachea una versión vieja. Tocá este
-                botón para limpiarlo y recargar la app fresca.
+                Si la app no responde o ves errores raros, el navegador
+                puede haber cacheado una versión vieja. Esta acción
+                limpia caché + service workers y recarga.
               </p>
             </div>
           </div>
@@ -257,13 +285,13 @@ export default function Help() {
                 )
               }
             }}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-info-300 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-info-400"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
           >
             <RefreshCw className="h-4 w-4" />
             Limpiar caché y recargar
           </button>
         </div>
-      </section>
+      </details>
 
       {/* Topic cards */}
       {filtered.length === 0 ? (
