@@ -1149,47 +1149,73 @@ function MensajesTab({
   caseData: TutorCase
   onOpenTemplate: () => void
 }) {
+  /**
+   * Fix SB12 (#TUT-16, auditoría UX): antes el banner decía
+   * "comunicación oficial" pero abajo había botón "Abrir WhatsApp" —
+   * ambiguo. ¿Lo que sale por WhatsApp queda en el expediente o no?
+   * Ahora declaramos la regla explícita: solo lo que se "Registra
+   * oficial" entra. El WhatsApp es para coordinación informal.
+   *
+   * Contador en el header refuerza el contraste (3 oficiales · ~muchos
+   * informales).
+   */
+  // Stub — en producción cuenta los del expediente
+  const officialCount: number = 3
+
   return (
     <div className="space-y-4">
-      <p className="text-sm text-navy-300">
-        Conversación oficial con el solicitante. Los mensajes quedan
-        registrados como parte del expediente.
-      </p>
-      <div className="rounded-2xl border border-info-300/40 bg-info-100/40 p-4">
-        <div className="flex items-center gap-2 text-xs font-bold text-info-400">
-          <MessageSquare className="h-3.5 w-3.5" />
-          Comunicación rápida vía WhatsApp
+      {/* Regla del tab — siempre arriba, no se cierra */}
+      <div className="flex items-start gap-3 rounded-2xl border border-info-200 bg-info-50/40 p-4">
+        <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-info-400" />
+        <div className="text-xs leading-relaxed text-navy-500">
+          <p className="font-bold">Cómo funciona esta tab</p>
+          <ul className="mt-1.5 space-y-1 text-navy-300">
+            <li>
+              <strong className="text-navy-500">Solo lo que registres oficial</strong>{' '}
+              queda en el expediente y es visible al postulante en su panel.
+            </li>
+            <li>
+              WhatsApp es para coordinación informal —{' '}
+              <strong className="text-navy-500">esos mensajes NO entran al expediente</strong>.
+              Usalo para "voy en 5 minutos" pero no para confirmaciones técnicas.
+            </li>
+          </ul>
         </div>
-        <p className="mt-2 text-sm text-navy-500">
-          La comunicación día a día se hace por WhatsApp con
-          {' '}<strong>{caseData.applicantName}</strong>. Los mensajes
-          importantes (decisiones, pedidos, aprobaciones) se registran acá
-          como parte del expediente oficial.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+      </div>
+
+      {/* Acciones */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
+        <div className="flex items-center gap-2 text-xs font-bold text-navy-500">
+          <FileText className="h-3.5 w-3.5 text-gold-700" />
+          {officialCount} mensaje{officialCount === 1 ? '' : 's'} en el
+          expediente
+        </div>
+        <div className="flex flex-wrap gap-2">
           <a
             href="https://wa.me/5491145678901"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-success-300 px-4 text-xs font-bold text-white transition-colors hover:bg-success-400"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-success-300 bg-white px-3 text-xs font-bold text-success-400 transition-colors hover:bg-success-100"
+            title="WhatsApp · NO queda registrado"
           >
             <Phone className="h-3.5 w-3.5" />
-            Abrir WhatsApp
+            Abrir WhatsApp (informal)
           </a>
           <button
             type="button"
             onClick={onOpenTemplate}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
           >
             <FileText className="h-3.5 w-3.5" />
-            Usar plantilla
+            Registrar mensaje oficial
           </button>
         </div>
       </div>
+
       {/* Stub: chat history */}
       <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
-          Registro de mensajes oficiales
+          Registro oficial — visible al postulante
         </p>
         <ul className="mt-3 space-y-3">
           <ChatBubble

@@ -2184,6 +2184,40 @@ function RescheduleSheet({
     '18:00 — 19:00',
   ]
 
+  /**
+   * Fix SB12 (#POS-19, auditoría UX): antes el postulante elegía un
+   * slot a ciegas sin saber si el tutor tenía disponibilidad — iba y
+   * volvía hasta encajar. Ahora simulamos disponibilidad con reglas
+   * deterministas basadas en día de semana + hora.
+   *
+   * En producción esto vendrá del calendario real del tutor por API.
+   *
+   * Reglas mock:
+   * - Fines de semana: todos los slots NO disponibles
+   * - Lun/Mié/Vie 10:00, 15:00 → ocupado (tiene otras reuniones)
+   * - Mar/Jue 16:00 → ocupado
+   * - Resto → disponible
+   */
+  function slotStatus(
+    day: number | null,
+    slot: string,
+  ): 'available' | 'busy' | 'unavailable' {
+    if (!day) return 'unavailable'
+    const date = new Date(year, month, day)
+    const dow = date.getDay() // 0=Dom, 6=Sáb
+    if (dow === 0 || dow === 6) return 'unavailable'
+    const hourPart = slot.slice(0, 5)
+    const busyByDow: Record<number, string[]> = {
+      1: ['10:00', '15:00'], // lun
+      3: ['10:00', '15:00'], // mié
+      5: ['10:00', '15:00'], // vie
+      2: ['16:00'], // mar
+      4: ['16:00'], // jue
+    }
+    if (busyByDow[dow]?.includes(hourPart)) return 'busy'
+    return 'available'
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-navy-500/30 backdrop-blur-sm" onClick={onClose}>
       <aside
@@ -2256,24 +2290,72 @@ function RescheduleSheet({
             </div>
           </div>
 
-          {/* Hora */}
+          {/* Hora — grilla con disponibilidad visual */}
           <div className="mt-6">
-            <p className="text-sm font-bold text-navy-500">Hora</p>
-            <select
-              value={hour}
-              onChange={(e) => setHour(e.target.value)}
-              className="mt-2 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
-            >
-              {timeSlots.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-navy-500">Hora</p>
+              {/* Leyenda */}
+              <div className="flex items-center gap-2 text-[10px] text-navy-300">
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-success-300" />
+                  Disponible
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-neutral-300" />
+                  Ocupado
+                </span>
+              </div>
+            </div>
+            <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {timeSlots.map((s) => {
+                const status = slotStatus(selectedDay, s)
+                const isSelected = hour === s && status === 'available'
+                const disabled = status !== 'available'
+                return (
+                  <li key={s}>
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => setHour(s)}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold transition-colors',
+                        disabled &&
+                          'cursor-not-allowed border-neutral-200 bg-neutral-100/60 text-navy-300',
+                        !disabled &&
+                          isSelected &&
+                          'border-navy-500 bg-navy-500 text-white shadow-sm',
+                        !disabled &&
+                          !isSelected &&
+                          'border-success-300/60 bg-success-100/30 text-navy-500 hover:border-success-300 hover:bg-success-100/60',
+                      )}
+                    >
+                      <span>{s.slice(0, 5)}</span>
+                      <span
+                        className={cn(
+                          'h-2 w-2 rounded-full',
+                          disabled
+                            ? 'bg-neutral-300'
+                            : isSelected
+                              ? 'bg-gold-400'
+                              : 'bg-success-300',
+                        )}
+                        aria-hidden
+                      />
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
             {summary && (
-              <p className="mt-2 inline-flex items-center gap-2 text-sm text-navy-500">
-                <CalendarIcon className="h-4 w-4 text-navy-300" />
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1.5 text-xs font-bold text-gold-700">
+                <CalendarIcon className="h-3.5 w-3.5" />
                 {summary}
               </p>
             )}
+            <p className="mt-2 text-[11px] text-navy-300">
+              Te confirmamos en menos de 24h si el tutor acepta. Si no,
+              te proponemos otro horario.
+            </p>
           </div>
 
           {/* Motivo */}
