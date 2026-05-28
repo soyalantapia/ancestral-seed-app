@@ -244,6 +244,8 @@ export default function MyCertifications() {
           <button
             type="button"
             onClick={() => setFilterUpcoming((v) => !v)}
+            // Fix SM5 (#POS-13): tooltip explica el rango temporal.
+            title="Reuniones agendadas en los próximos 7 días"
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors',
               filterUpcoming
@@ -252,7 +254,7 @@ export default function MyCertifications() {
             )}
           >
             <Calendar className="h-3.5 w-3.5" />
-            Con reunión próxima
+            Con reunión esta semana
             {filterUpcoming && <X className="h-3 w-3" />}
           </button>
 

@@ -35,6 +35,13 @@ const TABS: Array<{ id: Tab; label: string; icon: typeof FileCheck2 }> = [
 export default function Documentos() {
   const [tab, setTab] = useState<Tab>('certificados')
   const [query, setQuery] = useState('')
+  /**
+   * Fix SM5 (#POS-34, auditoría UX): filtro adicional por solicitud.
+   * Antes solo había búsqueda libre — con 3 solicitudes × 12
+   * evidencias = lista inmanejable. Ahora dropdown que filtra todas
+   * las listas (certificados / evidencias / facturas) por requestId.
+   */
+  const [requestFilter, setRequestFilter] = useState<string>('all')
 
   // Datos derivados
   const requests = mockCertificationRequests
@@ -68,14 +75,28 @@ export default function Documentos() {
   )
 
   const filteredEvidences = useMemo(() => {
-    if (!query.trim()) return allEvidences
+    let list = allEvidences
+    if (requestFilter !== 'all') {
+      list = list.filter((e) => e.req.id === requestFilter)
+    }
+    if (!query.trim()) return list
     const q = query.toLowerCase()
-    return allEvidences.filter(
+    return list.filter(
       (e) =>
         e.name.toLowerCase().includes(q) ||
         e.req.productName.toLowerCase().includes(q),
     )
-  }, [allEvidences, query])
+  }, [allEvidences, query, requestFilter])
+
+  const visibleCertificates = useMemo(() => {
+    if (requestFilter === 'all') return certificates
+    return certificates.filter((c) => c.req.id === requestFilter)
+  }, [certificates, requestFilter])
+
+  const visibleInvoices = useMemo(() => {
+    if (requestFilter === 'all') return allInvoices
+    return allInvoices.filter((i) => i.req.id === requestFilter)
+  }, [allInvoices, requestFilter])
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
@@ -142,27 +163,42 @@ export default function Documentos() {
         })}
       </div>
 
-      {/* Search */}
-      <div className="mt-5 relative max-w-md">
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por nombre o certificación..."
-          className="h-11 w-full rounded-full border border-neutral-300 bg-white pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
-        />
+      {/* Search + filter por solicitud (SM5 fix #POS-34) */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <div className="relative max-w-md flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por nombre o certificación..."
+            className="h-11 w-full rounded-full border border-neutral-300 bg-white pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
+          />
+        </div>
+        <select
+          value={requestFilter}
+          onChange={(e) => setRequestFilter(e.target.value)}
+          aria-label="Filtrar por solicitud"
+          className="h-11 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 focus:border-gold-500 focus:outline-none"
+        >
+          <option value="all">Todas las solicitudes</option>
+          {requests.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.number} · {r.productName}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Content */}
       <div className="mt-6">
         {tab === 'certificados' && (
-          <CertificatesGrid certificates={certificates} query={query} />
+          <CertificatesGrid certificates={visibleCertificates} query={query} />
         )}
         {tab === 'avales' && (
           <EvidencesList items={filteredEvidences} />
         )}
         {tab === 'facturas' && (
-          <InvoicesList items={allInvoices} query={query} />
+          <InvoicesList items={visibleInvoices} query={query} />
         )}
       </div>
     </div>

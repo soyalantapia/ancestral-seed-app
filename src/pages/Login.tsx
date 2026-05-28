@@ -69,7 +69,7 @@ export default function Login() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder=""
+                  placeholder="tu@email.com"
                   className="mt-2"
                   autoComplete="email"
                   {...register('email')}

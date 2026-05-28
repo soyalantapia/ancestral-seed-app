@@ -178,7 +178,24 @@ export default function MyProfile() {
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {tabs.map((t) => (
-            <TabButton key={t} active={tab === t} onClick={() => setTab(t)}>
+            <TabButton
+              key={t}
+              active={tab === t}
+              onClick={() => {
+                // Fix SM5 (#POS-29, auditoría UX): si hay cambios sin
+                // guardar en "Mi perfil", confirmar antes de cambiar
+                // de tab. Antes silenciosamente el state se mantenía
+                // pero el user no sabía si los datos seguían ahí.
+                if (dirty && tab === 'Mi perfil' && t !== 'Mi perfil') {
+                  const ok = window.confirm(
+                    'Tenés cambios sin guardar en tu perfil. ¿Cambiar de tab igual?\n\n' +
+                      'Los cambios siguen disponibles cuando vuelvas a esta tab.',
+                  )
+                  if (!ok) return
+                }
+                setTab(t)
+              }}
+            >
               {t}
             </TabButton>
           ))}

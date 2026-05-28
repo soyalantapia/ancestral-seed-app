@@ -499,6 +499,24 @@ function FilterChip<T extends string>({
   )
 }
 
+/**
+ * Lista de páginas con ellipsis — fix SM5 (#PUB-12, auditoría UX).
+ * Antes Array.from({length:totalPages}) escalaba mal: con 100 certs
+ * y PAGE_SIZE=9 había 12 botones inline. Ahora truncamos con "..."
+ * mostrando: [1] ... [current-1] [current] [current+1] ... [last]
+ */
+function buildPageList(current: number, total: number): Array<number | '…'> {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: Array<number | '…'> = [1]
+  if (current > 3) pages.push('…')
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let p = start; p <= end; p++) pages.push(p)
+  if (current < total - 2) pages.push('…')
+  pages.push(total)
+  return pages
+}
+
 function Pagination({
   page,
   totalPages,
@@ -510,7 +528,7 @@ function Pagination({
   onPage: (p: number) => void
   className?: string
 }) {
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+  const pages = buildPageList(page, totalPages)
   return (
     <div className={cn('flex items-center justify-end gap-1', className)}>
       <button
@@ -522,21 +540,31 @@ function Pagination({
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
-      {pages.map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onPage(p)}
-          className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors',
-            p === page
-              ? 'bg-gold-100 text-navy-500'
-              : 'text-navy-300 hover:bg-neutral-100',
-          )}
-        >
-          {p}
-        </button>
-      ))}
+      {pages.map((p, i) =>
+        p === '…' ? (
+          <span
+            key={`ellipsis-${i}`}
+            aria-hidden
+            className="flex h-9 w-6 items-center justify-center text-sm text-navy-300"
+          >
+            ···
+          </span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onPage(p)}
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors',
+              p === page
+                ? 'bg-gold-100 text-navy-500'
+                : 'text-navy-300 hover:bg-neutral-100',
+            )}
+          >
+            {p}
+          </button>
+        ),
+      )}
       <button
         type="button"
         onClick={() => onPage(Math.min(totalPages, page + 1))}
