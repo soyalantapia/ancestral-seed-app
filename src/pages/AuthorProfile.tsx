@@ -15,7 +15,9 @@ import {
   Shield,
   Share2,
   Sparkles,
+  User2,
   Users,
+  type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -70,14 +72,33 @@ const TERRITORY_COORDS: Record<string, [number, number]> = {
   Oaxaca: [-96.7, 17],
 }
 
-const tabs = [
-  { id: 'sobre' as const, label: 'Sobre' },
-  { id: 'certificaciones' as const, label: 'Certificaciones' },
-  { id: 'territorio' as const, label: 'Territorio' },
-  { id: 'trayectoria' as const, label: 'Trayectoria' },
+/**
+ * Tabs del perfil de autor.
+ *
+ * Decisión UX (mayo 2026): pasamos de underline plano a "pills" con
+ * ícono porque (a) el underline 2px era muy discreto vs el resto del
+ * perfil que tiene paleta navy/gold rica, (b) cada label sola
+ * ("Sobre", "Trayectoria") no comunicaba bien el contenido, (c) bajo
+ * affordance — no se sentía clickable más allá del hover.
+ *
+ * Las pills tienen:
+ * - Ícono semántico (User2 = persona, Award = logros, MapPin = lugar,
+ *   Sparkles = recorrido) que ancla rápido la lectura.
+ * - Active state con bg-navy sólido + dot dorado pulsante para
+ *   reforzar la jerarquía.
+ * - Badge counter en Certificaciones (la única tab con cardinalidad
+ *   variable y relevante).
+ * - Animación slide del fondo activo via framer-motion `layoutId`.
+ */
+const tabs: Array<{ id: TabKey; label: string; icon: LucideIcon }> = [
+  { id: 'sobre', label: 'Sobre', icon: User2 },
+  { id: 'certificaciones', label: 'Certificaciones', icon: Award },
+  { id: 'territorio', label: 'Territorio', icon: MapPin },
+  { id: 'trayectoria', label: 'Trayectoria', icon: Sparkles },
 ]
 
-type TabId = (typeof tabs)[number]['id']
+type TabKey = 'sobre' | 'certificaciones' | 'territorio' | 'trayectoria'
+type TabId = TabKey
 
 export default function AuthorProfile() {
   const { slug } = useParams()
@@ -136,7 +157,11 @@ export default function AuthorProfile() {
     <div className="bg-white">
       <ProfileHero author={author} coverUrl={coverUrl} />
       <ProfileStats author={author} certCount={certs?.length ?? 0} />
-      <ProfileTabsNav active={activeTab} onChange={onChangeTab} />
+      <ProfileTabsNav
+        active={activeTab}
+        onChange={onChangeTab}
+        certCount={certs?.length ?? 0}
+      />
 
       {/* Solo renderizamos la sección activa — cada tab es una "vista" */}
       {activeTab === 'sobre' && <SobreSection author={author} />}
@@ -372,37 +397,94 @@ function ProfileStats({
 function ProfileTabsNav({
   active,
   onChange,
+  certCount,
 }: {
   active: TabId
   onChange: (id: TabId) => void
+  certCount: number
 }) {
   return (
     <div
       id="profile-tabs-nav"
-      className="sticky top-16 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 md:top-20"
+      className="sticky top-16 z-20 border-b border-neutral-200/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 md:top-20"
     >
-      <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <ul className="flex items-center gap-1">
+      <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 py-3 md:px-8 md:py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul
+          role="tablist"
+          aria-label="Secciones del perfil"
+          className="flex snap-x snap-mandatory items-center gap-2"
+        >
           {tabs.map((t) => {
             const isActive = t.id === active
+            const Icon = t.icon
+            // Solo Certificaciones tiene cardinalidad relevante. Las
+            // otras tabs son contenido único, no listas.
+            const count = t.id === 'certificaciones' ? certCount : undefined
             return (
-              <li key={t.id} className="shrink-0">
+              <li key={t.id} className="shrink-0 snap-start">
                 <button
                   type="button"
+                  role="tab"
                   onClick={() => onChange(t.id)}
-                  aria-current={isActive ? 'true' : undefined}
+                  aria-selected={isActive}
+                  aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'relative inline-flex h-12 items-center whitespace-nowrap px-4 text-sm font-semibold text-navy-500 transition-colors md:h-14 md:px-5',
-                    isActive ? 'font-bold' : 'hover:text-gold-700',
+                    'relative inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2.5 text-sm transition-all md:px-4 md:py-3',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
+                    isActive
+                      ? 'text-white'
+                      : 'bg-white text-navy-500 ring-1 ring-navy-200 hover:bg-gold-50 hover:ring-gold-300 hover:text-gold-700',
                   )}
                 >
-                  {t.label}
+                  {/* Background activo que se desliza fluido entre tabs
+                      con layoutId — patrón clásico de framer-motion. */}
                   {isActive && (
                     <motion.span
-                      layoutId="profile-tab-underline"
-                      className="absolute inset-x-4 bottom-0 h-0.5 bg-gold-500 md:inset-x-5"
+                      layoutId="profile-tab-active-bg"
+                      aria-hidden
+                      className="absolute inset-0 -z-0 rounded-full bg-navy-500 shadow-md ring-1 ring-navy-400/30"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 420,
+                        damping: 34,
+                      }}
                     />
                   )}
+                  {/* Contenido en una capa por encima del bg animado */}
+                  <span className="relative z-10 inline-flex items-center gap-2">
+                    {isActive ? (
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 rounded-full bg-gold-400 shadow-[0_0_10px_rgba(212,175,55,0.7)]"
+                      />
+                    ) : (
+                      <Icon
+                        className="h-4 w-4 opacity-75"
+                        strokeWidth={1.85}
+                        aria-hidden
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        isActive && 'font-bold tracking-tight',
+                      )}
+                    >
+                      {t.label}
+                    </span>
+                    {typeof count === 'number' && count > 0 && (
+                      <span
+                        className={cn(
+                          'ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none tabular-nums',
+                          isActive
+                            ? 'bg-gold-500/25 text-gold-100 ring-1 ring-gold-400/30'
+                            : 'bg-gold-500/15 text-gold-700',
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </span>
                 </button>
               </li>
             )
