@@ -71,14 +71,63 @@
           font-size="13" letter-spacing="2" fill="#001c38">VERIFICADO EN BLOCKCHAIN</text>
   </g>
 
-  <!-- Headline principal — centro vertical -->
+  <!-- Headline principal — izquierda -->
   <g transform="translate(80, 240)">
     <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
-          font-size="68" fill="#FFFFFF">
+          font-size="56" fill="#FFFFFF">
       <tspan x="0" y="0">Saberes ancestrales,</tspan>
-      <tspan x="0" y="84" fill="#D4AF37">certificados con</tspan>
-      <tspan x="0" y="168" fill="#D4AF37">tecnología.</tspan>
+      <tspan x="0" y="72" fill="#D4AF37">certificados con</tspan>
+      <tspan x="0" y="144" fill="#D4AF37">tecnología.</tspan>
     </text>
+  </g>
+
+  <!--
+    Fix V2-PUB-04 (auditoría v2): antes la card OG era 100% tipografía
+    + halo dorado. Faltaba algo visual concreto que mostrara EL PRODUCTO
+    de la plataforma. Agregamos un mockup de tarjeta de certificado
+    flotando a la derecha: sello dorado con check + nombre de producto
+    + hash blockchain + estado "VIGENTE". Es SVG-only así que sigue
+    siendo liviano (~5KB extra) y se renderiza idéntico en todos los
+    crawlers de WhatsApp/X/LinkedIn.
+  -->
+  <g transform="translate(720, 230) rotate(-3)">
+    <!-- Sombra debajo del mockup -->
+    <rect x="6" y="8" width="380" height="220" rx="20" fill="#000000" opacity="0.25"/>
+
+    <!-- Body de la tarjeta -->
+    <rect x="0" y="0" width="380" height="220" rx="20" fill="#FFFFFF"/>
+
+    <!-- Header con eyebrow + badge VIGENTE -->
+    <text x="24" y="34" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="700" font-size="10" letter-spacing="3" fill="#7A6418">CERTIFICADO ANCESTRAL SEED</text>
+    <rect x="280" y="20" width="78" height="20" rx="10" fill="#3B7B5C"/>
+    <text x="319" y="34" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="700" font-size="10" letter-spacing="2" text-anchor="middle" fill="#FFFFFF">VIGENTE</text>
+
+    <!-- Nombre del producto + autor -->
+    <text x="24" y="74" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="800" font-size="22" fill="#001c38">Filigrana ancestral</text>
+    <text x="24" y="98" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="500" font-size="13" fill="#5C6878">Camila Montes · Sierra Nevada</text>
+
+    <!-- Hash blockchain -->
+    <text x="24" y="138" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="700" font-size="9" letter-spacing="2" fill="#7A6418">HASH BLOCKCHAIN</text>
+    <text x="24" y="156" font-family="ui-monospace, SF Mono, Menlo, monospace"
+          font-weight="600" font-size="12" fill="#001c38">0xAS-CERT-CE001ABF9D…</text>
+
+    <!-- Sello con check (right side) -->
+    <g transform="translate(290, 130)">
+      <circle cx="38" cy="38" r="38" fill="#D4AF37"/>
+      <circle cx="38" cy="38" r="32" fill="none" stroke="#001c38" stroke-width="2"/>
+      <path d="M22 38 L34 50 L54 28" stroke="#001c38" stroke-width="4" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Footer separator + leyenda -->
+    <line x1="24" y1="186" x2="356" y2="186" stroke="#E7E5DE" stroke-width="1"/>
+    <text x="24" y="206" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="500" font-size="11" fill="#5C6878">Auditado por Lic. Juan Pérez · 2026</text>
   </g>
 
   <!-- Tagline / propuesta de valor — bottom-left -->
