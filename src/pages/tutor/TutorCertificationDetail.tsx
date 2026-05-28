@@ -2294,7 +2294,10 @@ function MoreActionsDrawer({
     {
       icon: Download,
       label: 'Descargar acta',
-      sub: 'Documento oficial · TXT',
+      // Fix V2-TUT-08 (auditoría v2): el sub decía "TXT" pero el fix
+      // SB9 ya había migrado la descarga a PDF real con jsPDF. Solo
+      // quedaba el copy desactualizado.
+      sub: 'Documento oficial · PDF firmado',
       onClick: () => {
         downloadActa(cert, extra)
         toast.success(`acta-${cert.id}.pdf descargada`)

@@ -47,6 +47,7 @@ import {
   mockScoringByCase,
 } from '@/services/mocks/data'
 import { useTutorCasesStore } from '@/store/tutorCases'
+import { useInternalNotesStore } from '@/store/internalNotes'
 import type {
   CaseStage,
   EvidenceVerdict,
@@ -134,6 +135,17 @@ export default function TutorCaseDetail() {
   const cases = useTutorCasesStore((s) => s.cases)
   const moveCase = useTutorCasesStore((s) => s.moveCase)
   const caseData = cases.find((c) => c.id === id)
+
+  /**
+   * Fix V2-TUT-11 (auditoría v2): antes la tab "Notas internas" no
+   * tenía contador visible — solo entrabas y descubrías cuántas
+   * había. El tutor que volvía al día siguiente no podía saber a
+   * golpe de vista si alguien del equipo agregó algo nuevo. Ahora
+   * mostramos el badge en la tab y en el breadcrumb si está activo.
+   */
+  const notesCount = useInternalNotesStore((s) =>
+    id ? s.notesFor(caseEntityKey(id)).length : 0,
+  )
 
   // Tab activa en search param (?tab=evaluacion). Sobrevive refresh y
   // permite linkear directamente a una sección del caso.
@@ -346,6 +358,8 @@ export default function TutorCaseDetail() {
           >
             {TABS.map(({ id: tid, label, icon: Icon }) => {
               const active = tab === tid
+              // Fix V2-TUT-11: badge contador en la tab "notas".
+              const badge = tid === 'notas' && notesCount > 0 ? notesCount : null
               return (
                 <button
                   key={tid}
@@ -360,6 +374,19 @@ export default function TutorCaseDetail() {
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{label}</span>
+                  {badge !== null && (
+                    <span
+                      className={cn(
+                        'inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none',
+                        active
+                          ? 'bg-gold-500 text-navy-500'
+                          : 'bg-neutral-200 text-navy-500',
+                      )}
+                      aria-label={`${badge} notas`}
+                    >
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
                 </button>
               )
             })}

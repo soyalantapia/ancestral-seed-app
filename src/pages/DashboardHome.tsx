@@ -378,12 +378,23 @@ export default function DashboardHome() {
       )}
 
       {/* ─── Lo nuevo desde tu última visita ──────────────────────────── */}
-      {lastVisitSnapshot && newEventsSinceLastVisit.length > 0 && (
-        <RecentActivitySummary
-          since={lastVisitSnapshot}
-          events={newEventsSinceLastVisit}
-        />
-      )}
+      {/* Fix V2-POS-02 (auditoría v2): si el NBA arriba ya está hablando
+          de pagos vencidos, mostrar eventos `payment` repetidos abajo
+          es ruido — el user ya tiene la info. Filtramos los eventos
+          'payment' cuando el NBA es de tipo CreditCard. */}
+      {lastVisitSnapshot &&
+        (() => {
+          const filteredEvents =
+            nextBestAction?.icon === CreditCard
+              ? newEventsSinceLastVisit.filter((e) => e.kind !== 'payment')
+              : newEventsSinceLastVisit
+          return filteredEvents.length > 0 ? (
+            <RecentActivitySummary
+              since={lastVisitSnapshot}
+              events={filteredEvents}
+            />
+          ) : null
+        })()}
 
       {/* Banner info eliminado — Fix SM3 (#POS-08, auditoría UX): copy
           genérico sin valor accionable ("podríamos solicitar info...")

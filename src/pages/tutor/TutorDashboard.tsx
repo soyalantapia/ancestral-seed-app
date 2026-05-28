@@ -62,7 +62,10 @@ export default function TutorDashboard() {
   // que se desincronizaba con /tutor/tareas).
   const tasks = useTutorTasksStore((s) => s.tasks)
   const toggleTask = useTutorTasksStore((s) => s.toggle)
-  const [taskFilter, setTaskFilter] = useState<'all' | 'urgent' | 'today' | 'this_week'>('all')
+  // Fix V2-TUT-13 (auditoría v2): filtro persistido en el store
+  // para sobrevivir navegación entre Dashboard ↔ Tareas.
+  const taskFilter = useTutorTasksStore((s) => s.filter)
+  const setTaskFilter = useTutorTasksStore((s) => s.setFilter)
 
   const cases = mockTutorCases.filter((c) => c.tutorId === mockTutor.id)
   const agenda = mockTutorAgenda

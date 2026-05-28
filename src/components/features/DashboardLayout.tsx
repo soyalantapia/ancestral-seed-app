@@ -140,16 +140,22 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
             link al panel de tutor desde el sidebar del solicitante.
             Antes solo el TutorLayout tenía "Volver al panel
             solicitante" — asimetría que dejaba al tutor atrapado si
-            entraba al panel solicitante por error. */}
+            entraba al panel solicitante por error.
+
+            Fix V2-POS-16 (auditoría v2): el copy "Otro rol" + "Panel
+            de tutor" hacía pensar a Camila (postulante del demo) que
+            ella misma era tutora. Para el demo aclaramos que es un
+            atajo para ver el otro lado del producto, no su segundo
+            empleo. */}
         {(user?.role === 'tutor' || user?.roles?.includes('tutor')) && (
           <>
             <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
-              Otro rol
+              Demo · otro perfil
             </p>
             <SidebarLink
               to="/tutor/dashboard"
               icon={Compass}
-              label="Panel de tutor"
+              label="Ver como tutor"
               onClose={closeOnNav}
             />
           </>

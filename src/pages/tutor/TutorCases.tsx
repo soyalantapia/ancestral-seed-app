@@ -1138,12 +1138,29 @@ function CaseCard({
             </span>
           </div>
           {c.pendingItems.length > 0 && (
-            <div className="inline-flex items-center gap-2">
-              <AlertCircle className="h-3.5 w-3.5 text-error-300" />
-              <span className="text-navy-300">Pendiente:</span>
-              <span className="font-semibold text-navy-500">
-                {c.pendingItems[0]}
-              </span>
+            <div className="inline-flex items-start gap-2">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-error-300" />
+              <div className="min-w-0">
+                <span className="text-navy-300">
+                  {c.pendingItems.length === 1
+                    ? 'Pendiente:'
+                    : `Pendientes (${c.pendingItems.length}):`}
+                </span>{' '}
+                <span className="font-semibold text-navy-500">
+                  {c.pendingItems[0]}
+                </span>
+                {/* Fix V2-TUT-17 (auditoría v2): antes la card del
+                    kanban solo mostraba pendingItems[0] sin pista de
+                    los demás. Si el caso tenía 3 pendientes el tutor
+                    veía "1 cosa" y al abrir el detail descubría 2 más.
+                    Ahora indicamos el contador en el header y el
+                    siguiente pendiente como tooltip-line. */}
+                {c.pendingItems.length > 1 && (
+                  <span className="block text-[11px] text-navy-300">
+                    + {c.pendingItems.length - 1} más en el expediente
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

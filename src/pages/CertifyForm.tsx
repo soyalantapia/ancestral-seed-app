@@ -1133,11 +1133,17 @@ function StepEvidencias() {
         <EvidenceSection
           title="Fotos del producto o proceso"
           hint={
-            // Contador en vivo coherente con el schema (≥3). Si ya cumple,
-            // dice "✓ 3 mínimo" en verde para reforzar.
+            // Contador en vivo coherente con el schema (≥3).
+            //
+            // Fix V2-POS-08 (auditoría v2): antes el hint decía
+            // "✓ Cumpliste el mínimo (4/3)" — fracción incómoda que
+            // parecía error de validación (subí 4 pero el "mínimo"
+            // es 3). Ahora separamos los dos estados: cuando todavía
+            // falta mostramos progreso; cuando cumple desaparece la
+            // fracción y solo confirma la cantidad real subida.
             gallery.length >= 3
-              ? `Subí o tomá fotos claras, activá la fecha y hora. ✓ Cumpliste el mínimo (${gallery.length}/3)`
-              : `Subí o tomá fotos claras, activá la fecha y hora. Llevás ${gallery.length}/3 (mínimo).`
+              ? `Subí o tomá fotos claras, activá la fecha y hora. ✓ ${gallery.length} foto${gallery.length === 1 ? '' : 's'} subida${gallery.length === 1 ? '' : 's'}.`
+              : `Subí o tomá fotos claras, activá la fecha y hora. Llevás ${gallery.length} de 3 mínimas.`
           }
         >
           <UploadPill

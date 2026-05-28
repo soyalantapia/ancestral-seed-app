@@ -77,18 +77,22 @@ export default function MyCertifications() {
   const resetForm = useCertifyFormStore((s) => s.reset)
 
   const postponedDraft = useMemo<PostponedDraft | null>(() => {
-    const hasSignificant = Boolean(
-      formData.applicantName?.trim() ||
-        formData.productName?.trim() ||
-        formData.communityName?.trim() ||
-        formData.communityActivity?.trim() ||
-        formData.processDescription?.trim() ||
-        (formData.galleryNames && formData.galleryNames.length > 0),
-    )
-    if (!hasSignificant) return null
+    /**
+     * Fix V2-POS-21 (auditoría v2): antes la tab "Postergadas" contaba
+     * 1 borrador apenas el user tocaba CUALQUIER campo del CertifyForm,
+     * inclusive aceptando un draft "Sin nombre · Borrador sin título"
+     * que daba sensación de basura acumulada. Ahora exigimos AL MENOS
+     * productName + applicantName con contenido real para que cuente
+     * como borrador útil — los toques parciales no llenan la tab.
+     */
+    const productName = formData.productName?.trim() ?? ''
+    const applicantName = formData.applicantName?.trim() ?? ''
+    const hasRealContent =
+      productName.length >= 3 && applicantName.length >= 2
+    if (!hasRealContent) return null
     return {
-      productName: formData.productName?.trim() || 'Borrador sin título',
-      applicantName: formData.applicantName?.trim() || 'Sin nombre',
+      productName,
+      applicantName,
       step: formStep,
       totalSteps: 7,
     }

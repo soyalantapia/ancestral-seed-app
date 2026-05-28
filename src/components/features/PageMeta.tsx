@@ -65,7 +65,22 @@ export function PageMeta({
   jsonLd,
 }: PageMetaProps) {
   const fullTitle = title ? `${title} · ${SUFFIX}` : SUFFIX
-  const ogImage = image ? toAbsolute(image) : DEFAULT_OG_IMAGE
+  /**
+   * Fix V2-PUB-07 (auditoría v2): antes el fallback de OG image se
+   * aplicaba a CUALQUIER ruta — incluso las marcadas `noindex` (panel
+   * del solicitante, kanban del tutor, etc.). Si alguien pegaba un
+   * link de `/inicio` por WhatsApp, el preview rico podía sugerir
+   * que esa URL era pública. Para rutas `noindex` ahora omitimos
+   * tanto image como el JSON-LD: el preview queda mínimo, sin
+   * sugerir "contenido público". Solo las rutas públicas usan el
+   * OG default automático.
+   */
+  const allowRichPreview = !noindex
+  const ogImage = image
+    ? toAbsolute(image)
+    : allowRichPreview
+      ? DEFAULT_OG_IMAGE
+      : null
   const canonicalUrl =
     canonical ??
     (typeof window !== 'undefined' ? window.location.href : SITE_URL)
@@ -83,23 +98,29 @@ export function PageMeta({
       <meta property="og:site_name" content="Ancestral Seed" />
       <meta property="og:locale" content="es_AR" />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:image:type" content="image/png" />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta
-        property="og:image:alt"
-        content={title ? `${title} — Ancestral Seed` : 'Ancestral Seed · Certificación digital'}
-      />
+      {ogImage && (
+        <>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:type" content="image/png" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta
+            property="og:image:alt"
+            content={title ? `${title} — Ancestral Seed` : 'Ancestral Seed · Certificación digital'}
+          />
+        </>
+      )}
 
       {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
       <meta name="twitter:site" content="@ancestralseed" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
+      {ogImage && <meta name="twitter:image" content={ogImage} />}
 
-      {jsonLd && (
+      {/* JSON-LD solo en rutas indexables — evita filtrar metadata
+          estructurada de pantallas privadas. */}
+      {jsonLd && allowRichPreview && (
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       )}
     </Helmet>

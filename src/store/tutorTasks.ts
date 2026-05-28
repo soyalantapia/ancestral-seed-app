@@ -17,8 +17,22 @@ import { mockTutorTasks } from '@/services/mocks/data'
  * El initial state se hidrata desde mockTutorTasks solo en la primera
  * carga — después la persistencia toma el control.
  */
+/**
+ * Filtros disponibles en las listas de tareas (Dashboard + Tasks).
+ *
+ * Fix V2-TUT-13 (auditoría v2): antes el filtro vivía en `useState`
+ * local de cada página → cada navegación lo reseteaba a 'all'.
+ * Ahora persiste con el resto del store para que el tutor que filtra
+ * por "Urgentes" en el dashboard siga viendo "Urgentes" cuando entra
+ * a /tutor/tareas y al volver al día siguiente.
+ */
+export type TaskFilter = 'all' | 'urgent' | 'today' | 'this_week'
+
 interface TutorTasksState {
   tasks: TutorTask[]
+  /** Filtro activo persistido. */
+  filter: TaskFilter
+  setFilter: (filter: TaskFilter) => void
   /** Marca una tarea como hecha/no-hecha. */
   toggle: (id: string) => void
   /** Marca varias tareas como hechas (bulk action). */
@@ -34,6 +48,8 @@ export const useTutorTasksStore = create<TutorTasksState>()(
   persist(
     (set) => ({
       tasks: mockTutorTasks,
+      filter: 'all',
+      setFilter: (filter) => set({ filter }),
       toggle: (id) =>
         set((s) => ({
           tasks: s.tasks.map((t) =>
@@ -50,7 +66,7 @@ export const useTutorTasksStore = create<TutorTasksState>()(
       },
       remove: (id) =>
         set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
-      reset: () => set({ tasks: mockTutorTasks }),
+      reset: () => set({ tasks: mockTutorTasks, filter: 'all' }),
     }),
     { name: 'ancestral-seed-tutor-tasks-v1' },
   ),

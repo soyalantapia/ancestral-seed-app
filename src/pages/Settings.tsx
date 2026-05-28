@@ -742,10 +742,20 @@ function DeleteAccountModal({
                 <li className="flex items-start gap-1.5">
                   <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-error-400" />
                   <span>
+                    {/* Fix V2-POS-13 (auditoría v2): antes el copy
+                        decía "ya abonados no son reembolsables" — lo
+                        que sumaba todos los pagos pasados (servicios
+                        ya prestados) como si fueran pérdida directa
+                        al cerrar la cuenta. Eran $120K que asustaban
+                        sin razón: esa plata ya fue consumida en
+                        diagnóstico, auditoría, etc. Lo que sí se
+                        pierde es el acceso a los comprobantes y al
+                        historial. Cambiamos el copy para ser preciso. */}
+                    Vas a perder el acceso al historial de{' '}
                     <strong className="tabular-nums">
                       {fmtARS(summary.paidSum)}
                     </strong>{' '}
-                    ya abonados no son reembolsables
+                    en pagos y sus comprobantes
                   </span>
                 </li>
               )}

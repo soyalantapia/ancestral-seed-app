@@ -70,7 +70,11 @@
       content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png"
     />
 
-    <!-- ─── Schema.org JSON-LD (Google / buscadores) ──────────────── -->
+    <!-- ─── Schema.org JSON-LD (Google / buscadores) ────────────────
+         Fix V2-PUB-08 (auditoría v2): faltaba `sameAs` con perfiles
+         oficiales. Google los usa para conectar el knowledge panel
+         de la organización con sus redes (mejor ranking + signal de
+         autenticidad). Cuando haya nuevas cuentas, agregarlas acá. -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -88,7 +92,11 @@
           "addressCountry": "US"
         },
         "email": "info@ancestralseed.com",
-        "telephone": "+54-9-11-4937-8422"
+        "telephone": "+54-9-11-4937-8422",
+        "sameAs": [
+          "https://twitter.com/ancestralseed",
+          "https://x.com/ancestralseed"
+        ]
       }
     </script>
 
