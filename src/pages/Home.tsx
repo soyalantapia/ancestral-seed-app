@@ -164,8 +164,13 @@ function Hero() {
               auditoría y tecnología blockchain.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center md:mt-8">
-              {/* Una sola CTA primaria — reduce decisión. Verificar queda
-                  como link ghost para usuarios que vienen con un QR. */}
+              {/* Fix QW-B1 (auditoría UX): antes había dos CTAs
+                  ("Certificar Producto" + "verificar un certificado
+                  existente"), ambas asumiendo intención de acción. El
+                  visitante de redes — 80% del tráfico — viene a explorar,
+                  no a postular. Ahora la CTA secundaria lo lleva al
+                  directorio. "Verificar Certificado" ya está en el Header
+                  para quien busca eso. */}
               <Button
                 variant="gold"
                 size="lg"
@@ -177,12 +182,15 @@ function Hero() {
               <Button
                 variant="ghost"
                 size="lg"
-                onClick={() => navigate('/verificar')}
+                onClick={() => navigate('/directorio')}
                 className="w-full text-navy-500 underline-offset-4 hover:bg-transparent hover:text-gold-700 hover:underline sm:w-auto"
               >
-                o verificar un certificado existente
+                Explorar el directorio
               </Button>
             </div>
+            <p className="mt-3 text-xs text-navy-300">
+              Postulación en 7 pasos · gratuita para comunidades originarias.
+            </p>
           </div>
           <div className="flex justify-center lg:col-span-5">
             <HeroVideoPlaceholder />

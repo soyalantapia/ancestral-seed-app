@@ -56,9 +56,32 @@ export function StagePipeline({ stages }: { stages: RequestStageItem[] }) {
   )
 }
 
+/**
+ * Badge tipado para el estado/etapa de una solicitud.
+ *
+ * Acepta cualquier string libre pero tiene paleta predefinida para los
+ * labels del flujo RequestStage (Prediagnóstico, Inicio, Diagnóstico,
+ * Auditoría, Evaluación, Certificación) y los meta-estados de UI
+ * (En curso / En emisión / Vigente).
+ *
+ * Fix QW-A1 (auditoría UX): antes solo conocía 4 labels y por eso los
+ * callers hardcoded `"Prediagnóstico"` aunque la solicitud estuviera en
+ * otra etapa. Ahora el caller puede pasar el label real
+ * (STAGES[currentStage].label de lib/copy) y el badge le da color
+ * consistente con el progreso.
+ */
 export function StageStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
+    // Etapas tempranas — gold (todavía en preparación)
     Prediagnóstico: 'bg-gold-100 text-gold-700',
+    'Inicio del proceso': 'bg-gold-100 text-gold-700',
+    Diagnóstico: 'bg-gold-100 text-gold-700',
+    // Etapas centrales — navy (en revisión activa)
+    Auditoría: 'bg-navy-100 text-navy-500',
+    Evaluación: 'bg-navy-100 text-navy-500',
+    // Cierre — info azul claro
+    Certificación: 'bg-info-100 text-info-400',
+    // Meta-estados de UI
     'En curso': 'bg-gold-100 text-gold-700',
     'En emisión': 'bg-info-100 text-info-400',
     Vigente: 'bg-success-100 text-success-300 ring-1 ring-success-300/30',

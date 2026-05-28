@@ -371,6 +371,21 @@ export default function Pagos() {
                               : ''
                           }`}
                     </p>
+                    {/* Fix QW-B4 (auditoría UX): antes el "vencido" era
+                        solo un color rojo y una etiqueta. El postulante
+                        no sabía si era molestia o si le pausaban la
+                        solicitud. Ahora el copy comunica la consecuencia
+                        explícita del Reglamento 4.6 (suspensión por no
+                        conformidades sin resolver). */}
+                    {(p.status === 'overdue' ||
+                      (p.status === 'pending' &&
+                        days !== null &&
+                        days < 0)) && (
+                      <p className="mt-1 text-[11px] font-medium text-error-400">
+                        Si no se regulariza en 30 días corridos, tu
+                        solicitud queda pausada hasta subsanar.
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
                     <p className="text-base font-bold text-navy-500">

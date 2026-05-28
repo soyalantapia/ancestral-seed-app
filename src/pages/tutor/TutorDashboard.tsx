@@ -143,9 +143,16 @@ export default function TutorDashboard() {
           <DropdownPill label="País/Región" />
           <DropdownPill label="Categoría" />
           <DropdownPill label="Estado" />
+          {/* Fix QW-C3 (auditoría UX): Exportar también era affordance
+              falso (sin onClick). Mismo tratamiento que los DropdownPill
+              de filtros: disabled + tooltip "Próximamente" hasta que se
+              implemente el export real (CSV/PDF de métricas). */}
           <button
             type="button"
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+            disabled
+            title="Próximamente"
+            aria-label="Exportar (próximamente)"
+            className="inline-flex h-9 cursor-not-allowed items-center gap-2 rounded-full border border-dashed border-neutral-300 bg-white/70 px-4 text-xs font-bold text-navy-300 opacity-60"
           >
             <Download className="h-3.5 w-3.5" />
             Exportar
@@ -157,7 +164,32 @@ export default function TutorDashboard() {
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* LEFT */}
         <div className="space-y-6 lg:col-span-8">
-          {/* KPIs */}
+          {/* Fix QW-D3 (auditoría UX): el orden anterior dejaba
+              "Pendientes de mi firma" en posición #3 (después de KPIs y
+              tareas) — el tutor con 3 firmas vencidas tenía que scrollear
+              para verlas. Ahora arriba van LOS ACCIONABLES URGENTES
+              (Pendientes de firma → Tareas hoy), después los indicadores
+              (KPIs → métricas → charts). El "qué hacer ahora" precede al
+              "cómo voy". */}
+
+          {/* Pendientes de firma — accionable urgente, va primero */}
+          <PendingSignaturesCard
+            signatures={mockPendingSignatures}
+          />
+
+          {/* Mis tareas hoy — segundo accionable */}
+          <TasksCard
+            tasks={tasks}
+            filter={taskFilter}
+            onFilter={setTaskFilter}
+            onToggle={(id) =>
+              setTasks((prev) =>
+                prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+              )
+            }
+          />
+
+          {/* KPIs — overview de carga */}
           <section
             data-tour="tutor-kpis"
             className="grid grid-cols-1 gap-4 sm:grid-cols-3"
@@ -190,23 +222,6 @@ export default function TutorDashboard() {
               tone="warning"
             />
           </section>
-
-          {/* Mis tareas hoy */}
-          <TasksCard
-            tasks={tasks}
-            filter={taskFilter}
-            onFilter={setTaskFilter}
-            onToggle={(id) =>
-              setTasks((prev) =>
-                prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-              )
-            }
-          />
-
-          {/* Pendientes de firma */}
-          <PendingSignaturesCard
-            signatures={mockPendingSignatures}
-          />
 
           {/* Métricas del tutor */}
           <TutorMetricsCard metrics={mockTutorMetrics} />
@@ -352,11 +367,22 @@ function labelOf(k: string) {
   }
 }
 
+/**
+ * Pill placeholder con dropdown — lógica pendiente.
+ *
+ * Fix QW-C3 (auditoría UX): igual que FilterPill en TutorCases —
+ * estaban en posición prominente y se veían funcionales pero al click
+ * no pasaba nada, lo que minaba la confianza del tutor desde el primer
+ * scroll del dashboard. Ahora se ven a la legua como "próximamente".
+ */
 function DropdownPill({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+      disabled
+      title="Próximamente"
+      aria-label={`${label} (próximamente)`}
+      className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white/70 px-3 text-xs font-bold text-navy-300 opacity-60"
     >
       {label}
       <span className="text-navy-300">▾</span>

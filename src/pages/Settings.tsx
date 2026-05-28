@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner'
 import { useSettingsStore } from '@/store/settings'
 import { ThemeToggle } from '@/components/features/ThemeToggle'
+import { mockCertificationRequests } from '@/services/mocks/data'
 import { cn } from '@/lib/utils'
 
 // ─── Tab schema (extensible) ─────────────────────────────────────────────────
@@ -651,6 +652,38 @@ function DeleteAccountModal({
   const [typed, setTyped] = useState('')
   const canDelete = typed.trim().toLowerCase() === email.trim().toLowerCase()
 
+  /**
+   * Fix QW-D2 (auditoría UX): antes el modal listaba abstractamente
+   * "vas a eliminar tu cuenta, certificaciones, evidencias…". El user
+   * con $45K abonados a una auditoría en curso no veía esa pérdida
+   * concreta. Ahora computamos el summary real (solicitudes activas,
+   * pagos abonados, evidencias subidas) y lo mostramos antes del
+   * input de confirmación.
+   *
+   * Si el monto está pagado y la solicitud no es definitiva, esto
+   * funciona como freno cognitivo (cae el dedo sobre Cancelar).
+   */
+  const summary = useMemo(() => {
+    const activeRequests = mockCertificationRequests.filter(
+      (r) => r.status === 'En curso' || r.status === 'En emisión',
+    )
+    const paidSum = mockCertificationRequests
+      .flatMap((r) => r.payments ?? [])
+      .filter((p) => p.status === 'paid')
+      .reduce((acc, p) => acc + p.amount, 0)
+    const evidencesCount = mockCertificationRequests
+      .flatMap((r) => r.evidences ?? [])
+      .length
+    return { activeRequests, paidSum, evidencesCount }
+  }, [])
+
+  const fmtARS = (n: number) =>
+    new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      maximumFractionDigits: 0,
+    }).format(n)
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
@@ -686,6 +719,60 @@ function DeleteAccountModal({
             Vas a eliminar permanentemente tu cuenta, certificaciones, evidencias
             y métodos de pago. <strong>No se puede deshacer.</strong>
           </p>
+          {/* Summary concreto de lo que el user pierde — pega más fuerte
+              que la lista genérica. */}
+          {(summary.activeRequests.length > 0 ||
+            summary.paidSum > 0 ||
+            summary.evidencesCount > 0) && (
+            <ul className="mt-3 space-y-1 text-xs text-navy-500">
+              {summary.activeRequests.length > 0 && (
+                <li className="flex items-start gap-1.5">
+                  <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-error-400" />
+                  <span>
+                    <strong className="tabular-nums">
+                      {summary.activeRequests.length}
+                    </strong>{' '}
+                    solicitud
+                    {summary.activeRequests.length === 1 ? '' : 'es'} en curso
+                    se {summary.activeRequests.length === 1 ? 'pierde' : 'pierden'}
+                  </span>
+                </li>
+              )}
+              {summary.paidSum > 0 && (
+                <li className="flex items-start gap-1.5">
+                  <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-error-400" />
+                  <span>
+                    <strong className="tabular-nums">
+                      {fmtARS(summary.paidSum)}
+                    </strong>{' '}
+                    ya abonados no son reembolsables
+                  </span>
+                </li>
+              )}
+              {summary.evidencesCount > 0 && (
+                <li className="flex items-start gap-1.5">
+                  <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-error-400" />
+                  <span>
+                    <strong className="tabular-nums">
+                      {summary.evidencesCount}
+                    </strong>{' '}
+                    evidencia
+                    {summary.evidencesCount === 1 ? '' : 's'} (fotos,
+                    videos, documentos) se borr
+                    {summary.evidencesCount === 1 ? 'a' : 'an'}
+                  </span>
+                </li>
+              )}
+            </ul>
+          )}
+          {summary.activeRequests.length > 0 && (
+            <p className="mt-3 rounded-lg bg-white/60 p-2 text-[11px] text-navy-500">
+              💡 Si solo querés tomarte un descanso, podés{' '}
+              <strong>desactivar la cuenta</strong> en lugar de eliminarla —
+              tus solicitudes en curso quedan congeladas y volvés cuando
+              quieras.
+            </p>
+          )}
         </div>
         <div className="mt-4">
           <label className="text-xs font-bold text-navy-500">

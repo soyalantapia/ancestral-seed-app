@@ -39,6 +39,7 @@ import type {
   RequestStageItem,
   TutorMessage,
 } from '@/types'
+import { STAGES } from '@/lib/copy'
 import { cn, downloadBlob } from '@/lib/utils'
 
 const tabs = [
@@ -138,7 +139,18 @@ export default function CertificationRequest() {
               <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-[11px] font-bold text-navy-500">
                 {request.number}
               </span>
-              <StageStatusBadge status={request.status === 'En emisión' ? 'En emisión' : 'Prediagnóstico'} />
+              {/* Fix QW-A4 (auditoría UX): badge antes mentía con
+                  "Prediagnóstico" aunque la solicitud estuviera en
+                  Diagnóstico/Auditoría/Evaluación. Ahora deriva del
+                  currentStage real, con "En emisión" como override
+                  cuando ya entró a esa fase administrativa. */}
+              <StageStatusBadge
+                status={
+                  request.status === 'En emisión'
+                    ? 'En emisión'
+                    : STAGES[request.currentStage]?.label ?? 'En curso'
+                }
+              />
               {request.pendingItems.length > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-error-100 px-2.5 py-0.5 text-[11px] font-bold text-error-400 ring-1 ring-error-200">
                   <AlertTriangle className="h-3 w-3" />
@@ -382,7 +394,11 @@ function SeguimientoTab({
           </div>
           <div className="flex items-center gap-2 text-sm text-navy-300">
             Estado actual:
-            <StageStatusBadge status="Prediagnóstico" />
+            {/* Fix QW-A4 (auditoría UX): igual que el hero — derivar del
+                currentStage. */}
+            <StageStatusBadge
+              status={STAGES[request.currentStage]?.label ?? 'En curso'}
+            />
           </div>
         </div>
 
@@ -840,14 +856,45 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                           : `${(it.sizeKb / 1024).toFixed(1)} MB`}
                       </p>
                     </div>
+                    {/* Fix QW-D1 (auditoría UX): antes el Trash borraba
+                        sin confirmar y solo con toast success — un click
+                        accidental destruía evidencia subida. Ahora el
+                        toast trae acción "Deshacer" durante 6s: si el
+                        user toca, restauramos el item en su posición
+                        original. Patrón estándar (Gmail / Slack). */}
                     <button
                       type="button"
                       onClick={() => {
-                        setItems((prev) => prev.filter((x) => x.id !== it.id))
-                        toast.success('Archivo eliminado')
+                        const removed = it
+                        const removedIndex = groupItems.findIndex(
+                          (x) => x.id === it.id,
+                        )
+                        setItems((prev) =>
+                          prev.filter((x) => x.id !== it.id),
+                        )
+                        toast.success(`"${removed.name}" eliminado`, {
+                          duration: 6000,
+                          action: {
+                            label: 'Deshacer',
+                            onClick: () => {
+                              setItems((prev) => {
+                                // Restaurar en la posición original si la
+                                // lista no cambió, o al final si cambió.
+                                const next = [...prev]
+                                const targetIndex =
+                                  removedIndex >= 0 &&
+                                  removedIndex <= next.length
+                                    ? removedIndex
+                                    : next.length
+                                next.splice(targetIndex, 0, removed)
+                                return next
+                              })
+                            },
+                          },
+                        })
                       }}
                       className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-error-400 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
-                      aria-label="Eliminar"
+                      aria-label={`Eliminar ${it.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

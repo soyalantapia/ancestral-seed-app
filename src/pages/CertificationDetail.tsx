@@ -204,6 +204,12 @@ export default function CertificationDetail() {
 
             {/* RIGHT: Action buttons + Author card + Stats */}
             <div className="space-y-5 lg:col-span-6">
+              {/* Fix QW-B2 (auditoría UX): los labels antes prometían
+                  más de lo que entregaban. "Ver en Blockchain" hacía
+                  esperar Polygonscan directo (es modal interno que sí
+                  linkea afuera, ahora lo comunicamos con ícono
+                  ExternalLink). "Ver Certificado Verificado" era
+                  redundante ("verlo" si ya estoy en la ficha). */}
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -211,7 +217,8 @@ export default function CertificationDetail() {
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-gold-400"
                 >
                   <Network className="h-4 w-4" />
-                  Ver en Blockchain
+                  Ver registro blockchain
+                  <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
                 </button>
                 <button
                   type="button"
@@ -219,7 +226,7 @@ export default function CertificationDetail() {
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
                 >
                   <ShieldCheck className="h-4 w-4" />
-                  Ver Certificado Verificado
+                  Ver certificado oficial
                 </button>
                 <button
                   type="button"

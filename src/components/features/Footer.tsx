@@ -108,23 +108,19 @@ export function Footer() {
                 </a>
               </li>
             </ul>
-            <div className="mt-6">
-              <label htmlFor="lang-select" className="sr-only">
-                Elegir idioma
-              </label>
-              <div className="relative">
-                <Globe className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-                <select
-                  id="lang-select"
-                  defaultValue="es-AR"
-                  className="h-12 w-full appearance-none rounded-full border-0 bg-white pl-11 pr-10 text-sm font-medium text-navy-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500/40 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_16px_center] bg-no-repeat"
-                >
-                  <option value="es-AR">Español (Argentina)</option>
-                  <option value="es-LA">Español (Latam)</option>
-                  <option value="en">English</option>
-                  <option value="pt-BR">Português (BR)</option>
-                </select>
-              </div>
+            {/* Fix QW-C1 (auditoría UX): el selector de idioma estaba
+                visible y sin onChange — cambiar la opción no hacía
+                nada (affordance falso). Lo reemplazamos por un chip
+                informativo "Disponible en español · Multilingüe próximo"
+                que respeta la realidad sin perder la señal de que el
+                producto piensa Latam-wide. Cuando entre i18n real, va
+                de vuelta el select con onChange y router localizado. */}
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs text-white/85 ring-1 ring-white/20">
+              <Globe className="h-3.5 w-3.5 text-gold-400" aria-hidden />
+              <span>
+                Disponible en español ·{' '}
+                <span className="text-white/60">multilingüe próximo</span>
+              </span>
             </div>
           </div>
         </div>

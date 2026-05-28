@@ -955,17 +955,32 @@ function EvaluacionTab({
 
   return (
     <div className="space-y-4">
-      {/* Banner "Generado por IA · no editable" */}
+      {/* Banner "Generado por IA · no editable"
+          Fix QW-B5 (auditoría UX): antes el banner no comunicaba qué
+          significaba "firmar" desde el lado de la responsabilidad del
+          tutor. Ahora explicita el modelo (IA-AS-v3.2), la fuente del
+          peso de variables (Excel del antropólogo), y aclara qué cubre
+          la firma (revisión y aval como insumo) vs qué no (la
+          responsabilidad técnica del puntaje recae en el modelo). */}
       <div className="flex items-start gap-2 rounded-2xl border border-gold-300/50 bg-gradient-to-br from-gold-100/60 to-white p-3">
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
         <div className="text-xs leading-relaxed text-navy-500">
           <p className="font-bold">
             Evaluación generada por IA sobre las 14 variables del antropólogo.
+            <span className="ml-1.5 rounded-full bg-navy-500/10 px-2 py-0.5 text-[10px] font-bold tabular-nums text-navy-500">
+              modelo IA-AS v3.2
+            </span>
           </p>
           <p className="mt-0.5 text-navy-300">
             Los puntajes son calculados automáticamente a partir de las
             evidencias y datos del caso. El tutor revisa y firma — no edita
             valores individuales.
+          </p>
+          <p className="mt-1.5 text-navy-300">
+            <strong className="text-navy-500">Al firmar</strong> dejás
+            constancia de que revisaste la evaluación y avalás su uso como
+            insumo. La responsabilidad técnica del puntaje recae en el
+            modelo, no en el tutor firmante.
           </p>
         </div>
       </div>

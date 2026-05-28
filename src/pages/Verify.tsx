@@ -5,9 +5,11 @@ import {
   ArrowRight,
   Camera,
   FileCheck2,
+  Flag,
   KeyRound,
   QrCode,
   ScanLine,
+  Search as SearchIcon,
   ShieldCheck,
   X,
 } from 'lucide-react'
@@ -187,11 +189,38 @@ function HashModal({
       )}
 
       {result.state === 'invalid' && (
-        <div className="mt-5 rounded-2xl border border-error-300 bg-error-100 p-4 text-center">
-          <p className="font-bold text-error-400">Certificado no válido</p>
-          <p className="mt-1 text-xs text-error-400/80">
-            No encontramos coincidencias o el certificado fue revocado.
-          </p>
+        <div className="mt-5 rounded-2xl border border-error-300 bg-error-100 p-4">
+          <div className="text-center">
+            <p className="font-bold text-error-400">Certificado no válido</p>
+            <p className="mt-1 text-xs text-error-400/80">
+              No encontramos coincidencias o el certificado fue revocado.
+            </p>
+          </div>
+          {/* Fix QW-B3 (auditoría UX): antes "invalid" era dead-end. Ahora
+              ofrecemos 2 caminos: buscar por nombre en el directorio (caso
+              "me pasaron un hash mal copiado") y reportar sospecha de
+              falsificación (caso "esto huele a fraude"). */}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Link
+              to="/directorio"
+              onClick={onClose}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-navy-500 ring-1 ring-navy-200 transition-colors hover:bg-navy-50 hover:ring-navy-300"
+            >
+              <SearchIcon className="h-3.5 w-3.5" />
+              Buscar en el directorio
+            </Link>
+            <a
+              href={
+                'mailto:soporte@ancestralseed.com' +
+                '?subject=Sospecha%20de%20falsificaci%C3%B3n%20de%20certificado' +
+                '&body=Hola%2C%20intent%C3%A9%20verificar%20un%20certificado%20y%20no%20fue%20v%C3%A1lido.%20Detalles%3A%0A%0A'
+              }
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-error-400 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-error-300"
+            >
+              <Flag className="h-3.5 w-3.5" />
+              Reportar sospecha
+            </a>
+          </div>
         </div>
       )}
 

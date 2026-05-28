@@ -72,7 +72,15 @@ const stepSchemas = [
   // Step 5 — Evidencias
   z.object({
     coverImageName: z.string().min(1, 'Subí al menos una foto'),
-    galleryNames: z.array(z.string()).optional(),
+    /**
+     * Fix QW-A6 (auditoría UX): el hint en pantalla decía "Mínimo 3
+     * fotos" pero el schema solo exigía 1 — el postulante podía pasar
+     * con 1 foto y bloquearse después en auditoría. Ahora coincide:
+     * `galleryNames` (que incluye la cover) debe tener ≥ 3.
+     */
+    galleryNames: z
+      .array(z.string())
+      .min(3, 'Subí al menos 3 fotos del producto o proceso'),
     videoUrl: z.string().optional().or(z.literal('')),
     references: z.string().optional().or(z.literal('')),
   }),
@@ -957,7 +965,13 @@ function StepEvidencias() {
       <div className="space-y-7">
         <EvidenceSection
           title="Fotos del producto o proceso"
-          hint="Subí o tomá fotos claras, activá la fecha y hora. (Mínimo 3 fotos)"
+          hint={
+            // Contador en vivo coherente con el schema (≥3). Si ya cumple,
+            // dice "✓ 3 mínimo" en verde para reforzar.
+            gallery.length >= 3
+              ? `Subí o tomá fotos claras, activá la fecha y hora. ✓ Cumpliste el mínimo (${gallery.length}/3)`
+              : `Subí o tomá fotos claras, activá la fecha y hora. Llevás ${gallery.length}/3 (mínimo).`
+          }
         >
           <UploadPill
             icon={Upload}

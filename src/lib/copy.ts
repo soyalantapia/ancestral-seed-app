@@ -45,6 +45,10 @@ export const STAGES = {
    *  evidencias preliminares antes de profundizar. Detectado en mock
    *  data (`mockCertificationRequests`) como estado de Camila. */
   prediagnostico: { id: 'prediagnostico', label: 'Prediagnóstico' },
+  /** Etapa "Inicio del proceso" del flujo del postulante (RequestStage).
+   *  Distinta de "postulado" (estado tutor) — acá ya hay Orden de Trabajo
+   *  abierta y Tutor asignado. */
+  inicio: { id: 'inicio', label: 'Inicio del proceso' },
   diagnostico: { id: 'diagnostico', label: 'Diagnóstico' },
   auditoria: { id: 'auditoria', label: 'Auditoría' },
   evaluacion: { id: 'evaluacion', label: 'Evaluación' },

@@ -35,6 +35,7 @@ import {
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import type { CertificationRequest, RequestStage, TutorMessage } from '@/types'
+import { STAGES } from '@/lib/copy'
 import { cn } from '@/lib/utils'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -364,7 +365,14 @@ export default function DashboardHome() {
                     {inProgress.progressLabel}
                   </p>
                 </div>
-                <StageStatusBadge status="Prediagnóstico" />
+                {/* Fix QW-A3 (auditoría UX): antes era hardcoded
+                    "Prediagnóstico" aunque la solicitud estuviera en otra
+                    etapa. Ahora deriva del currentStage real. */}
+                <StageStatusBadge
+                  status={
+                    STAGES[inProgress.currentStage]?.label ?? 'En curso'
+                  }
+                />
               </div>
 
               <div className="mt-6 overflow-x-auto">

@@ -622,11 +622,26 @@ function Field({
   )
 }
 
+/**
+ * Pill de filtro placeholder — todavía sin lógica conectada.
+ *
+ * Fix QW-C2 (auditoría UX): antes estos pills se veían idénticos a los
+ * funcionales (Riesgo, Sin asignar), lo que confundía: el tutor
+ * clickeaba y nada pasaba. Ahora con opacity-60 + cursor not-allowed +
+ * tooltip "Próximamente" se ve a la legua qué está disponible y qué
+ * no, sin necesitar leer release notes.
+ *
+ * Cuando se implemente la lógica de cada filtro, sacar `disabled` y
+ * reemplazar el title por la descripción del filtro.
+ */
 function FilterPill({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
+      disabled
+      title="Próximamente"
+      aria-label={`${label} (próximamente)`}
+      className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed border-neutral-300 bg-white/70 px-3 text-xs font-bold text-navy-300 opacity-60"
     >
       {label}
       <ChevronDown className="h-3.5 w-3.5 text-navy-300" />
@@ -723,8 +738,18 @@ function CaseCard({
           <div className="inline-flex items-center gap-2">
             <BarChart3 className="h-3.5 w-3.5 text-navy-300" />
             <span className="text-navy-300">Scoring IA:</span>
-            <span className="font-semibold text-navy-500">
-              {c.scoringIA}/100
+            {/* Fix QW-A7 (auditoría UX): caso recién creado tenía
+                scoringIA=0 y mostrábamos "0/100" como si fuera un
+                veredicto negativo. Ahora distinguimos "todavía no se
+                evaluó" de "evaluado bajo". */}
+            <span
+              className={
+                c.scoringIA > 0
+                  ? 'font-semibold text-navy-500'
+                  : 'font-medium italic text-navy-300'
+              }
+            >
+              {c.scoringIA > 0 ? `${c.scoringIA}/100` : 'Pendiente IA'}
             </span>
           </div>
           {c.pendingItems.length > 0 && (

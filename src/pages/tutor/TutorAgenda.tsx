@@ -282,8 +282,11 @@ function AgendaRow({
   const d = new Date(event.scheduledAt)
   return (
     <li>
+      {/* Fix QW-A5 (auditoría UX): antes el link salía al panel del
+          SOLICITANTE (/mis-certificaciones/...), sacando al tutor de su
+          flujo. Apuntar al expediente tutor del caso. */}
       <Link
-        to={`/mis-certificaciones/${event.caseId}?tab=evaluacion`}
+        to={`/tutor/casos/${event.caseId}?tab=evaluacion`}
         className="flex items-start gap-3 rounded-2xl border border-neutral-200 p-3 transition-colors hover:bg-neutral-100"
       >
         <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-navy-500 text-white">
