@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Activity,
@@ -34,6 +35,7 @@ import {
 } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
+import { useLastVisitStore } from '@/store/lastVisit'
 import type { CertificationRequest, RequestStage, TutorMessage } from '@/types'
 import { STAGES } from '@/lib/copy'
 import { cn } from '@/lib/utils'
@@ -187,6 +189,76 @@ export default function DashboardHome() {
   })()
 
   const name = user?.name?.split(' ')[0] ?? 'Camila'
+
+  /**
+   * Fix SB5 (#POS-06, auditoría UX): "Lo nuevo desde tu última visita".
+   *
+   * Leemos lastVisitAt del store al PRIMER render (capturado en ref
+   * vía estado lazy) — antes de marcar la visita actual. Si no hay
+   * lastVisit guardado (primera vez), no mostramos el bloque.
+   *
+   * El "marcar" se hace en useEffect → al desmontar o al cambiar
+   * de visita. Así la próxima vez que vuelva, el lastVisit cubre
+   * desde esta sesión hacia atrás.
+   */
+  const lastVisitAt = useLastVisitStore((s) => s.lastVisitAt)
+  const markVisited = useLastVisitStore((s) => s.markVisited)
+  // Snapshot del lastVisit al primer render — para que actualizar el
+  // store al final del effect no cambie lo que estamos mostrando.
+  const [lastVisitSnapshot] = useState(() => lastVisitAt)
+
+  const newEventsSinceLastVisit = useMemo(() => {
+    if (!lastVisitSnapshot) return []
+    const since = new Date(lastVisitSnapshot).getTime()
+    const events: Array<{
+      kind: 'message' | 'evidence' | 'stage' | 'payment' | 'meeting'
+      label: string
+      requestName: string
+      at: string
+    }> = []
+    for (const r of requests) {
+      for (const h of r.history ?? []) {
+        const t = new Date(h.at).getTime()
+        if (t <= since) continue
+        if (h.kind === 'message_sent' || h.kind === 'audit_proposed') {
+          events.push({
+            kind: 'message',
+            label: h.title,
+            requestName: r.productName,
+            at: h.at,
+          })
+        } else if (h.kind === 'evidence_uploaded' || h.kind === 'document_uploaded') {
+          events.push({
+            kind: 'evidence',
+            label: h.title,
+            requestName: r.productName,
+            at: h.at,
+          })
+        } else if (h.kind === 'stage_changed' || h.kind === 'cert_published') {
+          events.push({
+            kind: 'stage',
+            label: h.title,
+            requestName: r.productName,
+            at: h.at,
+          })
+        } else if (h.kind === 'payment_received') {
+          events.push({
+            kind: 'payment',
+            label: h.title,
+            requestName: r.productName,
+            at: h.at,
+          })
+        }
+      }
+    }
+    return events.sort((a, b) => b.at.localeCompare(a.at))
+  }, [lastVisitSnapshot, requests])
+
+  // Marcar la visita actual al montar — la próxima vez que vuelva,
+  // el snapshot apuntará al timestamp de esta sesión.
+  useEffect(() => {
+    markVisited()
+  }, [markVisited])
   const firstName = name
 
   // Empty welcome state for first-time users
@@ -267,10 +339,17 @@ export default function DashboardHome() {
         </div>
       </header>
 
-      {/* ─── Quick Actions ─────────────────────────────────────────────── */}
-      <QuickActionsRow inProgressId={inProgress?.id} />
+      {/* Fix SB5 (#POS-05 + #POS-06, auditoría UX): reorden — antes
+          aparecían 6 CTAs (QuickActions + NBA + banner info + KPIs +
+          UrgentPayment) ANTES de mostrar "Tu certificación en proceso".
+          Ahora el orden responde la pregunta del user que vuelve:
+            1. "¿Qué pasó?" → Lo nuevo desde última visita + In progress
+            2. "¿Qué tengo que hacer ahora?" → Next Best Action
+            3. "¿Cómo vengo?" → KPIs + métricas + agenda
+          Lo accionable arriba, los indicadores abajo. Las Quick Actions
+          siguen disponibles pero no roban protagonismo. */}
 
-      {/* ─── Next Best Action ─────────────────────────────────────────── */}
+      {/* ─── Next Best Action — qué hacer ahora ────────────────────────── */}
       {nextBestAction && (
         <NextBestActionCard
           tone={nextBestAction.tone}
@@ -280,6 +359,14 @@ export default function DashboardHome() {
           body={nextBestAction.body}
           ctaLabel={nextBestAction.ctaLabel}
           ctaTo={nextBestAction.ctaTo}
+        />
+      )}
+
+      {/* ─── Lo nuevo desde tu última visita ──────────────────────────── */}
+      {lastVisitSnapshot && newEventsSinceLastVisit.length > 0 && (
+        <RecentActivitySummary
+          since={lastVisitSnapshot}
+          events={newEventsSinceLastVisit}
         />
       )}
 
@@ -425,6 +512,12 @@ export default function DashboardHome() {
 
           {/* Métricas (si hay cert publicado) */}
           {publishedCert && <ImpactMetricsCard cert={publishedCert} />}
+
+          {/* Quick actions — movido al final del LEFT (SB5 fix). Antes
+              estaban arriba del fold robando protagonismo a la solicitud
+              en proceso. Acá siguen accesibles pero como "atajos
+              secundarios" no como primaria. */}
+          <QuickActionsRow inProgressId={inProgress?.id} />
         </div>
 
         {/* RIGHT */}
@@ -685,6 +778,120 @@ function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
         )
       })}
     </div>
+  )
+}
+
+/**
+ * Resumen "Lo nuevo desde tu última visita" — agrupa eventos del
+ * history posteriores al timestamp guardado en useLastVisitStore.
+ *
+ * Fix SB5 (#POS-06, auditoría UX): responde la primera pregunta del
+ * usuario recurrente al volver a la app: "¿qué pasó?". Antes esa
+ * info solo aparecía en "Actividad reciente" abajo del fold, mezclada
+ * con TODO el historial. Ahora destacamos solo lo nuevo, agrupado por
+ * tipo de evento.
+ */
+function RecentActivitySummary({
+  since,
+  events,
+}: {
+  since: string
+  events: Array<{
+    kind: 'message' | 'evidence' | 'stage' | 'payment' | 'meeting'
+    label: string
+    requestName: string
+    at: string
+  }>
+}) {
+  const groupCounts: Record<string, number> = events.reduce(
+    (acc, e) => ({ ...acc, [e.kind]: (acc[e.kind] ?? 0) + 1 }),
+    {} as Record<string, number>,
+  )
+  const KIND_META: Record<
+    string,
+    { icon: typeof Activity; label: string; color: string }
+  > = {
+    message: { icon: MessageSquare, label: 'mensajes del tutor', color: 'text-info-400' },
+    evidence: { icon: FileText, label: 'evidencias', color: 'text-gold-700' },
+    stage: { icon: Activity, label: 'cambios de etapa', color: 'text-success-300' },
+    payment: { icon: CreditCard, label: 'movimientos de pago', color: 'text-warning-400' },
+    meeting: { icon: CalendarClock, label: 'reuniones', color: 'text-navy-500' },
+  }
+
+  const sinceDate = new Date(since)
+  const daysAgo = Math.floor(
+    (Date.now() - sinceDate.getTime()) / (1000 * 60 * 60 * 24),
+  )
+  const sinceLabel =
+    daysAgo === 0
+      ? 'hace menos de un día'
+      : daysAgo === 1
+        ? 'hace 1 día'
+        : `hace ${daysAgo} días`
+
+  return (
+    <section className="mt-6 overflow-hidden rounded-2xl border border-info-200 bg-gradient-to-br from-info-100/40 to-white shadow-sm">
+      <div className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-info-400 text-white shadow-sm">
+          <Activity className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-info-400">
+            Lo nuevo desde tu última visita · {sinceLabel}
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-navy-500">
+            {Object.entries(groupCounts)
+              .map(([kind, count]) => {
+                const meta = KIND_META[kind]
+                if (!meta) return null
+                return `${count} ${meta.label}`
+              })
+              .filter(Boolean)
+              .slice(0, 3)
+              .join(' · ')}
+          </p>
+        </div>
+      </div>
+
+      {events.length > 0 && (
+        <ul className="border-t border-info-200/60 bg-white">
+          {events.slice(0, 4).map((e, i) => {
+            const meta = KIND_META[e.kind]
+            const Icon = meta?.icon ?? Activity
+            return (
+              <li
+                key={`${e.at}-${i}`}
+                className="flex items-start gap-3 border-b border-neutral-200/60 p-3 last:border-0 sm:p-4"
+              >
+                <Icon
+                  className={cn('mt-0.5 h-4 w-4 shrink-0', meta?.color ?? 'text-navy-300')}
+                  strokeWidth={1.85}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-navy-500">
+                    {e.label}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-navy-300">
+                    {e.requestName} ·{' '}
+                    {new Date(e.at).toLocaleDateString('es-AR', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </li>
+            )
+          })}
+          {events.length > 4 && (
+            <li className="bg-neutral-100/50 px-4 py-2 text-center text-[11px] font-semibold text-navy-300">
+              + {events.length - 4} más en Historial
+            </li>
+          )}
+        </ul>
+      )}
+    </section>
   )
 }
 
