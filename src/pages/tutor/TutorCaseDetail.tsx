@@ -48,6 +48,7 @@ import {
 } from '@/services/mocks/data'
 import { useTutorCasesStore } from '@/store/tutorCases'
 import { useInternalNotesStore } from '@/store/internalNotes'
+import { useCaseSignaturesStore } from '@/store/caseSignatures'
 import type {
   CaseStage,
   EvidenceVerdict,
@@ -905,7 +906,15 @@ function EvaluacionTab({
   onJumpToNotas?: () => void
 }) {
   const [signOpen, setSignOpen] = useState(false)
-  const [signed, setSigned] = useState(false)
+  /**
+   * Fix V3-TUT-11 (auditoría v3): antes `signed` era `useState` local.
+   * El tutor firmaba la evaluación → cerraba pestaña / navegaba →
+   * volvía y el botón mostraba "Aceptar y firmar" de nuevo. La firma
+   * NO debe ser efímera por definición del Reglamento. Ahora viene
+   * del store persistido por caseId.
+   */
+  const signed = useCaseSignaturesStore((s) => s.isSigned(caseData.id))
+  const signAction = useCaseSignaturesStore((s) => s.sign)
   // La evaluación es 100% IA — el tutor no edita valores individuales,
   // solo firma. El score se computa con los pesos del antropólogo.
   const finalScore = computeWeightedScore(values)
@@ -1194,7 +1203,13 @@ function EvaluacionTab({
           category={category}
           onClose={() => setSignOpen(false)}
           onConfirm={() => {
-            setSigned(true)
+            // Fix V3-TUT-11: firma persistida en el store, no local.
+            signAction({
+              caseId: caseData.id,
+              tutorId: 'mock-juan-perez',
+              finalScore,
+              category: category.label,
+            })
             setSignOpen(false)
             onSign(finalScore, category.label)
             toast.success(

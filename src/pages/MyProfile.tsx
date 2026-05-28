@@ -132,6 +132,32 @@ export default function MyProfile() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirty])
 
+  /**
+   * Fix V3-POS-09 (auditoría v3): el `useState<ProfileData>` lazy
+   * initializer corre UNA VEZ al mount con `user?.avatarUrl ?? ''`.
+   * Si `useAuthStore` carga al user async (Suspense, hidratación
+   * tardía), el data queda con avatarUrl/name vacíos y NO se
+   * sincroniza cuando llega el user. Ahora un effect mantiene
+   * `data` (y `initial` para preservar el dirty check) sincronizado
+   * con el user cuando este cambia — siempre que no haya cambios
+   * sin guardar (sino, no pisamos los edits del user).
+   */
+  useEffect(() => {
+    if (!user || dirty) return
+    setData((d) => ({
+      ...d,
+      name: user.name ?? d.name,
+      email: user.email ?? d.email,
+      avatarUrl: user.avatarUrl ?? d.avatarUrl,
+    }))
+    setInitial((d) => ({
+      ...d,
+      name: user.name ?? d.name,
+      email: user.email ?? d.email,
+      avatarUrl: user.avatarUrl ?? d.avatarUrl,
+    }))
+  }, [user, dirty])
+
   const update = (patch: Partial<ProfileData>) => setData((d) => ({ ...d, ...patch }))
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, key: 'coverUrl' | 'avatarUrl') => {

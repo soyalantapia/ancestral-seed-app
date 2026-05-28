@@ -82,13 +82,19 @@ export default function MyCertifications() {
      * 1 borrador apenas el user tocaba CUALQUIER campo del CertifyForm,
      * inclusive aceptando un draft "Sin nombre · Borrador sin título"
      * que daba sensación de basura acumulada. Ahora exigimos AL MENOS
-     * productName + applicantName con contenido real para que cuente
-     * como borrador útil — los toques parciales no llenan la tab.
+     * productName + applicantName con contenido real.
+     *
+     * Fix V3-POS-21 (auditoría v3): el criterio `productName.length >= 3`
+     * excluía nombres legítimamente cortos en lenguas originarias
+     * ("Ñe" guaraní, "Ru" mapuche). Ahora aceptamos productName de
+     * cualquier longitud >= 1 char + applicantName >= 2 chars (el
+     * applicantName puede ser razonablemente >= 2 porque es un nombre
+     * de persona completo).
      */
     const productName = formData.productName?.trim() ?? ''
     const applicantName = formData.applicantName?.trim() ?? ''
     const hasRealContent =
-      productName.length >= 3 && applicantName.length >= 2
+      productName.length >= 1 && applicantName.length >= 2
     if (!hasRealContent) return null
     return {
       productName,

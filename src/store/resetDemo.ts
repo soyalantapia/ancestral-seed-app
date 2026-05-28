@@ -6,6 +6,7 @@ import { useCoverByRequestStore } from './coverByRequest'
 import { useLastVisitStore } from './lastVisit'
 import { useCertifyFormStore } from './certifyForm'
 import { useNotificationsStore } from './notifications'
+import { useCaseSignaturesStore } from './caseSignatures'
 
 /**
  * Fix V3-TUT-09 + V3-POS-20 + V3-POS-05 (auditoría v3):
@@ -69,6 +70,8 @@ export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string
     'ancestral-seed-cert-checklist-v1',
     'ancestral-seed-cover-by-request-v1',
     'ancestral-seed-last-visit-v1',
+    // Fix V3-TUT-11: incluir el nuevo store de firmas
+    'ancestral-seed-case-signatures-v1',
   ]
   if (typeof window !== 'undefined' && window.localStorage) {
     for (const key of keysToClear) {
@@ -106,6 +109,12 @@ export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string
   try {
     useLastVisitStore.setState({ lastVisitAt: null })
     touched.push('lastVisit')
+  } catch {
+    /* noop */
+  }
+  try {
+    useCaseSignaturesStore.getState().clear()
+    touched.push('caseSignatures')
   } catch {
     /* noop */
   }

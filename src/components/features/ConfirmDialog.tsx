@@ -111,9 +111,18 @@ export function ConfirmDialog({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
         >
-          <button
-            type="button"
-            aria-label="Cancelar"
+          {/*
+            Fix V3-PUB-11 (auditoría v3): antes el backdrop era un
+            `<button>` con `aria-label="Cancelar"` — eso lo metía en el
+            orden de tabulación, así que el Tab focuseaba el backdrop
+            antes del primer botón real del dialog. Cualquier Enter ahí
+            confirmaba "cancelar" sin que el user supiera. Ahora es un
+            `<div role="presentation">` con `aria-hidden` y no
+            tabulable; el click-away sigue funcionando.
+          */}
+          <div
+            role="presentation"
+            aria-hidden
             onClick={onCancel}
             className="absolute inset-0 bg-navy-500/60 backdrop-blur-[2px]"
           />

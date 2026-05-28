@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   AlertCircle,
@@ -1147,6 +1148,8 @@ function CaseCard({
    * en todos los browsers cuando el drop no aterriza.
    */
   const pointerStart = useRef<{ x: number; y: number } | null>(null)
+  // Fix V3-TUT-14: ref al botón "..." para anclar el menú portal.
+  const moreButtonRef = useRef<HTMLButtonElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const riskStyle =
     c.risk === 'alto'
@@ -1215,6 +1218,7 @@ function CaseCard({
               menú con Tab + Enter, sin necesitar mouse. */}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
+              ref={moreButtonRef}
               type="button"
               aria-label="Más opciones del caso"
               aria-haspopup="menu"
@@ -1230,29 +1234,23 @@ function CaseCard({
                   className="fixed inset-0 z-10"
                   onClick={() => setMenuOpen(false)}
                 />
-                <ul
-                  role="menu"
-                  className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg"
-                >
-                  <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-navy-300">
-                    Mover a
-                  </li>
-                  {STAGES.filter((s) => s.id !== c.stage).map((s) => (
-                    <li key={s.id}>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setMenuOpen(false)
-                          onMoveTo(s.id)
-                        }}
-                        className="flex w-full items-center px-3 py-2 text-left text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100 focus-visible:bg-neutral-100 focus-visible:outline-none"
-                      >
-                        {s.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {/*
+                  Fix V3-TUT-14 (auditoría v3): el dropdown se renderizaba
+                  con `absolute right-0` dentro del CaseCard, que vive en
+                  un kanban con `overflow-x-auto`. En la última columna
+                  (Certificación), el dropdown se cortaba contra el borde
+                  derecho del scroll container y quedaba parcialmente
+                  visible. Ahora montamos el menú en un PORTAL al
+                  document.body con `position: fixed` posicionado contra
+                  el botón trigger via getBoundingClientRect, así flota
+                  por encima de cualquier overflow ancestral.
+                */}
+                <KanbanCardMenu
+                  anchorEl={moreButtonRef.current}
+                  currentStage={c.stage}
+                  onClose={() => setMenuOpen(false)}
+                  onMoveTo={onMoveTo}
+                />
               </>
             )}
           </div>
@@ -1368,5 +1366,99 @@ function CaseCard({
         </Link>
       </div>
     </li>
+  )
+}
+
+/**
+ * Fix V3-TUT-14 (auditoría v3): menú "Mover a" del CaseCard montado
+ * en un portal al document.body con `position: fixed`. Esto lo saca
+ * del overflow-x-auto del kanban scroll container, así no se corta
+ * en la última columna. Posicionado contra el rectángulo del botón
+ * trigger via getBoundingClientRect, con detección simple de borde:
+ * si el menú no entra a la derecha, lo flipeamos a la izquierda.
+ */
+function KanbanCardMenu({
+  anchorEl,
+  currentStage,
+  onClose,
+  onMoveTo,
+}: {
+  anchorEl: HTMLElement | null
+  currentStage: CaseStage
+  onClose: () => void
+  onMoveTo: (target: CaseStage) => void
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const menuRef = useRef<HTMLUListElement>(null)
+  const MENU_WIDTH = 192 // w-48
+
+  useEffect(() => {
+    if (!anchorEl) return
+    const computePos = () => {
+      const rect = anchorEl.getBoundingClientRect()
+      // Preferir alineación a la derecha del botón. Si se sale del
+      // viewport (rect.right + width > innerWidth), flipear al lado
+      // izquierdo del botón.
+      const wantRight = rect.right
+      const overflowsRight =
+        wantRight + 4 > window.innerWidth || wantRight - MENU_WIDTH < 8
+      const left = overflowsRight
+        ? Math.max(8, rect.right - MENU_WIDTH)
+        : rect.right - MENU_WIDTH
+      setPos({ top: rect.bottom + 4, left })
+    }
+    computePos()
+    // Recompute si la ventana cambia (resize) o el user scrollea fuera
+    // del kanban — el menú flotante necesita seguir al ancla.
+    window.addEventListener('resize', computePos)
+    window.addEventListener('scroll', computePos, true)
+    return () => {
+      window.removeEventListener('resize', computePos)
+      window.removeEventListener('scroll', computePos, true)
+    }
+  }, [anchorEl])
+
+  if (!anchorEl || !pos) return null
+  return createPortal(
+    <>
+      {/* Backdrop click-away en TODA la pantalla */}
+      <div
+        className="fixed inset-0 z-40"
+        onClick={onClose}
+        aria-hidden
+      />
+      <ul
+        ref={menuRef}
+        role="menu"
+        style={{
+          position: 'fixed',
+          top: pos.top,
+          left: pos.left,
+          width: MENU_WIDTH,
+        }}
+        className="z-50 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg"
+      >
+        <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-navy-300">
+          Mover a
+        </li>
+        {STAGES.filter((s) => s.id !== currentStage).map((s) => (
+          <li key={s.id}>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={(e) => {
+                e.stopPropagation()
+                onClose()
+                onMoveTo(s.id)
+              }}
+              className="flex w-full items-center px-3 py-2 text-left text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100 focus-visible:bg-neutral-100 focus-visible:outline-none"
+            >
+              {s.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>,
+    document.body,
   )
 }
