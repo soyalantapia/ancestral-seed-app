@@ -17,10 +17,13 @@ import { toast } from 'sonner'
 import { Breadcrumbs } from '@/components/features/Breadcrumbs'
 import {
   STAGE_SLA_DAYS,
+  mockEvidenceEvaluations,
+  mockScoringByCase,
   mockTutor,
 } from '@/services/mocks/data'
 import type { CaseRisk, CaseStage, TutorCase } from '@/types'
 import { useTutorCasesStore } from '@/store/tutorCases'
+import { validateCaseAdvance } from '@/lib/caseValidation'
 import { cn } from '@/lib/utils'
 
 function daysInStageFromCase(c: TutorCase): number {
@@ -143,12 +146,45 @@ export default function TutorCases() {
       return
     }
 
-    // QT5: validar salto de etapas. Si el tutor arrastra saltando >1
-    // etapa hacia adelante, requerir confirmación para evitar avances
-    // accidentales. Volver atrás siempre OK (corrección de errores).
     const fromIdx = STAGES.findIndex((s) => s.id === moving.stage)
     const toIdx = STAGES.findIndex((s) => s.id === target)
     const jump = toIdx - fromIdx
+    const isBackwards = jump < 0
+
+    /**
+     * Fix SB6 (#TUT-08, auditoría UX): el drag-and-drop saltaba las
+     * mismas validaciones que el botón "Avanzar etapa" del expediente.
+     * Eso dejaba 2 workflows incompatibles: el formal con checklist
+     * (computeCanAdvance) y el informal con drag. Para el tutor con
+     * prisa, el atajo siempre ganaba.
+     *
+     * Ahora aplicamos el mismo `computeCanAdvance()` antes de mover.
+     * Si no cumple, mostramos toast.error con los requirements
+     * pendientes. Retroceder (jump<0) sigue OK sin validar — es
+     * corrección de errores, no avance.
+     */
+    if (!isBackwards) {
+      const advanceCheck = validateCaseAdvance(moving, target, {
+        evidenceEvals: mockEvidenceEvaluations[moving.id] ?? [],
+        scoringValues: mockScoringByCase[moving.id] ?? [],
+      })
+      if (!advanceCheck.ok) {
+        const pendings = advanceCheck.requirements
+          .filter((r) => !r.done)
+          .map((r) => r.label)
+          .join(' · ')
+        toast.error(
+          `No podés avanzar "${moving.productName}" a ${STAGES[toIdx].label}: ${pendings || advanceCheck.reason}. ` +
+            `Ingresá al caso y resolvelo desde ahí.`,
+        )
+        setDraggingId(null)
+        setHoverColumn(null)
+        return
+      }
+    }
+
+    // QT5: si pasa la validación pero salta >1 etapa, pedir confirmación
+    // extra (puede ser intencional pero requiere segundo OK).
     if (jump > 1) {
       const ok = window.confirm(
         `Estás saltando ${jump} etapas (de "${STAGES[fromIdx].label}" a "${STAGES[toIdx].label}"). ` +

@@ -35,6 +35,10 @@ import {
   caseEntityKey,
 } from '@/components/features/InternalNotesPanel'
 import {
+  computeCanAdvance,
+  computeWeightedScore,
+} from '@/lib/caseValidation'
+import {
   MESSAGE_TEMPLATES,
   SCORING_CRITERIA,
   categoryFromScore,
@@ -107,18 +111,8 @@ function urgencyOfStage(stage: CaseStage, daysInStage: number) {
   return 'green'
 }
 
-function computeWeightedScore(values: ScoringValue[]): number {
-  if (values.length === 0) return 0
-  let total = 0
-  let weights = 0
-  for (const v of values) {
-    const def = SCORING_CRITERIA.find((c) => c.id === v.criterionId)
-    if (!def) continue
-    total += v.score * def.weight
-    weights += def.weight
-  }
-  return weights === 0 ? 0 : Math.round((total / weights) * 10)
-}
+// computeWeightedScore movido a @/lib/caseValidation para reusar
+// desde el kanban (SB6).
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -462,91 +456,8 @@ export default function TutorCaseDetail() {
   )
 }
 
-// ─── Workflow validation ──────────────────────────────────────────────────────
-
-function computeCanAdvance(
-  caseData: TutorCase,
-  evidenceEvals: Array<{ verdict: EvidenceVerdict }>,
-  scoringValues: ScoringValue[],
-): { ok: boolean; reason: string; requirements: Array<{ label: string; done: boolean }> } {
-  const reqs: Array<{ label: string; done: boolean }> = []
-
-  switch (caseData.stage) {
-    case 'postulado':
-      reqs.push({
-        label: 'Tutor asignado al caso',
-        done: !!caseData.tutorId,
-      })
-      reqs.push({
-        label: 'Scoring IA disponible',
-        done: caseData.scoringIA > 0,
-      })
-      break
-    case 'revision-inicial':
-      reqs.push({
-        label: 'Riesgo evaluado',
-        done: !!caseData.risk,
-      })
-      reqs.push({
-        label: 'Pendientes resueltos',
-        done: caseData.pendingItems.length === 0,
-      })
-      break
-    case 'elegible':
-      reqs.push({
-        label: 'Al menos 1 evidencia subida',
-        done: evidenceEvals.length > 0,
-      })
-      reqs.push({
-        label: 'Pendientes resueltos',
-        done: caseData.pendingItems.length === 0,
-      })
-      break
-    case 'diagnostico':
-      reqs.push({
-        label: 'Evidencias aprobadas',
-        done:
-          evidenceEvals.length > 0 &&
-          evidenceEvals.every((e) => e.verdict === 'approved'),
-      })
-      reqs.push({
-        label: 'Sin evidencias rechazadas',
-        done: !evidenceEvals.some((e) => e.verdict === 'rejected'),
-      })
-      break
-    case 'auditoria':
-      reqs.push({
-        label: 'Auditoría documentada',
-        done: true, // mock
-      })
-      break
-    case 'evaluacion':
-      reqs.push({
-        label: 'Scoring completo en 7 criterios',
-        done: scoringValues.length >= 7,
-      })
-      reqs.push({
-        label: 'Puntaje final ≥ 70',
-        done: computeWeightedScore(scoringValues) >= 70,
-      })
-      break
-    case 'certificacion':
-      return {
-        ok: false,
-        reason: 'Caso ya certificado',
-        requirements: [],
-      }
-  }
-
-  const pending = reqs.filter((r) => !r.done)
-  return {
-    ok: pending.length === 0,
-    reason: pending.length
-      ? `Faltan ${pending.length} requisito${pending.length === 1 ? '' : 's'}`
-      : '',
-    requirements: reqs,
-  }
-}
+// computeCanAdvance movido a @/lib/caseValidation para reusar desde
+// el kanban drag-and-drop (SB6 fix #TUT-08).
 
 // ─── Header components ────────────────────────────────────────────────────────
 
