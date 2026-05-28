@@ -408,11 +408,15 @@ function ProfileTabsNav({
       id="profile-tabs-nav"
       className="sticky top-16 z-20 border-b border-neutral-200/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 md:top-20"
     >
-      <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 py-3 md:px-8 md:py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Container: en mobile scrolea horizontal con snap (para que entren
+          las 4 pills sin truncar). En md+ el overflow desaparece porque el
+          ul pasa a grid de 4 columnas exactas — cada pill ocupa 25% del
+          ancho y se ve uniformemente distribuida. */}
+      <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 py-3 md:overflow-visible md:px-8 md:py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <ul
           role="tablist"
           aria-label="Secciones del perfil"
-          className="flex snap-x snap-mandatory items-center gap-2"
+          className="flex snap-x snap-mandatory items-center gap-2 md:grid md:grid-cols-4 md:gap-3 md:snap-none"
         >
           {tabs.map((t) => {
             const isActive = t.id === active
@@ -421,7 +425,7 @@ function ProfileTabsNav({
             // otras tabs son contenido único, no listas.
             const count = t.id === 'certificaciones' ? certCount : undefined
             return (
-              <li key={t.id} className="shrink-0 snap-start">
+              <li key={t.id} className="shrink-0 snap-start md:w-full">
                 <button
                   type="button"
                   role="tab"
@@ -429,7 +433,9 @@ function ProfileTabsNav({
                   aria-selected={isActive}
                   aria-current={isActive ? 'page' : undefined}
                   className={cn(
-                    'relative inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2.5 text-sm transition-all md:px-4 md:py-3',
+                    // Mobile: pills auto-width con scroll. md+: ancho completo
+                    // de la celda del grid y contenido centrado.
+                    'relative inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2.5 text-sm transition-all md:flex md:w-full md:justify-center md:px-4 md:py-3',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2',
                     isActive
                       ? 'text-white'
