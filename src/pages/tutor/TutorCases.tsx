@@ -52,6 +52,7 @@ export default function TutorCases() {
   // Cases persistidos en zustand store (key tutor-cases-v1). Antes el
   // useState local hacía que un drag/drop o "Crear solicitud" se
   // perdiera al refrescar/navegar.
+  const navigateRouter = useNavigate()
   const cases = useTutorCasesStore((s) => s.cases)
   const moveCase = useTutorCasesStore((s) => s.moveCase)
   const addCase = useTutorCasesStore((s) => s.addCase)
@@ -66,6 +67,24 @@ export default function TutorCases() {
   // QT6: anuncio a screen readers cuando se mueve un caso
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
   const kanbanRef = useRef<HTMLDivElement | null>(null)
+  /**
+   * Fix SB14 (#TUT-09, auditoría UX): el kanban de 7 columnas no entra
+   * en pantalla 13" — el tutor tenía que scrollear horizontalmente para
+   * ver el final del pipeline. Ahora un toggle deja elegir Kanban o
+   * Lista. Persiste en localStorage (clave v1).
+   */
+  const [view, setView] = useState<'kanban' | 'list'>(() => {
+    if (typeof window === 'undefined') return 'kanban'
+    return (
+      (localStorage.getItem('ancestral-seed:tutor-cases-view') as
+        | 'kanban'
+        | 'list') ?? 'kanban'
+    )
+  })
+  function setViewPersist(v: 'kanban' | 'list') {
+    setView(v)
+    localStorage.setItem('ancestral-seed:tutor-cases-view', v)
+  }
 
   const total = cases.length
   const assigned = cases.filter((c) => c.tutorId).length
@@ -243,14 +262,43 @@ export default function TutorCases() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setCreateOpen(true)}
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
-        >
-          <Plus className="h-4 w-4" />
-          Crear solicitud
-        </button>
+        <div className="flex items-center gap-2">
+          {/* SB14: toggle vista */}
+          <div className="inline-flex h-11 items-center rounded-full bg-neutral-200 p-1">
+            <button
+              type="button"
+              onClick={() => setViewPersist('kanban')}
+              className={cn(
+                'rounded-full px-3 text-xs font-bold transition-colors',
+                view === 'kanban'
+                  ? 'bg-white text-navy-500 shadow-sm'
+                  : 'text-navy-300',
+              )}
+            >
+              Kanban
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewPersist('list')}
+              className={cn(
+                'rounded-full px-3 text-xs font-bold transition-colors',
+                view === 'list'
+                  ? 'bg-white text-navy-500 shadow-sm'
+                  : 'text-navy-300',
+              )}
+            >
+              Lista
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+          >
+            <Plus className="h-4 w-4" />
+            Crear solicitud
+          </button>
+        </div>
       </header>
 
       <hr className="my-6 border-neutral-200" />
@@ -373,7 +421,109 @@ export default function TutorCases() {
         {liveAnnouncement}
       </div>
 
+      {/* Vista lista — Fix SB14 (#TUT-09) */}
+      {view === 'list' && (
+        <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <table className="min-w-full text-sm">
+            <thead className="bg-neutral-100">
+              <tr>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Caso
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Etapa
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Solicitante
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Riesgo
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Días en etapa
+                </th>
+                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-widest text-navy-300">
+                  Scoring IA
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-200">
+              {visibleCases.map((c) => {
+                const stageMeta = STAGES.find((s) => s.id === c.stage)
+                const days = daysInStageFromCase(c)
+                const overdue = days > STAGE_SLA_DAYS[c.stage]
+                return (
+                  <tr
+                    key={c.id}
+                    onClick={() => navigateRouter(`/tutor/casos/${c.id}`)}
+                    className="cursor-pointer transition-colors hover:bg-neutral-50"
+                  >
+                    <td className="px-4 py-3">
+                      <p className="text-xs font-bold text-navy-300">
+                        {c.id}
+                      </p>
+                      <p className="font-bold text-navy-500">
+                        {c.productName}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-navy-500">
+                      {stageMeta?.label}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-navy-500">
+                      {c.applicantName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest',
+                          c.risk === 'alto' && 'bg-error-100 text-error-400',
+                          c.risk === 'medio' &&
+                            'bg-warning-100 text-warning-400',
+                          c.risk === 'bajo' && 'bg-success-100 text-success-300',
+                        )}
+                      >
+                        {c.risk}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <span
+                        className={cn(
+                          'tabular-nums',
+                          overdue
+                            ? 'font-bold text-error-400'
+                            : 'text-navy-500',
+                        )}
+                      >
+                        {days}d / {STAGE_SLA_DAYS[c.stage]}d
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-bold tabular-nums text-navy-500">
+                        {c.scoringIA > 0
+                          ? `${c.scoringIA}/100`
+                          : 'Pendiente'}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+              {visibleCases.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-12 text-center text-sm text-navy-300"
+                  >
+                    No hay casos con los filtros actuales.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       {/* Kanban */}
+      {view === 'kanban' && (
       <div
         ref={kanbanRef}
         data-tour="kanban-board"
@@ -444,10 +594,13 @@ export default function TutorCases() {
           })}
         </div>
       </div>
+      )}
 
-      <p className="mt-4 text-center text-[11px] text-navy-300">
-        💡 Arrastrá una card entre columnas para cambiar su etapa
-      </p>
+      {view === 'kanban' && (
+        <p className="mt-4 text-center text-[11px] text-navy-300">
+          Arrastrá una card entre columnas para cambiar su etapa
+        </p>
+      )}
 
       {createOpen && (
         <CreateCaseModal
