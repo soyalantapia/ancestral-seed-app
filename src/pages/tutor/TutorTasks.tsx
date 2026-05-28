@@ -15,8 +15,8 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { mockTutorTasks } from '@/services/mocks/data'
 import type { TutorTask, TutorTaskPriority } from '@/types'
+import { useTutorTasksStore } from '@/store/tutorTasks'
 import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
 type FilterKey = 'all' | 'pending' | 'done' | TutorTaskPriority
@@ -64,7 +64,12 @@ const KIND_META: Record<
  *   - ver claramente qué quedó por hacer
  */
 export default function TutorTasks() {
-  const [tasks, setTasks] = useState<TutorTask[]>(mockTutorTasks)
+  // SB11 fix (#TUT-29): tasks vienen del store compartido. Antes useState
+  // local separado del TutorDashboard — marcar "hecha" en una vista NO
+  // se reflejaba en la otra.
+  const tasks = useTutorTasksStore((s) => s.tasks)
+  const toggleTaskStore = useTutorTasksStore((s) => s.toggle)
+  const markDoneStore = useTutorTasksStore((s) => s.markDone)
   const [filter, setFilter] = useState<FilterKey>('all')
   const [sort, setSort] = useState<SortKey>('priority')
   const [query, setQuery] = useState('')
@@ -114,10 +119,7 @@ export default function TutorTasks() {
     return list
   }, [tasks, filter, query, sort])
 
-  const toggleTask = (id: string) =>
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-    )
+  const toggleTask = toggleTaskStore
 
   const toggleSelect = (id: string) =>
     setSelected((prev) => {
@@ -133,9 +135,7 @@ export default function TutorTasks() {
   }
 
   const bulkMarkDone = () => {
-    setTasks((prev) =>
-      prev.map((t) => (selected.has(t.id) ? { ...t, done: true } : t)),
-    )
+    markDoneStore(Array.from(selected))
     toast.success(`${selected.size} tareas marcadas como hechas`)
     setSelected(new Set())
   }

@@ -29,11 +29,11 @@ import {
   mockTutorAgenda,
   mockTutorCases,
   mockTutorMetrics,
-  mockTutorTasks,
 } from '@/services/mocks/data'
 import type { ApprovalSignature, TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
+import { useTutorTasksStore } from '@/store/tutorTasks'
 import { cn } from '@/lib/utils'
 
 const periods = [
@@ -60,7 +60,10 @@ export default function TutorDashboard() {
   const [calendarSelected, setCalendarSelected] = useState<Date | undefined>(
     undefined,
   )
-  const [tasks, setTasks] = useState<TutorTask[]>(mockTutorTasks)
+  // SB11 fix: tasks vienen del store compartido (antes useState local
+  // que se desincronizaba con /tutor/tareas).
+  const tasks = useTutorTasksStore((s) => s.tasks)
+  const toggleTask = useTutorTasksStore((s) => s.toggle)
   const [taskFilter, setTaskFilter] = useState<'all' | 'urgent' | 'today' | 'this_week'>('all')
 
   const cases = mockTutorCases.filter((c) => c.tutorId === mockTutor.id)
@@ -182,11 +185,7 @@ export default function TutorDashboard() {
             tasks={tasks}
             filter={taskFilter}
             onFilter={setTaskFilter}
-            onToggle={(id) =>
-              setTasks((prev) =>
-                prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-              )
-            }
+            onToggle={toggleTask}
           />
 
           {/* KPIs — overview de carga */}
