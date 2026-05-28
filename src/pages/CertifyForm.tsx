@@ -218,6 +218,19 @@ export default function CertifyForm() {
     }
   }
 
+  /**
+   * Salto directo a un paso ya visitado. Persiste los valores actuales
+   * antes de saltar (igual que onBack) para que no se pierdan datos
+   * tipeados sin "Siguiente". Solo se permite saltar a pasos <= step
+   * (el Stepper valida eso visualmente con `done`).
+   */
+  const onJumpTo = (target: number) => {
+    if (target < 0 || target >= steps.length || target === step) return
+    updateData(methods.getValues())
+    setStep(target)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const onSubmitFinal = async (final: CertifyFormData) => {
     toast.success('Solicitud enviada · Recibirás novedades en tu email')
     setSubmitted(true)
@@ -314,7 +327,7 @@ export default function CertifyForm() {
       {/* Stepper */}
       <section className="bg-white pt-10 md:pt-12">
         <div className="mx-auto max-w-[1100px] px-4 md:px-8">
-          <Stepper current={step} />
+          <Stepper current={step} onJumpTo={onJumpTo} />
         </div>
       </section>
 
@@ -370,7 +383,9 @@ export default function CertifyForm() {
                         {step === 3 && <StepProceso />}
                         {step === 4 && <StepEvidencias />}
                         {step === 5 && <StepPrivacidad />}
-                        {step === 6 && <StepRevision data={data} />}
+                        {step === 6 && (
+                          <StepRevision data={data} onJumpTo={onJumpTo} />
+                        )}
                       </motion.div>
                     </AnimatePresence>
 
@@ -446,7 +461,23 @@ function VideoPanel() {
   )
 }
 
-function Stepper({ current }: { current: number }) {
+/**
+ * Stepper del CertifyForm.
+ *
+ * Fix SB2 (#POS-22): antes los pasos eran <span> y el postulante que
+ * quería corregir un dato del paso 1 estando en el 5 tenía que hacer
+ * Volver × 4. Ahora los pasos ya VISITADOS (done) son `<button>` con
+ * onJumpTo — el current y los futuros no, para forzar el flujo
+ * lineal (no se saltea sin validar).
+ */
+function Stepper({
+  current,
+  onJumpTo,
+}: {
+  current: number
+  /** Salto solo permitido a pasos ya visitados. */
+  onJumpTo?: (step: number) => void
+}) {
   const progressPct = ((current + 1) / steps.length) * 100
   const currentLabel = steps[current]?.title ?? ''
   const nextLabel = steps[current + 1]?.title
@@ -463,22 +494,31 @@ function Stepper({ current }: { current: number }) {
           </p>
         </div>
         <p className="mt-1 text-base font-bold text-navy-500">{currentLabel}</p>
-        {/* dot indicator row */}
-        <ol className="mt-3 flex items-center gap-1.5" aria-hidden>
+        {/* dot indicator row — en mobile cada dot ya visitado también
+            es clickeable */}
+        <ol className="mt-3 flex items-center gap-1.5">
           {steps.map((s, i) => {
             const active = i === current
             const done = i < current
-            return (
-              <li
-                key={s.id}
-                className={cn(
-                  'h-1.5 flex-1 rounded-full transition-colors',
-                  done && 'bg-navy-500',
-                  active && 'bg-gold-500',
-                  !done && !active && 'bg-neutral-200',
-                )}
-              />
+            const className = cn(
+              'h-1.5 flex-1 rounded-full transition-colors',
+              done && 'bg-navy-500',
+              active && 'bg-gold-500',
+              !done && !active && 'bg-neutral-200',
             )
+            if (done && onJumpTo) {
+              return (
+                <li key={s.id} className="contents">
+                  <button
+                    type="button"
+                    aria-label={`Volver al paso ${i + 1}: ${s.title}`}
+                    onClick={() => onJumpTo(i)}
+                    className={cn(className, 'cursor-pointer hover:opacity-80')}
+                  />
+                </li>
+              )
+            }
+            return <li key={s.id} className={className} />
           })}
         </ol>
       </div>
@@ -489,8 +529,8 @@ function Stepper({ current }: { current: number }) {
           const active = i === current
           const done = i < current
           const reached = done || active
-          return (
-            <li key={s.id} className="flex items-center gap-2">
+          const inner = (
+            <>
               <span
                 className={cn(
                   'flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors',
@@ -513,6 +553,27 @@ function Stepper({ current }: { current: number }) {
               >
                 {s.title}
               </span>
+            </>
+          )
+          // Pasos visitados (done) son clickeables; el current y los
+          // futuros no — el current ya estás ahí, los futuros requieren
+          // pasar la validación del paso actual.
+          return (
+            <li key={s.id} className="flex items-center gap-2">
+              {done && onJumpTo ? (
+                <button
+                  type="button"
+                  onClick={() => onJumpTo(i)}
+                  aria-label={`Volver al paso ${i + 1}: ${s.title}`}
+                  className="inline-flex items-center gap-2 rounded-full px-1 py-0.5 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+                >
+                  {inner}
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-2 px-1 py-0.5">
+                  {inner}
+                </span>
+              )}
               {i < steps.length - 1 && (
                 <ChevronRight className="h-4 w-4 text-navy-300" />
               )}
@@ -1230,10 +1291,28 @@ function StepPrivacidad() {
 // STEP 7 — REVISIÓN
 // ─────────────────────────────────────────────────────────────────────────────
 
-function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
-  const sections: Array<{ title: string; items: Array<[string, string | undefined]> }> = [
+function StepRevision({
+  data,
+  onJumpTo,
+}: {
+  data: Partial<CertifyFormData>
+  /**
+   * Fix SB2 (#POS-23): antes el copy decía "Podés volver a editar
+   * cualquier paso" pero NO había link "Editar →" por sección. El
+   * postulante tenía que adivinar a qué paso pertenecía cada dato.
+   * Ahora cada sección lleva la step index correcta y un botón que
+   * salta directo allá.
+   */
+  onJumpTo?: (step: number) => void
+}) {
+  const sections: Array<{
+    title: string
+    step: number
+    items: Array<[string, string | undefined]>
+  }> = [
     {
       title: 'Identidad',
+      step: 0,
       items: [
         ['Nombre', data.applicantName],
         ['Documento', data.documentType && data.documentNumber ? `${data.documentType} ${data.documentNumber}` : undefined],
@@ -1244,6 +1323,7 @@ function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
     },
     {
       title: 'Comunidad',
+      step: 1,
       items: [
         ['Rol', data.communityRole],
         ['Actividad', data.communityActivity],
@@ -1255,6 +1335,7 @@ function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
     },
     {
       title: 'Producto',
+      step: 2,
       items: [
         ['Nombre', data.productName],
         ['Tipo', data.productType],
@@ -1264,6 +1345,7 @@ function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
     },
     {
       title: 'Proceso',
+      step: 3,
       items: [
         ['Descripción', data.processDescription],
         ['Productor', data.producerType],
@@ -1284,9 +1366,22 @@ function StepRevision({ data }: { data: Partial<CertifyFormData> }) {
             key={section.title}
             className="rounded-2xl border border-neutral-200 bg-white p-5"
           >
-            <p className="text-sm font-bold uppercase tracking-widest text-navy-300">
-              {section.title}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold uppercase tracking-widest text-navy-300">
+                {section.title}
+              </p>
+              {onJumpTo && (
+                <button
+                  type="button"
+                  onClick={() => onJumpTo(section.step)}
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold text-gold-700 transition-colors hover:bg-gold-50 hover:text-gold-700"
+                  aria-label={`Editar paso ${section.step + 1}: ${section.title}`}
+                >
+                  Editar
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
             <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm md:grid-cols-2">
               {section.items
                 .filter(([, v]) => Boolean(v))
