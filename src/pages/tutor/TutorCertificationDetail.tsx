@@ -53,6 +53,7 @@ import type {
 import { useEscape } from '@/hooks/useEscape'
 import { cn, downloadBlob } from '@/lib/utils'
 import { useInternalNotesStore } from '@/store/internalNotes'
+import { useCertChecklistStore } from '@/store/certChecklist'
 import { certEntityKey } from '@/components/features/InternalNotesPanel'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -267,6 +268,7 @@ export default function TutorCertificationDetail() {
       <AnimatePresence>
         {drawer === 'checklist' && (
           <ChecklistDrawer
+            certId={cert.id}
             categories={checklistData}
             onClose={() => setDrawer(null)}
           />
@@ -1643,13 +1645,38 @@ function NotesDrawer({
 // ─── Drawer: Checklist (rediseño con progress sticky) ─────────────────────────
 
 function ChecklistDrawer({
+  certId,
   categories: initial,
   onClose,
 }: {
+  certId: string
   categories: ChecklistCategory[]
   onClose: () => void
 }) {
-  const [categories, setCategories] = useState<ChecklistCategory[]>(initial)
+  /**
+   * Fix V2-TUT-20 (auditoría v2): antes el state del checklist era
+   * `useState` puro — cerrar el drawer y reabrirlo perdía toggles y
+   * comentarios. Ahora persiste por certId en `useCertChecklistStore`.
+   * La primera vez hidratamos con el `initial` que viene del prop;
+   * después siempre leemos del store.
+   */
+  const storeCategories = useCertChecklistStore((s) => s.byCert[certId])
+  const hydrate = useCertChecklistStore((s) => s.hydrateIfEmpty)
+  const setStoreCategories = useCertChecklistStore((s) => s.set)
+  useEffect(() => {
+    hydrate(certId, initial)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [certId])
+  const categories = storeCategories ?? initial
+  const setCategories = (
+    updater:
+      | ChecklistCategory[]
+      | ((prev: ChecklistCategory[]) => ChecklistCategory[]),
+  ) => {
+    const next =
+      typeof updater === 'function' ? updater(categories) : updater
+    setStoreCategories(certId, next)
+  }
   const [editingCat, setEditingCat] = useState<string | null>(null)
   const [draftComment, setDraftComment] = useState('')
   useEscape(true, onClose)

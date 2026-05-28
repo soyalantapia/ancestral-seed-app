@@ -86,6 +86,17 @@ export function CheckoutModal({
   const [number, setNumber] = useState('')
   const [expiry, setExpiry] = useState('')
   const [cvv, setCvv] = useState('')
+  // Fix V2-POS-14 (auditoría v2): antes el formulario solo deshabilitaba
+  // el submit cuando los campos eran inválidos — no había feedback en
+  // los campos en sí. El user no entendía POR QUÉ no podía pagar.
+  // Ahora trackeamos `touched` por campo (se activa al blur) y, si
+  // el campo está touched + inválido, mostramos border-error + mensaje.
+  const [touched, setTouched] = useState<{
+    holder: boolean
+    number: boolean
+    expiry: boolean
+    cvv: boolean
+  }>({ holder: false, number: false, expiry: false, cvv: false })
   // Transfer file
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -101,6 +112,12 @@ export function CheckoutModal({
       setExpiry('')
       setCvv('')
       setEvidenceFile(null)
+      setTouched({
+        holder: false,
+        number: false,
+        expiry: false,
+        cvv: false,
+      })
     }
   }, [open, item?.id])
 
@@ -131,11 +148,36 @@ export function CheckoutModal({
     return `${digits.slice(0, 2)}/${digits.slice(2)}`
   }
 
+  // Fix V2-POS-14: validez por campo individual (no solo el bool global)
+  const fieldErrors = {
+    holder:
+      holder.trim().length === 0
+        ? 'Ingresá el nombre que figura en la tarjeta'
+        : holder.trim().length < 3
+          ? 'Mínimo 3 caracteres'
+          : null,
+    number: (() => {
+      const digits = number.replace(/\s/g, '')
+      if (digits.length === 0) return 'Ingresá el número de la tarjeta'
+      if (digits.length < 13) return 'Faltan dígitos (mínimo 13)'
+      return null
+    })(),
+    expiry: !/^\d{2}\/\d{2}$/.test(expiry)
+      ? expiry.length === 0
+        ? 'Ingresá el vencimiento (MM/AA)'
+        : 'Formato inválido — usá MM/AA'
+      : null,
+    cvv: !/^\d{3,4}$/.test(cvv)
+      ? cvv.length === 0
+        ? 'Ingresá el CVV'
+        : 'CVV debe tener 3 o 4 dígitos'
+      : null,
+  }
   const cardValid =
-    holder.trim().length >= 3 &&
-    number.replace(/\s/g, '').length >= 13 &&
-    /^\d{2}\/\d{2}$/.test(expiry) &&
-    /^\d{3,4}$/.test(cvv)
+    !fieldErrors.holder &&
+    !fieldErrors.number &&
+    !fieldErrors.expiry &&
+    !fieldErrors.cvv
 
   function copyToClipboard(value: string, label: string) {
     navigator.clipboard?.writeText(value).then(
@@ -145,7 +187,19 @@ export function CheckoutModal({
   }
 
   async function handleSubmitCard() {
-    if (!cardValid) return
+    if (!cardValid) {
+      // Fix V2-POS-14: si el user clickea "Pagar" sin haber blurreado
+      // los campos vacíos, marcar todos como touched para que se vean
+      // los errores en vez de quedarse con el botón disabled sin
+      // explicación.
+      setTouched({
+        holder: true,
+        number: true,
+        expiry: true,
+        cvv: true,
+      })
+      return
+    }
     setStatus('processing')
     // Simulación de procesamiento (en producción → Mercado Pago/Stripe)
     await new Promise((r) => setTimeout(r, 1500))
@@ -307,68 +361,109 @@ export function CheckoutModal({
             <div className="px-6 py-5">
               {tab === 'card' && (
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-navy-500">
-                      Nombre del titular
-                    </label>
+                  {/* Fix V2-POS-14: cada campo con su propio error visible
+                      cuando touched && invalid. El border pasa a rojo y
+                      aparece un mensaje específico debajo. */}
+                  <FieldRow
+                    label="Nombre del titular"
+                    error={touched.holder ? fieldErrors.holder : null}
+                  >
                     <input
                       type="text"
                       value={holder}
                       onChange={(e) => setHolder(e.target.value)}
+                      onBlur={() => setTouched((t) => ({ ...t, holder: true }))}
                       placeholder="Como figura en la tarjeta"
                       autoComplete="cc-name"
-                      className="mt-1 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+                      aria-invalid={
+                        touched.holder && fieldErrors.holder !== null
+                      }
+                      className={cn(
+                        'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm text-navy-500 focus:outline-none focus:ring-2',
+                        touched.holder && fieldErrors.holder
+                          ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                          : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                      )}
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-navy-500">
-                      Número de tarjeta
-                    </label>
+                  </FieldRow>
+                  <FieldRow
+                    label="Número de tarjeta"
+                    error={touched.number ? fieldErrors.number : null}
+                  >
                     <input
                       type="text"
                       value={number}
                       onChange={(e) =>
                         setNumber(formatCardNumber(e.target.value))
                       }
+                      onBlur={() => setTouched((t) => ({ ...t, number: true }))}
                       placeholder="1234 5678 9012 3456"
                       autoComplete="cc-number"
                       inputMode="numeric"
-                      className="mt-1 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm tabular-nums text-navy-500 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+                      aria-invalid={
+                        touched.number && fieldErrors.number !== null
+                      }
+                      className={cn(
+                        'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                        touched.number && fieldErrors.number
+                          ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                          : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                      )}
                     />
-                  </div>
+                  </FieldRow>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-bold text-navy-500">
-                        Vencimiento
-                      </label>
+                    <FieldRow
+                      label="Vencimiento"
+                      error={touched.expiry ? fieldErrors.expiry : null}
+                    >
                       <input
                         type="text"
                         value={expiry}
                         onChange={(e) =>
                           setExpiry(formatExpiry(e.target.value))
                         }
+                        onBlur={() =>
+                          setTouched((t) => ({ ...t, expiry: true }))
+                        }
                         placeholder="MM/AA"
                         autoComplete="cc-exp"
                         inputMode="numeric"
-                        className="mt-1 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm tabular-nums text-navy-500 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+                        aria-invalid={
+                          touched.expiry && fieldErrors.expiry !== null
+                        }
+                        className={cn(
+                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                          touched.expiry && fieldErrors.expiry
+                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                        )}
                       />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-navy-500">
-                        CVV
-                      </label>
+                    </FieldRow>
+                    <FieldRow
+                      label="CVV"
+                      error={touched.cvv ? fieldErrors.cvv : null}
+                    >
                       <input
                         type="text"
                         value={cvv}
                         onChange={(e) =>
                           setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
                         }
+                        onBlur={() => setTouched((t) => ({ ...t, cvv: true }))}
                         placeholder="123"
                         autoComplete="cc-csc"
                         inputMode="numeric"
-                        className="mt-1 h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm tabular-nums text-navy-500 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/20"
+                        aria-invalid={
+                          touched.cvv && fieldErrors.cvv !== null
+                        }
+                        className={cn(
+                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                          touched.cvv && fieldErrors.cvv
+                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                        )}
                       />
-                    </div>
+                    </FieldRow>
                   </div>
                   <p className="flex items-center gap-1.5 text-[11px] text-navy-300">
                     <Lock className="h-3 w-3" />
@@ -528,6 +623,31 @@ export function CheckoutModal({
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+/**
+ * Wrapper de campo del formulario de tarjeta con label arriba y
+ * mensaje de error abajo. Fix V2-POS-14 — feedback visible cuando el
+ * campo está tocado y es inválido.
+ */
+function FieldRow({
+  label,
+  error,
+  children,
+}: {
+  label: string
+  error: string | null
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label className="text-xs font-bold text-navy-500">{label}</label>
+      {children}
+      {error && (
+        <p className="mt-1 text-[11px] font-semibold text-error-400">{error}</p>
+      )}
+    </div>
   )
 }
 

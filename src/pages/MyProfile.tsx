@@ -66,6 +66,26 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
+/**
+ * Normaliza las URLs blob: para que el dirty check no se confunda.
+ * Si el campo es un blob: URL lo colapsamos a un placeholder estable.
+ * Ver fix V2-POS-19.
+ */
+function normalizeForDirty(p: ProfileData): ProfileData {
+  return {
+    ...p,
+    coverUrl: p.coverUrl.startsWith('blob:') ? '<<blob>>' : p.coverUrl,
+    avatarUrl: p.avatarUrl.startsWith('blob:') ? '<<blob>>' : p.avatarUrl,
+  }
+}
+
+function isProfileDirty(data: ProfileData, initial: ProfileData): boolean {
+  return (
+    JSON.stringify(normalizeForDirty(data)) !==
+    JSON.stringify(normalizeForDirty(initial))
+  )
+}
+
 export default function MyProfile() {
   const [tab, setTab] = useState<Tab>('Mi perfil')
   // Fix V2-POS-12: parking del destino de tab mientras esperamos la
@@ -85,7 +105,21 @@ export default function MyProfile() {
   const coverInputRef = useRef<HTMLInputElement>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
-  const dirty = JSON.stringify(data) !== JSON.stringify(initial)
+  /**
+   * Fix V2-POS-19 (auditoría v2): antes el dirty check era un
+   * `JSON.stringify(data) !== JSON.stringify(initial)` puro. Eso
+   * generaba un falso positivo cuando el user "Cambiar avatar" y
+   * elegía el MISMO archivo — `URL.createObjectURL(file)` devuelve
+   * un blob: distinto cada vez, así que `data.avatarUrl` siempre
+   * cambiaba aunque la foto fuera la misma. El "Guardar" rojo y el
+   * warning de salida aparecían sin razón visible para el user.
+   *
+   * Ahora normalizamos los blob: URLs antes de comparar. Si ambos
+   * lados tienen blob:, los tratamos como "iguales" — el cambio real
+   * solo se considera cuando se pasa de "sin foto" a "con foto" o
+   * viceversa (cosa que sí impacta el perfil persistido).
+   */
+  const dirty = isProfileDirty(data, initial)
 
   // Block accidental leave
   useEffect(() => {

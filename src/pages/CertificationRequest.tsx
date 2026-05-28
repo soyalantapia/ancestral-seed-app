@@ -46,6 +46,7 @@ import type {
   TutorMessage,
 } from '@/types'
 import { REGLAMENTO_DEADLINES, STAGES } from '@/lib/copy'
+import { useCoverByRequestStore } from '@/store/coverByRequest'
 import { cn, downloadBlob } from '@/lib/utils'
 
 const tabs = [
@@ -826,6 +827,18 @@ const REQUESTED_EVIDENCES_BY_REQUEST: Record<string, RequestedEvidenceSlot[]> = 
 function EvidenciasTab({ request }: { request: CertificationRequestType }) {
   const [items, setItems] = useState<EvidenceFile[]>(request.evidences ?? [])
   /**
+   * Fix V2-POS-06 (auditoría v2): la portada se elegía solo en el paso 5
+   * del CertifyForm. Una vez enviada la postulación, no había manera
+   * de cambiarla — el postulante que subía una mejor foto después
+   * quedaba con la portada vieja. Ahora persistimos override por
+   * requestId en localStorage. La portada efectiva es:
+   *   coverOverride ?? primera imagen del listado.
+   */
+  const coverOverride = useCoverByRequestStore((s) => s.overrides[request.id])
+  const setCover = useCoverByRequestStore((s) => s.setCover)
+  const firstImageId = items.find((it) => it.kind === 'image')?.id
+  const currentCoverId = coverOverride ?? firstImageId ?? null
+  /**
    * Track de qué slots ya fueron cumplidos en esta sesión. En producción
    * vendría linkeado por slotId → evidenceId. Acá mantenemos un map
    * simple de slotId → evidenceId asignado por el postulante.
@@ -1060,6 +1073,23 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                           <div className="flex h-full w-full items-center justify-center text-navy-300">
                             <ImageIcon className="h-7 w-7" />
                           </div>
+                        )}
+                        {/* Fix V2-POS-06: badge + acción para portada */}
+                        {currentCoverId === it.id ? (
+                          <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-gold-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-navy-500 shadow-sm">
+                            ★ Portada
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCover(request.id, it.id)
+                              toast.success(`"${it.name}" es la nueva portada`)
+                            }}
+                            className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-navy-500 opacity-0 shadow-sm backdrop-blur transition-opacity hover:bg-white group-hover:opacity-100 focus:opacity-100"
+                          >
+                            Usar como portada
+                          </button>
                         )}
                       </div>
                     ) : (

@@ -1106,9 +1106,22 @@ function CaseCard({
   onMoveTo: (target: CaseStage) => void
 }) {
   const navigate = useNavigate()
-  // Distinguir entre click y drag: si el puntero se movió >5px durante mousedown,
-  // es drag (no navegamos). Si no se movió, es click.
-  const [dragMoved, setDragMoved] = useState(false)
+  /**
+   * Fix V2-TUT-15 (auditoría v2): antes había un flag `dragMoved` que
+   * se seteaba a true en `onDragStart` y se reseteaba dentro del
+   * mismo openCase(). El problema: si el user empezaba a draguear y
+   * después soltaba en LA MISMA columna (sin drop válido), el
+   * onDragEnd disparaba pero el flag dragMoved quedaba pegado en true
+   * hasta el SIGUIENTE openCase — que terminaba siendo un click que
+   * NO navegaba. El usuario veía el click "perderse".
+   *
+   * Ahora usamos pointer position tracking real: guardamos coords del
+   * pointerdown y comparamos con coords del click. Si el delta supera
+   * el threshold (4px), es drag y no navega. Si no, es click puro.
+   * Independiente de los flags de drag de HTML5 que no se confiabilizan
+   * en todos los browsers cuando el drop no aterriza.
+   */
+  const pointerStart = useRef<{ x: number; y: number } | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const riskStyle =
     c.risk === 'alto'
@@ -1126,11 +1139,19 @@ function CaseCard({
   const days = daysInStageFromCase(c)
   const sla = STAGE_SLA_DAYS[c.stage] ?? 14
 
-  const openCase = () => {
-    if (dragMoved) {
-      setDragMoved(false)
-      return
+  const openCase = (e: React.MouseEvent) => {
+    // Si el delta del puntero entre pointerdown y click es mayor al
+    // threshold, asumimos que fue drag (no navega).
+    const start = pointerStart.current
+    if (start) {
+      const dx = Math.abs(e.clientX - start.x)
+      const dy = Math.abs(e.clientY - start.y)
+      if (dx > 4 || dy > 4) {
+        pointerStart.current = null
+        return
+      }
     }
+    pointerStart.current = null
     navigate(`/tutor/casos/${c.id}`)
   }
 
@@ -1139,9 +1160,11 @@ function CaseCard({
       draggable
       role="button"
       tabIndex={0}
+      onPointerDown={(e) => {
+        pointerStart.current = { x: e.clientX, y: e.clientY }
+      }}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = 'move'
-        setDragMoved(true)
         onDragStart()
       }}
       onDragEnd={onDragEnd}
