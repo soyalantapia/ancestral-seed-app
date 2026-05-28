@@ -1,1 +1,0 @@
-import{n as e,s as t}from"./jsx-runtime-CnSBKPes.js";import{t as n}from"./onboarding-CHzpXoR3.js";var r=t(e(),1);function i(e,t=800){let i=n(t=>t.completed[e]),a=n(e=>e.activeTour),o=n(e=>e.start);(0,r.useEffect)(()=>{if(i||a)return;let r=setTimeout(()=>{let t=n.getState();!t.completed[e]&&!t.activeTour&&o(e)},t);return()=>clearTimeout(r)},[e,i,a,o,t])}export{i as t};
