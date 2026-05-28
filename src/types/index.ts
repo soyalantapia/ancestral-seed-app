@@ -1,5 +1,29 @@
 export type CertificationStatus = 'verified' | 'pending' | 'expired' | 'revoked'
 
+/**
+ * Las 3 categorías oficiales definidas por el Reglamento de Marca,
+ * cláusula 2.1.1. La taxonomía es fija por reglamento — no inventar
+ * variantes nuevas sin coordinación con Ancestral Seed.
+ *
+ * - `autentico`: comunidad indígena constituida.
+ * - `tradicional`: referencia directa o participación de comunidad.
+ * - `inspiracion`: inspirado en comunidad, sin estar constituido.
+ */
+export type OfficialCategory = 'autentico' | 'tradicional' | 'inspiracion'
+
+/**
+ * Estado de la licencia de uso del Sello según el Reglamento
+ * (capítulo 5 — Sanciones).
+ *
+ * - `vigente`: licencia activa, el titular puede usar el sello.
+ * - `suspendida`: pausada por no conformidades sin resolver (>30 días).
+ * - `cancelada`: revocada definitivamente.
+ *
+ * Distinto de `CertificationStatus` que es estado UX. La licencia
+ * es la dimensión legal/comercial.
+ */
+export type LicenseStatus = 'vigente' | 'suspendida' | 'cancelada'
+
 export interface Author {
   id: string
   slug: string
@@ -39,11 +63,33 @@ export interface Certification {
   contextParagraphs?: string[]
   /** Párrafos extra para la sección "Técnica y producción" */
   techniqueParagraphs?: string[]
+  /**
+   * Categoría oficial según Reglamento 2.1.1. Opcional para
+   * compatibilidad con mocks antiguos, pero todo cert NUEVO debería
+   * tenerla. UI cae a `category` (libre) si falta.
+   */
+  officialCategory?: OfficialCategory
+  /**
+   * Estado de la licencia de uso del Sello (Reglamento cap. 5).
+   * Opcional por compat. Si falta, asumir 'vigente'.
+   */
+  licenseStatus?: LicenseStatus
+  /** ISO date — fecha hasta la cual la licencia es válida. */
+  licenseValidUntil?: string
+  /**
+   * N° de licencia oficial (formato sugerido: AS-YYYY-XXX). Opcional
+   * según Reglamento 3.2: "N° de licencia: es opcional" para mostrar
+   * junto al sello.
+   */
+  licenseNumber?: string
 }
 
 export interface DirectoryFilters {
   query?: string
+  /** Categoría libre (region/temática) — campo histórico. */
   category?: string
+  /** Categoría oficial del Reglamento 2.1.1. Filtrado en cliente. */
+  officialCategory?: OfficialCategory
   status?: CertificationStatus
   sortBy?: 'recent' | 'name' | 'popular'
 }

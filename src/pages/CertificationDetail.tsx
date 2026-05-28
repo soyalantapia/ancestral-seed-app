@@ -34,8 +34,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Sheet } from '@/components/ui/sheet'
 import { Label } from '@/components/ui/label'
 import { PageMeta } from '@/components/features/PageMeta'
+import { CategoryBadge } from '@/components/features/CategoryBadge'
+import { LicenseStatusBadge } from '@/components/features/LicenseStatusBadge'
 import { api } from '@/services/api'
 import { cn, formatDate } from '@/lib/utils'
+import { OFFICIAL_DOCS } from '@/lib/copy'
 
 const PLACEHOLDER = '__placeholder__'
 const isPlaceholder = (v: string) => v === PLACEHOLDER || !v
@@ -150,9 +153,42 @@ export default function CertificationDetail() {
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 py-8 md:px-8 md:py-10">
+          {/* Badges del Reglamento 2.1.1 + cap. 5 — arriba del título
+              porque comunican la naturaleza del certificado antes que el
+              nombre del producto. */}
+          {(cert.officialCategory || cert.licenseStatus) && (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              {cert.officialCategory && (
+                <CategoryBadge category={cert.officialCategory} />
+              )}
+              {cert.licenseStatus && (
+                <LicenseStatusBadge status={cert.licenseStatus} />
+              )}
+            </div>
+          )}
           <h1 className="text-2xl font-bold leading-tight text-navy-500 md:text-[32px]">
             {cert.title}
           </h1>
+          {cert.licenseNumber && (
+            <p className="mt-2 text-xs font-medium uppercase tracking-widest text-navy-300">
+              N° de licencia ·{' '}
+              <span className="font-bold text-navy-500">
+                {cert.licenseNumber}
+              </span>
+              {cert.licenseValidUntil && (
+                <>
+                  {' '}
+                  · Vigente hasta{' '}
+                  <span className="font-bold text-navy-500">
+                    {new Date(cert.licenseValidUntil).toLocaleDateString(
+                      'es-AR',
+                      { day: '2-digit', month: 'long', year: 'numeric' },
+                    )}
+                  </span>
+                </>
+              )}
+            </p>
+          )}
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
             {/* LEFT: Cover image — Figma 587x455 ≈ 1.29:1 */}
@@ -331,6 +367,11 @@ export default function CertificationDetail() {
         </div>
       </section>
 
+      {/* Documentación oficial — Reglamento 1.4 obliga a que el documento
+          esté disponible electrónicamente. Va antes de Methodology porque
+          es el "contrato" sobre el cual se sostiene todo lo anterior. */}
+      <OfficialDocsSection />
+
       <MethodologySection />
 
       <ReportSheet
@@ -503,6 +544,64 @@ function MapPreview({ region, mapQuery }: { region: string; mapQuery: string }) 
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * Sección de documentación oficial — Reglamento 1.4.
+ *
+ * Muestra el Reglamento de Marca como documento descargable con
+ * metadata (tamaño, páginas, última actualización). Servido desde
+ * /public/docs/ → respeta BASE_URL automáticamente.
+ */
+function OfficialDocsSection() {
+  const doc = OFFICIAL_DOCS.reglamentoMarca
+  const href = `${import.meta.env.BASE_URL}${doc.path}`
+  return (
+    <section className="bg-neutral-100/60">
+      <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
+        <h2 className="text-xl font-bold text-navy-500 md:text-2xl">
+          Documentación oficial
+        </h2>
+        <p className="mt-2 max-w-xl text-sm text-navy-300">
+          Documento legal que define las condiciones de uso del Sello
+          Ancestral Seed por parte de los titulares de la licencia.
+        </p>
+
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-start gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
+              <FileCheck2 className="h-6 w-6" strokeWidth={1.85} />
+            </div>
+            <div className="flex-1">
+              <p className="text-base font-bold text-navy-500 group-hover:text-gold-700">
+                {doc.title}
+              </p>
+              <p className="mt-1 text-xs text-navy-300">
+                {doc.description}
+              </p>
+              <p className="mt-2 text-[11px] font-medium uppercase tracking-widest text-navy-300">
+                PDF · {doc.sizeKb} KB · {doc.pages} páginas · actualizado{' '}
+                {new Date(doc.updatedAt).toLocaleDateString('es-AR', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
+            </div>
+            <Download
+              className="h-5 w-5 shrink-0 text-navy-300 transition-transform group-hover:translate-y-0.5 group-hover:text-gold-700"
+              aria-hidden
+            />
+          </a>
+        </div>
+      </div>
+    </section>
   )
 }
 

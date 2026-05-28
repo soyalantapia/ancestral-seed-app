@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Facebook, Globe, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { Facebook, FileText, Globe, Instagram, Linkedin, Twitter } from 'lucide-react'
 import { Logo } from './Logo'
+import { LEGAL_ENTITY, OFFICIAL_DOCS } from '@/lib/copy'
 
 const socials = [
   { label: 'Instagram', href: 'https://instagram.com', icon: Instagram },
@@ -77,10 +78,10 @@ export function Footer() {
             <ul className="flex flex-col gap-4 text-base text-white">
               <li>
                 <a
-                  href="mailto:soporte@ancestralseed.org?subject=Consulta%20desde%20la%20web"
+                  href={`mailto:${LEGAL_ENTITY.email}?subject=Consulta%20desde%20la%20web`}
                   className="transition-colors hover:text-gold-400"
                 >
-                  soporte@ancestralseed.org
+                  {LEGAL_ENTITY.email}
                 </a>
               </li>
               <li>
@@ -91,6 +92,19 @@ export function Footer() {
                   className="transition-colors hover:text-gold-400"
                 >
                   WhatsApp soporte
+                </a>
+              </li>
+              {/* Documentación oficial — Reglamento 1.4 obliga a que esté
+                  disponible electrónicamente para los usuarios. */}
+              <li>
+                <a
+                  href={`${import.meta.env.BASE_URL}${OFFICIAL_DOCS.reglamentoMarca.path}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-gold-400"
+                >
+                  <FileText className="h-4 w-4" strokeWidth={1.85} />
+                  {OFFICIAL_DOCS.reglamentoMarca.title}
                 </a>
               </li>
             </ul>
@@ -115,18 +129,26 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 border-t border-navy-300/40 pt-5 text-xs text-neutral-400 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Ancestral Seeds — Todos los derechos reservados</p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link to="/legal/terminos" className="hover:text-gold-400">
-              Términos y condiciones
-            </Link>
-            <Link to="/legal/privacidad" className="hover:text-gold-400">
-              Políticas y privacidad
-            </Link>
-            <Link to="/legal/cookies" className="hover:text-gold-400">
-              Políticas de Cookies
-            </Link>
+        {/* Datos del Organismo de Certificación según Reglamento 1.2 —
+            obligatorios a estar disponibles para los usuarios. */}
+        <div className="mt-10 border-t border-navy-300/40 pt-5 text-xs text-neutral-400">
+          <p className="leading-relaxed">
+            Organismo de Certificación · <span className="font-semibold text-white">{LEGAL_ENTITY.name}</span>{' '}
+            · {LEGAL_ENTITY.address} · <a href={`tel:${LEGAL_ENTITY.phone.replace(/\s/g, '')}`} className="hover:text-gold-400">{LEGAL_ENTITY.phone}</a>
+          </p>
+          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p>© {new Date().getFullYear()} Ancestral Seed — Todos los derechos reservados</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link to="/legal/terminos" className="hover:text-gold-400">
+                Términos y condiciones
+              </Link>
+              <Link to="/legal/privacidad" className="hover:text-gold-400">
+                Políticas y privacidad
+              </Link>
+              <Link to="/legal/cookies" className="hover:text-gold-400">
+                Políticas de Cookies
+              </Link>
+            </div>
           </div>
         </div>
       </div>

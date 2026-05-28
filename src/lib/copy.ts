@@ -61,6 +61,110 @@ export const ACTIONS = {
   signEvaluation: 'Aceptar y firmar evaluación IA',
 } as const
 
+/**
+ * Las 3 categorías oficiales del Reglamento de Marca (cláusula 2.1.1).
+ *
+ * Descripciones textuales del documento — NO reformular sin coordinación
+ * con Ancestral Seed. La taxonomía es legalmente vinculante.
+ *
+ * El `tone` define el tratamiento visual de los badges:
+ * - autentico → gold (rango más alto, pertenencia plena)
+ * - tradicional → navy (vínculo por raíz/participación)
+ * - inspiracion → cream (referencia/inspiración, menor proximidad)
+ */
+export const CATEGORIES = {
+  autentico: {
+    id: 'autentico' as const,
+    label: 'Ancestral Auténtico',
+    shortLabel: 'Auténtico',
+    description:
+      'Producto o servicio constituido como comunidad indígena, o cuyo ' +
+      'proceso demuestre su característica ancestral.',
+    tone: 'gold' as const,
+  },
+  tradicional: {
+    id: 'tradicional' as const,
+    label: 'Tradicional con raíces ancestrales',
+    shortLabel: 'Tradicional',
+    description:
+      'Referencia directa a comunidad indígena por su técnica o ' +
+      'participación, o cuyo proceso demuestre su característica ancestral.',
+    tone: 'navy' as const,
+  },
+  inspiracion: {
+    id: 'inspiracion' as const,
+    label: 'Inspiración cultural',
+    shortLabel: 'Inspiración',
+    description:
+      'Producto o servicio no constituido como comunidad indígena, pero ' +
+      'cuyo proceso demuestra referencia o inspiración en una etnia o ' +
+      'comunidad indígena determinada.',
+    tone: 'cream' as const,
+  },
+} as const
+
+/** Estados de licencia del Reglamento, cap. 5. */
+export const LICENSE_STATUS = {
+  vigente: {
+    id: 'vigente' as const,
+    label: 'Licencia vigente',
+    shortLabel: 'Vigente',
+    description: 'La licencia de uso del Sello está activa.',
+    tone: 'success' as const,
+  },
+  suspendida: {
+    id: 'suspendida' as const,
+    label: 'Licencia suspendida',
+    shortLabel: 'Suspendida',
+    description:
+      'Pausada por no conformidades sin resolver. El titular no puede ' +
+      'usar el Sello hasta subsanar.',
+    tone: 'warning' as const,
+  },
+  cancelada: {
+    id: 'cancelada' as const,
+    label: 'Licencia cancelada',
+    shortLabel: 'Cancelada',
+    description:
+      'Revocada. El titular debe cesar todo uso del Sello y publicidad ' +
+      'relacionada.',
+    tone: 'danger' as const,
+  },
+} as const
+
+/**
+ * Datos legales del Organismo de Certificación (Reglamento 1.2).
+ * Fuente única para footer, /legal, /nosotros y emails transaccionales.
+ */
+export const LEGAL_ENTITY = {
+  name: 'Seed One Global Corp.',
+  address: 'Miami Beach, FL · USA',
+  phone: '+54 9 11 4937 8422',
+  email: 'info@ancestralseed.com',
+  website: 'https://www.ancestralseed.com',
+} as const
+
+/**
+ * Documentos oficiales descargables. Reglamento 1.4 obliga a que el
+ * documento esté disponible electrónicamente para los usuarios.
+ *
+ * `path` es relativo a BASE_URL (en prod queda
+ * `/ancestral-seed-app/docs/...`, en dev `/docs/...`). NO hardcodear.
+ */
+export const OFFICIAL_DOCS = {
+  reglamentoMarca: {
+    id: 'reglamento-marca',
+    title: 'Reglamento de uso de la Marca',
+    description:
+      'Define las condiciones de uso del Sello Ancestral Seed por parte ' +
+      'de los titulares de la licencia.',
+    path: 'docs/reglamento-marca-ancestral-seed.pdf',
+    sizeKb: 278,
+    pages: 11,
+    updatedAt: '2026-05-27',
+  },
+} as const
+
 /** Mensajes de error de API tipados — usados por services/api.ts cuando
  *  diferenciamos 404 vs 500 vs NetworkError. */
 export const ERRORS = {

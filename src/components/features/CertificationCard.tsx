@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { PLACEHOLDER_TOKEN } from '@/services/mocks/data'
+import { CategoryBadge } from '@/components/features/CategoryBadge'
 
 interface CertificationCardProps {
   certification: Certification
@@ -73,6 +74,15 @@ export function CertificationCard({
         >
           {placeholderText ? 'Estado' : status.label}
         </Badge>
+        {/* Categoría oficial del Reglamento 2.1.1 — solo si está definida
+            (compat con certs viejos). Va a la izquierda en compact mode. */}
+        {!placeholderText && c.officialCategory && (
+          <CategoryBadge
+            category={c.officialCategory}
+            compact
+            className="absolute left-3 top-3 shadow-sm"
+          />
+        )}
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <Link to={`/certificado/${c.slug}`}>

@@ -16,7 +16,12 @@ import { Sheet } from '@/components/ui/sheet'
 import { CertificationCard } from '@/components/features/CertificationCard'
 import { PageMeta } from '@/components/features/PageMeta'
 import { useCategories, useCertifications } from '@/hooks/useCertifications'
-import type { CertificationStatus, DirectoryFilters } from '@/types'
+import type {
+  CertificationStatus,
+  DirectoryFilters,
+  OfficialCategory,
+} from '@/types'
+import { CATEGORIES } from '@/lib/copy'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE = 9
@@ -33,6 +38,17 @@ const statusOptions: { value: CertificationStatus; label: string }[] = [
   { value: 'expired', label: 'Vencidos' },
 ]
 
+/**
+ * Opciones del filtro de categoría oficial — Reglamento 2.1.1.
+ * Orden por proximidad cultural: auténtico (constituido) → tradicional
+ * (raíces) → inspiración (referencia).
+ */
+const officialCategoryOptions: { value: OfficialCategory; label: string }[] = [
+  { value: 'autentico', label: CATEGORIES.autentico.label },
+  { value: 'tradicional', label: CATEGORIES.tradicional.label },
+  { value: 'inspiracion', label: CATEGORIES.inspiracion.label },
+]
+
 export default function Directory() {
   const [filters, setFilters] = useState<DirectoryFilters>({
     sortBy: 'recent',
@@ -43,13 +59,31 @@ export default function Directory() {
   const { data: categories } = useCategories()
   const { data: certs, isLoading, error, refetch } = useCertifications(filters)
 
-  const total = certs?.length ?? 0
+  /**
+   * Filtrado en cliente por categoría oficial. No tocamos el handler MSW
+   * porque el campo `officialCategory` recién se agregó (Reglamento 2.1.1)
+   * y todavía no aplica a todos los certs históricos.
+   *
+   * Si la categoría no está definida en el cert, lo dejamos pasar — así
+   * el filtro funciona "best effort" sin ocultar contenido legacy.
+   */
+  const filteredCerts = useMemo(() => {
+    if (!certs) return undefined
+    if (!filters.officialCategory) return certs
+    return certs.filter(
+      (c) =>
+        c.officialCategory === filters.officialCategory ||
+        c.officialCategory === undefined,
+    )
+  }, [certs, filters.officialCategory])
+
+  const total = filteredCerts?.length ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const paged = useMemo(() => {
-    if (!certs) return []
+    if (!filteredCerts) return []
     const start = (page - 1) * PAGE_SIZE
-    return certs.slice(start, start + PAGE_SIZE)
-  }, [certs, page])
+    return filteredCerts.slice(start, start + PAGE_SIZE)
+  }, [filteredCerts, page])
 
   const updateFilter = <K extends keyof DirectoryFilters>(
     key: K,
@@ -110,9 +144,17 @@ export default function Directory() {
             >
               <SlidersHorizontal className="h-4 w-4" />
               Filtros
-              {(filters.category || filters.status) && (
+              {(filters.officialCategory ||
+                filters.category ||
+                filters.status) && (
                 <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold-500 text-[10px] font-bold text-navy-500">
-                  {[filters.category, filters.status].filter(Boolean).length}
+                  {
+                    [
+                      filters.officialCategory,
+                      filters.category,
+                      filters.status,
+                    ].filter(Boolean).length
+                  }
                 </span>
               )}
             </Button>
@@ -129,8 +171,24 @@ export default function Directory() {
 
           {/* Desktop: filter chips inline */}
           <div className="mt-5 hidden flex-wrap items-center gap-2 md:flex">
+            {/* Categoría oficial (Reglamento 2.1.1) — primera por ser la
+                taxonomía vinculante. */}
             <FilterChip
-              label="Categorías"
+              label="Tipo"
+              value={filters.officialCategory}
+              options={officialCategoryOptions.map((o) => ({
+                value: o.value,
+                label: o.label,
+              }))}
+              onChange={(v) =>
+                updateFilter(
+                  'officialCategory',
+                  v as OfficialCategory | undefined,
+                )
+              }
+            />
+            <FilterChip
+              label="Región"
               value={filters.category}
               options={(categories ?? []).map((c) => ({ value: c, label: c }))}
               onChange={(v) => updateFilter('category', v)}
@@ -146,7 +204,9 @@ export default function Directory() {
                 updateFilter('status', v as CertificationStatus | undefined)
               }
             />
-            {(filters.category || filters.status) && (
+            {(filters.officialCategory ||
+              filters.category ||
+              filters.status) && (
               <button
                 type="button"
                 onClick={clearFilters}
@@ -183,9 +243,39 @@ export default function Directory() {
             description="Refiná tu búsqueda en el directorio"
           >
             <div className="space-y-5">
+              {/* Tipo: las 3 categorías del Reglamento 2.1.1 */}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-navy-300">
-                  Categoría
+                  Tipo de certificación
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {officialCategoryOptions.map((opt) => {
+                    const active = filters.officialCategory === opt.value
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() =>
+                          updateFilter(
+                            'officialCategory',
+                            active ? undefined : opt.value,
+                          )
+                        }
+                        className={cn(
+                          'rounded-full border px-3 py-1.5 text-xs font-semibold transition-all',
+                          active
+                            ? 'border-gold-500 bg-gold-500 text-navy-500'
+                            : 'border-neutral-300 bg-white text-navy-300',
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-navy-300">
+                  Región
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(categories ?? []).map((cat) => {
