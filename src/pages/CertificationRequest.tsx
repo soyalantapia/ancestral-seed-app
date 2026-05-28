@@ -27,6 +27,11 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
+import {
+  CheckoutModal,
+  type CheckoutPaymentInput,
+  type CheckoutResult,
+} from '@/components/features/CheckoutModal'
 import type {
   AuditMeeting,
   AuditMeetingStatus,
@@ -912,12 +917,61 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
 // ─── Tab: Pagos ──────────────────────────────────────────────────────────────
 
 function PagosTab({ request }: { request: CertificationRequestType }) {
-  const payments = request.payments ?? []
+  const rawPayments = request.payments ?? []
+  /**
+   * Fix SA4 (#POS-20): el botón "Pagar" desde esta tab navegaba a
+   * /pagos sin checkout. Ahora abrimos el CheckoutModal localmente
+   * (igual UX que en /pagos) y mantenemos override de paidOverrides
+   * para reflejar el cambio en esta misma vista.
+   */
+  const [checkoutItem, setCheckoutItem] =
+    useState<CheckoutPaymentInput | null>(null)
+  const [paidOverrides, setPaidOverrides] = useState<
+    Record<string, { paidAt: string; method: 'card' | 'transfer' }>
+  >({})
+
+  const payments = rawPayments.map((p) => {
+    const override = paidOverrides[p.id]
+    return override
+      ? {
+          ...p,
+          status: 'paid' as PaymentStatus,
+          paidAt: override.paidAt,
+        }
+      : p
+  })
+
   const totalPaid = payments.filter((p) => p.status === 'paid').reduce((a, p) => a + p.amount, 0)
   const totalPending = payments.filter((p) => p.status === 'pending' || p.status === 'overdue').reduce((a, p) => a + p.amount, 0)
 
   const fmt = (amount: number, currency: string) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency }).format(amount)
+
+  function handlePay(p: PaymentItem) {
+    setCheckoutItem({
+      id: p.id,
+      concept: p.concept,
+      amount: p.amount,
+      currency: p.currency,
+      requestLabel: `${request.number} · ${request.productName}`,
+      dueDate: p.dueDate,
+    })
+  }
+
+  function handlePaid(result: CheckoutResult) {
+    setPaidOverrides((prev) => ({
+      ...prev,
+      [result.itemId]: {
+        paidAt: result.paidAt,
+        method: result.method,
+      },
+    }))
+    if (result.method === 'card') {
+      toast.success('Pago confirmado — vas a recibir el recibo por email')
+    } else {
+      toast.success('Comprobante recibido — revisamos en menos de 24h')
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -950,16 +1004,31 @@ function PagosTab({ request }: { request: CertificationRequestType }) {
         ) : (
           <ul className="mt-4 divide-y divide-neutral-200">
             {payments.map((p) => (
-              <PaymentRow key={p.id} payment={p} />
+              <PaymentRow key={p.id} payment={p} onPay={handlePay} />
             ))}
           </ul>
         )}
       </section>
+
+      {/* CheckoutModal local — abre desde click "Pagar" en cualquier
+          fila pendiente. Override marca paid en este componente. */}
+      <CheckoutModal
+        open={checkoutItem !== null}
+        item={checkoutItem}
+        onClose={() => setCheckoutItem(null)}
+        onPaid={handlePaid}
+      />
     </div>
   )
 }
 
-function PaymentRow({ payment }: { payment: PaymentItem }) {
+function PaymentRow({
+  payment,
+  onPay,
+}: {
+  payment: PaymentItem
+  onPay: (p: PaymentItem) => void
+}) {
   const tone = paymentToneMap[payment.status]
   const isPay = payment.status === 'pending' || payment.status === 'overdue'
   return (
@@ -986,13 +1055,13 @@ function PaymentRow({ payment }: { payment: PaymentItem }) {
           {payment.status === 'refunded' && 'Reintegrado'}
         </span>
         {isPay && (
-          <Link
-            to="/pagos"
-            onClick={() => toast.success('Te llevamos al detalle de pagos')}
+          <button
+            type="button"
+            onClick={() => onPay(payment)}
             className="inline-flex items-center rounded-full bg-gold-500 px-4 py-1.5 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
           >
             Pagar
-          </Link>
+          </button>
         )}
         {payment.invoiceUrl && (
           <a

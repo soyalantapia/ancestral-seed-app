@@ -149,6 +149,28 @@ export const LEGAL_ENTITY = {
 } as const
 
 /**
+ * Datos bancarios del Organismo para pagos por transferencia.
+ *
+ * Estos son los valores que ve el postulante en el CheckoutModal
+ * cuando elige "Transferencia bancaria". Centralizados acá para que
+ * cualquier cambio (cuenta nueva, alias renombrado) sea una sola
+ * edición y se refleje en /pagos + tab Pagos de CertificationRequest
+ * + email de notificación.
+ *
+ * Modo demo: los valores son mock; en producción vendrán del backend
+ * por moneda y por país.
+ */
+export const PAYMENT_TRANSFER = {
+  bankName: 'Galicia',
+  accountHolder: 'Seed One Global Corp.',
+  cuit: '30-71234567-9',
+  cbu: '0070110820000123456789',
+  cvu: '0000003100012345678901',
+  alias: 'ANCESTRAL.SEED.AR',
+  currency: 'ARS',
+} as const
+
+/**
  * Documentos oficiales descargables. Reglamento 1.4 obliga a que el
  * documento esté disponible electrónicamente para los usuarios.
  *

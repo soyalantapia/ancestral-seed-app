@@ -14,6 +14,11 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import type { PaymentStatus } from '@/types'
+import {
+  CheckoutModal,
+  type CheckoutPaymentInput,
+  type CheckoutResult,
+} from '@/components/features/CheckoutModal'
 import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
 function buildPaymentReceipt(p: FlatPayment): string {
@@ -110,18 +115,56 @@ const filters: { id: 'all' | PaymentStatus; label: string }[] = [
 ]
 
 export default function Pagos() {
+  /**
+   * SA4 (#POS-31, auditoría UX): antes "Pagar" disparaba toast inocuo.
+   * Ahora abrimos CheckoutModal con el item seleccionado. Las
+   * confirmaciones (card o transferencia) generan un override local
+   * que marca el pago como `paid` en la lista, persistido en este
+   * mount pero no en el mock global (que es read-only).
+   *
+   * En producción esto se reemplaza con un PATCH al backend que
+   * propaga el cambio a todos los clientes.
+   */
+  const [checkoutItem, setCheckoutItem] =
+    useState<CheckoutPaymentInput | null>(null)
+  const [paidOverrides, setPaidOverrides] = useState<
+    Record<string, { paidAt: string; method: 'card' | 'transfer' }>
+  >({})
+
   const allPayments: FlatPayment[] = useMemo(
     () =>
       mockCertificationRequests.flatMap((r) =>
-        (r.payments ?? []).map((p) => ({
-          ...p,
-          requestId: r.id,
-          requestName: r.productName,
-          requestNumber: r.number,
-        })),
+        (r.payments ?? []).map((p) => {
+          const override = paidOverrides[p.id]
+          return {
+            ...p,
+            status: override ? ('paid' as PaymentStatus) : p.status,
+            paidAt: override?.paidAt ?? p.paidAt,
+            requestId: r.id,
+            requestName: r.productName,
+            requestNumber: r.number,
+          }
+        }),
       ),
-    [],
+    [paidOverrides],
   )
+
+  function handlePaid(result: CheckoutResult) {
+    setPaidOverrides((prev) => ({
+      ...prev,
+      [result.itemId]: {
+        paidAt: result.paidAt,
+        method: result.method,
+      },
+    }))
+    if (result.method === 'card') {
+      toast.success('Pago confirmado — vas a recibir el recibo por email')
+    } else {
+      toast.success(
+        'Comprobante recibido — lo revisamos en menos de 24h',
+      )
+    }
+  }
 
   const pendingCount = allPayments.filter(
     (p) => p.status === 'pending' || p.status === 'overdue',
@@ -395,7 +438,14 @@ export default function Pagos() {
                       <button
                         type="button"
                         onClick={() =>
-                          toast.success(`Iniciando pago de ${p.concept}`)
+                          setCheckoutItem({
+                            id: p.id,
+                            concept: p.concept,
+                            amount: p.amount,
+                            currency: p.currency,
+                            requestLabel: `${p.requestNumber} · ${p.requestName}`,
+                            dueDate: p.dueDate,
+                          })
                         }
                         className={cn(
                           'inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-bold transition-colors',
@@ -441,6 +491,14 @@ export default function Pagos() {
         Gestionar métodos de pago
         <ArrowRight className="h-3.5 w-3.5" />
       </Link>
+
+      {/* Checkout — abre al click "Pagar" sobre cualquier pago pendiente */}
+      <CheckoutModal
+        open={checkoutItem !== null}
+        item={checkoutItem}
+        onClose={() => setCheckoutItem(null)}
+        onPaid={handlePaid}
+      />
     </div>
   )
 }
