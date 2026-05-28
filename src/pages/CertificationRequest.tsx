@@ -5,6 +5,7 @@ import { useEscape } from '@/hooks/useEscape'
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   Award,
   Calendar as CalendarIcon,
   Check,
@@ -134,6 +135,12 @@ export default function CertificationRequest() {
         <ArrowLeft className="h-4 w-4" />
         Mis certificaciones
       </Link>
+
+      {/* Fix SB1 (#POS-14): Antes la ficha tenía 6 tabs y ningún espacio
+          que respondiera la pregunta del postulante "¿qué necesitan de
+          mí?". Ahora un bloque destacado computa el "next step" más
+          urgente y le ofrece un CTA directo. */}
+      <NextStepCard request={request} setTab={setTab} />
 
       {/* Hero summary card */}
       <section className="mt-4 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
@@ -1736,6 +1743,161 @@ function MessageThreadSheet({
         </div>
       </aside>
     </div>
+  )
+}
+
+/**
+ * Computa la acción más urgente del postulante en función del estado
+ * de la solicitud. Patrón "next best action" — responde la única
+ * pregunta del usuario al abrir la ficha: "¿qué necesitan de mí?".
+ *
+ * Prioridad (cae al primero que matchee):
+ * 1. Pago vencido → "Regularizar pago" (urgent)
+ * 2. Reunión pendiente de tu respuesta → "Responder propuesta" (urgent)
+ * 3. Diagnóstico abierto sin completar → "Completar diagnóstico" (urgent)
+ * 4. Items pendientes del array `pendingItems` → primero del array
+ * 5. Solicitud en proceso, nada pendiente → estado informativo, no urgent
+ */
+type NextStep = {
+  title: string
+  description: string
+  ctaLabel: string
+  onAction: () => void
+  urgent: boolean
+  icon: typeof AlertTriangle
+}
+
+function computeNextStep(
+  request: CertificationRequestType,
+  setTab: (t: Tab) => void,
+): NextStep {
+  const pendingPayments = (request.payments ?? []).filter(
+    (p) => p.status === 'overdue',
+  )
+  if (pendingPayments.length > 0) {
+    const p = pendingPayments[0]
+    return {
+      title: 'Regularizá el arancel',
+      description: `Tenés el pago "${p.concept}" vencido. Si no se resuelve en 30 días, la solicitud se pausa.`,
+      ctaLabel: 'Ir a pagos',
+      onAction: () => setTab('Pagos'),
+      urgent: true,
+      icon: AlertTriangle,
+    }
+  }
+
+  const pendingMeeting = request.meetings.find((m) => m.status === 'pending')
+  if (pendingMeeting) {
+    return {
+      title: 'Respondé la propuesta del auditor',
+      description: `${pendingMeeting.auditorName} propuso una reunión. Confirmá o reprogramá.`,
+      ctaLabel: 'Ver propuesta',
+      onAction: () => setTab('Seguimiento'),
+      urgent: true,
+      icon: CalendarIcon,
+    }
+  }
+
+  if (
+    request.diagnosticDeadline &&
+    request.diagnosticCompleted === false
+  ) {
+    return {
+      title: 'Completá el diagnóstico',
+      description: `Es el primer paso para avanzar a la siguiente etapa. Vence el ${request.diagnosticDeadline}.`,
+      ctaLabel: 'Completar ahora',
+      onAction: () => setTab('Evaluación'),
+      urgent: true,
+      icon: AlertTriangle,
+    }
+  }
+
+  if (request.pendingItems.length > 0) {
+    const first = request.pendingItems[0]
+    return {
+      title: first,
+      description:
+        request.pendingItems.length > 1
+          ? `Tenés ${request.pendingItems.length} pendiente${request.pendingItems.length > 1 ? 's' : ''} en total. Empezá por este.`
+          : 'Necesario para que el tutor pueda avanzar el caso.',
+      ctaLabel: 'Ver detalle',
+      onAction: () => setTab('Evaluación'),
+      urgent: false,
+      icon: ChevronRight,
+    }
+  }
+
+  return {
+    title: 'Tu solicitud está en revisión por el tutor',
+    description:
+      'No tenés nada pendiente por ahora. Te avisamos por email cuando haya novedades.',
+    ctaLabel: 'Ver historial',
+    onAction: () => setTab('Historial'),
+    urgent: false,
+    icon: Check,
+  }
+}
+
+function NextStepCard({
+  request,
+  setTab,
+}: {
+  request: CertificationRequestType
+  setTab: (t: Tab) => void
+}) {
+  const step = computeNextStep(request, setTab)
+  const Icon = step.icon
+  return (
+    <section
+      className={cn(
+        'mt-4 overflow-hidden rounded-2xl border shadow-sm',
+        step.urgent
+          ? 'border-error-300/60 bg-gradient-to-br from-error-100/60 to-white'
+          : 'border-gold-300/60 bg-gradient-to-br from-gold-100/40 to-white',
+      )}
+    >
+      <div className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
+        <div
+          className={cn(
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+            step.urgent
+              ? 'bg-error-400 text-white shadow-sm'
+              : 'bg-gold-500 text-navy-500 shadow-sm',
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p
+            className={cn(
+              'text-[11px] font-bold uppercase tracking-widest',
+              step.urgent ? 'text-error-400' : 'text-gold-700',
+            )}
+          >
+            {step.urgent ? 'Acción urgente · tu próximo paso' : 'Tu próximo paso'}
+          </p>
+          <p className="mt-0.5 text-base font-bold text-navy-500">
+            {step.title}
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-navy-300">
+            {step.description}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={step.onAction}
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold shadow-sm transition-colors',
+            step.urgent
+              ? 'bg-error-400 text-white hover:bg-error-300'
+              : 'bg-navy-500 text-white hover:bg-navy-400',
+          )}
+        >
+          {step.ctaLabel}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </section>
   )
 }
 
