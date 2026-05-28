@@ -1,0 +1,19 @@
+# Fix V3-PUB-18 (auditoría v3): no había robots.txt — los crawlers
+# tenían que adivinar políticas. Ahora declaramos explícitamente:
+# - permitido: rutas públicas (home, directorio, autores, verificar,
+#   ayuda, legal, nosotros)
+# - bloqueado: panel del solicitante y del tutor (también marcados
+#   con meta robots noindex desde los Layouts)
+
+User-agent: *
+Allow: /
+Disallow: /inicio
+Disallow: /mis-certificaciones
+Disallow: /calendario
+Disallow: /pagos
+Disallow: /perfil
+Disallow: /settings
+Disallow: /notificaciones
+Disallow: /tutor
+
+Sitemap: https://soyalantapia.github.io/ancestral-seed-app/sitemap.xml
