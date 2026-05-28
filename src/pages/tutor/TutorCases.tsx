@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Breadcrumbs } from '@/components/features/Breadcrumbs'
 import {
   STAGE_SLA_DAYS,
   mockTutor,
@@ -56,6 +57,9 @@ export default function TutorCases() {
   const [hoverColumn, setHoverColumn] = useState<CaseStage | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [slaFilter, setSlaFilter] = useState<'all' | 'alerts'>('all')
+  // QT8: filtros adicionales de kanban — riesgo + sin asignar
+  const [riskFilter, setRiskFilter] = useState<'all' | CaseRisk>('all')
+  const [unassignedOnly, setUnassignedOnly] = useState(false)
   // QT6: anuncio a screen readers cuando se mueve un caso
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
   const kanbanRef = useRef<HTMLDivElement | null>(null)
@@ -70,13 +74,20 @@ export default function TutorCases() {
     return { overdue, watch }
   }, [cases])
 
-  // Vista filtrada según el filtro SLA
+  // Vista filtrada — aplica todos los filtros activos en cascada
   const visibleCases = useMemo(() => {
+    let result = cases
     if (slaFilter === 'alerts') {
-      return cases.filter((c) => slaToneForCase(c) !== 'green')
+      result = result.filter((c) => slaToneForCase(c) !== 'green')
     }
-    return cases
-  }, [cases, slaFilter])
+    if (riskFilter !== 'all') {
+      result = result.filter((c) => c.risk === riskFilter)
+    }
+    if (unassignedOnly) {
+      result = result.filter((c) => !c.tutorId)
+    }
+    return result
+  }, [cases, slaFilter, riskFilter, unassignedOnly])
 
   const byStage = useMemo(() => {
     const map = new Map<CaseStage, TutorCase[]>()
@@ -166,6 +177,13 @@ export default function TutorCases() {
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 md:px-8 md:py-8">
+      <Breadcrumbs
+        items={[
+          { label: 'Tutor', to: '/tutor/dashboard' },
+          { label: 'Casos' },
+        ]}
+        className="mb-4"
+      />
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">
@@ -239,11 +257,43 @@ export default function TutorCases() {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Filters — QT8 funcionales (riesgo + sin asignar). Los pills sin
+          onClick son placeholders esperando spec del producto. */}
       <div className="flex flex-wrap items-center gap-2">
         <FilterPill label="Tutor" />
         <FilterPill label="Solicitante" />
-        <FilterPill label="Riesgo" />
+        {/* Filtro Riesgo funcional: toggle entre all → alto → medio → bajo → all */}
+        <button
+          type="button"
+          onClick={() => {
+            const order: Array<'all' | CaseRisk> = ['all', 'alto', 'medio', 'bajo']
+            const i = order.indexOf(riskFilter)
+            setRiskFilter(order[(i + 1) % order.length])
+          }}
+          className={cn(
+            'inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition-colors',
+            riskFilter === 'all'
+              ? 'border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100'
+              : 'border-warning-300 bg-warning-100 text-warning-400',
+          )}
+        >
+          Riesgo: {riskFilter === 'all' ? 'todos' : riskFilter}
+          <ChevronDown className="h-3.5 w-3.5" />
+        </button>
+        {/* Filtro Sin asignar (toggle) */}
+        <button
+          type="button"
+          onClick={() => setUnassignedOnly((v) => !v)}
+          aria-pressed={unassignedOnly}
+          className={cn(
+            'inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition-colors',
+            unassignedOnly
+              ? 'border-navy-500 bg-navy-500 text-white'
+              : 'border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100',
+          )}
+        >
+          Sin asignar
+        </button>
         <FilterPill label="Pendientes" />
         <FilterPill label="Certificación" />
         <button

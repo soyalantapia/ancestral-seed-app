@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Breadcrumbs } from '@/components/features/Breadcrumbs'
 import {
   MESSAGE_TEMPLATES,
   SCORING_CRITERIA,
@@ -173,13 +174,31 @@ export default function TutorCaseDetail() {
     )
   }
 
+  // Tab label legible para el breadcrumb (capitalizado)
+  const tabLabel = (
+    { resumen: 'Resumen', evidencias: 'Evidencias', evaluacion: 'Evaluación', mensajes: 'Mensajes', historial: 'Historial' } as const
+  )[tab]
+
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 md:px-8 md:py-8">
-      {/* Breadcrumb */}
+      {/* Breadcrumbs jerárquicos: Tutor / Casos / CE-XXX / Tab */}
+      <Breadcrumbs
+        items={[
+          { label: 'Tutor', to: '/tutor/dashboard' },
+          { label: 'Casos', to: '/tutor/casos' },
+          {
+            label: caseData.id,
+            to: tab !== 'resumen' ? `/tutor/casos/${caseData.id}` : undefined,
+          },
+          ...(tab !== 'resumen' ? [{ label: tabLabel }] : []),
+        ]}
+      />
+
+      {/* Botón explícito "Volver a Casos" en mobile/quick-action */}
       <button
         type="button"
         onClick={() => navigate('/tutor/casos')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-navy-300 transition-colors hover:text-navy-500"
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-navy-300 transition-colors hover:text-navy-500"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Volver a Casos
