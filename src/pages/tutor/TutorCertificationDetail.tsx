@@ -36,11 +36,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
+  SCORING_CRITERIA,
   getChecklistByCert,
   getEvidenciasByCert,
   getExpedienteData,
   getInitialNotesByCert,
   mockIssuedCertifications,
+  mockScoringByCase,
 } from '@/services/mocks/data'
 import type {
   CertExpedienteEvidence,
@@ -714,6 +716,14 @@ function InfoTab({
         </div>
       </section>
 
+      {/* Fix SB7 (#TUT-26, auditoría UX): el expediente del cert
+          emitido mostraba solo un score global numérico, sin desglose
+          por dimensiones. El TutorCaseDetail (caso activo) sí mostraba
+          las 5 dimensiones culturales — inconsistente. Ahora el cert
+          emitido muestra el mismo desglose en read-only, con timestamp
+          implícito "al momento de emisión". */}
+      <DimensionsBreakdown caseId={cert.id} />
+
       {/* Información del producto */}
       <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
         <SectionHeader
@@ -771,6 +781,126 @@ function InfoTab({
         onCreatePreTask={onCreatePreTask}
       />
     </div>
+  )
+}
+
+/**
+ * Score por dimensiones culturales — versión read-only del bloque del
+ * TutorCaseDetail. Muestra las 5 dimensiones (cultural / social /
+ * ambiental / ética / gestión) con score promedio + peso de la
+ * dimensión sobre el total, con barra de progreso.
+ *
+ * Si no hay scoringValues registrados para este caseId, mostramos un
+ * empty state explicando que el caso fue emitido sin scoring detallado
+ * (puede pasar con certs heredados de pre-modelo).
+ */
+function DimensionsBreakdown({ caseId }: { caseId: string }) {
+  const values = mockScoringByCase[caseId] ?? []
+
+  // Agrupar por dimensión: promedio ponderado dentro de la dimensión
+  // (cada criterio tiene su peso, pero acá nos interesa la nota promedio
+  // expresada en escala 0-100 para que sea legible).
+  const dimensions = SCORING_CRITERIA.reduce(
+    (acc, def) => {
+      if (!acc[def.dimension]) {
+        acc[def.dimension] = {
+          dimension: def.dimension,
+          totalWeight: 0,
+          weightedScore: 0,
+          criteriaCount: 0,
+          completedCount: 0,
+        }
+      }
+      const value = values.find((v) => v.criterionId === def.id)
+      acc[def.dimension].totalWeight += def.weight
+      acc[def.dimension].criteriaCount += 1
+      if (value) {
+        acc[def.dimension].weightedScore += value.score * def.weight
+        acc[def.dimension].completedCount += 1
+      }
+      return acc
+    },
+    {} as Record<
+      string,
+      {
+        dimension: string
+        totalWeight: number
+        weightedScore: number
+        criteriaCount: number
+        completedCount: number
+      }
+    >,
+  )
+
+  const dimensionLabels: Record<string, string> = {
+    cultural: 'Cultural',
+    social: 'Sociales y Comunitaria',
+    ambiental: 'Ambiental',
+    etica: 'Ética y Cosmovisión',
+    gestion: 'Gestión y técnica',
+  }
+
+  const list = Object.values(dimensions).filter((d) => d.criteriaCount > 0)
+
+  if (values.length === 0) {
+    return (
+      <section className="rounded-3xl border border-dashed border-neutral-300 bg-white p-6 text-center md:p-8">
+        <p className="text-sm font-bold text-navy-500">
+          Sin scoring por dimensiones registrado
+        </p>
+        <p className="mt-1 text-xs text-navy-300">
+          Este certificado fue emitido antes de la evaluación con las
+          14 variables del antropólogo. El score global del expediente
+          es la única medida disponible.
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+      <SectionHeader
+        icon={FileCheck2}
+        title="Score por dimensiones culturales"
+        sub="Desglose por las 5 dimensiones del modelo del antropólogo, al momento de emisión."
+      />
+      <ul className="mt-5 space-y-4">
+        {list.map((d) => {
+          const score = d.totalWeight === 0 ? 0 : Math.round((d.weightedScore / d.totalWeight) * 10)
+          return (
+            <li key={d.dimension}>
+              <div className="flex items-baseline justify-between text-sm">
+                <span className="font-bold text-navy-500">
+                  {dimensionLabels[d.dimension] ?? d.dimension}
+                </span>
+                <span className="font-bold tabular-nums text-navy-500">
+                  {score}/100
+                </span>
+              </div>
+              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all',
+                    score >= 80
+                      ? 'bg-success-300'
+                      : score >= 60
+                        ? 'bg-gold-500'
+                        : score >= 40
+                          ? 'bg-warning-400'
+                          : 'bg-error-400',
+                  )}
+                  style={{ width: `${score}%` }}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-navy-300">
+                {d.completedCount} de {d.criteriaCount} criterios
+                evaluados · peso de la dimensión: {d.totalWeight}%
+              </p>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 
