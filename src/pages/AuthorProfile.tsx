@@ -231,11 +231,6 @@ function ProfileHero({
                   className="h-full w-full object-cover"
                 />
               </div>
-              {/* Badge blockchain flotante */}
-              <div className="absolute -bottom-3 -right-3 inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-navy-500 shadow-lg ring-4 ring-white">
-                <Shield className="h-3 w-3" />
-                Blockchain
-              </div>
             </div>
           </div>
 
