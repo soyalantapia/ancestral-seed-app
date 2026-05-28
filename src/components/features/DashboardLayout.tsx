@@ -28,10 +28,16 @@ import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
+// Fix SM3 (#POS-42, auditoría UX): Documentos antes vivía en "Mi
+// cuenta" pero NO son documentos personales — son derivados de las
+// solicitudes (certificados emitidos, facturas, evidencias). Movido
+// al grupo General junto a "Mis certificaciones" donde el user
+// espera encontrarlo.
 const generalItems = [
   { to: '/inicio', icon: Home, label: 'Inicio' },
   { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: 'unread' as const },
   { to: '/mis-certificaciones', icon: FileText, label: 'Mis certificaciones' },
+  { to: '/documentos', icon: FileCheck2, label: 'Documentos' },
   { to: '/calendario', icon: Calendar, label: 'Calendario' },
 ]
 
@@ -41,7 +47,6 @@ const financeItems = [
 
 const accountItems = [
   { to: '/mi-perfil', icon: UserRound, label: 'Mi perfil' },
-  { to: '/documentos', icon: FileCheck2, label: 'Documentos' },
   { to: '/configuracion', icon: Settings, label: 'Configuración' },
   { to: '/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]

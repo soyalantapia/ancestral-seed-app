@@ -35,7 +35,8 @@ export default function Login() {
     try {
       const res = await api.login(data)
       setSession(res.user, res.token)
-      toast.success('¡Bienvenida de vuelta!')
+      // Fix SM3 (#POS-01, auditoría UX): género-neutral.
+      toast.success('¡Qué bueno tenerte de vuelta!')
       navigate(redirectTo, { replace: true })
     } catch (e) {
       toast.error((e as Error).message)

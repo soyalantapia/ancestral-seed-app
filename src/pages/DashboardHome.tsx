@@ -25,10 +25,8 @@ import {
   TrendingUp,
   Upload,
   Users,
-  X,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
-import { useUiStore } from '@/store/ui'
 import { useNotificationsStore } from '@/store/notifications'
 import {
   mockCertificationRequests,
@@ -140,8 +138,9 @@ export default function DashboardHome() {
   const user = useAuthStore((s) => s.user)
   // Tour guiado de 8 pasos en primera visita
   useAutoStartTour('solicitante')
-  const dismissed = useUiStore((s) => s.dismissedBanners['welcome-info'])
-  const dismissBanner = useUiStore((s) => s.dismissBanner)
+  // useUiStore antes manejaba dismiss del banner "Mantente atento" —
+  // removido en SM3 fix #POS-08. Si se reintroduce algún banner
+  // dismissable, restaurar el wiring.
   const notifs = useNotificationsStore((s) => s.items)
   const unread = notifs.filter((n) => !n.read).length
 
@@ -370,27 +369,11 @@ export default function DashboardHome() {
         />
       )}
 
-      {/* ─── Banner info ──────────────────────────────────────────────── */}
-      {!dismissed && (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl bg-info-100 px-5 py-4 text-sm text-navy-500 ring-1 ring-info-200">
-          <Info className="mt-0.5 h-5 w-5 shrink-0 text-info-400" />
-          <div className="flex-1">
-            <p className="font-bold">Mantente atento a tus notificaciones</p>
-            <p className="mt-1 text-navy-300">
-              Podríamos solicitar información adicional o nuevas evidencias.
-              Te avisaremos por correo y dentro de la plataforma.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => dismissBanner('welcome-info')}
-            className="text-navy-300 hover:text-navy-500"
-            aria-label="Cerrar"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+      {/* Banner info eliminado — Fix SM3 (#POS-08, auditoría UX): copy
+          genérico sin valor accionable ("podríamos solicitar info...")
+          que ocupaba espacio antes de los KPIs. La info útil (próxima
+          acción, recientes, urgentes) ya está cubierta por el NBA, el
+          RecentActivitySummary y el UrgentPaymentBanner. */}
 
       {/* ─── KPIs ──────────────────────────────────────────────────────── */}
       <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -1079,10 +1062,28 @@ function TutorMessageCard({
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
+        {/* Fix SM3 (#POS-09, auditoría UX): antes el botón WhatsApp abría
+            wa.me/5491145678901 (número mock) — el user llegaba a un chat
+            con un número que no existe. Ahora confirmamos antes y, si es
+            mock, sugerimos responder dentro de la plataforma. */}
         <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={(e) => {
+            if (import.meta.env.VITE_USE_MSW !== 'false') {
+              // En modo demo, advertir antes de abrir
+              const ok = window.confirm(
+                'Modo demo: el número de WhatsApp del tutor es de prueba. ' +
+                  '¿Querés abrirlo igual o preferís responder dentro de la plataforma?\n\n' +
+                  'OK = abrir WhatsApp · Cancelar = abrir el thread interno',
+              )
+              if (!ok) {
+                e.preventDefault()
+                window.location.href = `/mis-certificaciones/${requestId}?tab=evaluacion&meeting=${message.meetingId}`
+              }
+            }
+          }}
           className="inline-flex items-center gap-1.5 rounded-full bg-success-300 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-success-400"
         >
           <MessageSquare className="h-3.5 w-3.5" />

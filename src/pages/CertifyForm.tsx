@@ -1652,8 +1652,9 @@ function PostponeModal({
               ¿Postergar tu solicitud?
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-navy-300">
-              Guardamos tus avances de forma segura. Podés retomar la
-              certificación más adelante desde tu panel.
+              Guardamos tus avances por 60 días. Podés retomar desde
+              <strong>"Mis certificaciones" → "Postergadas"</strong> en
+              tu panel.
             </p>
 
             <div className="mt-7 flex flex-col gap-2">

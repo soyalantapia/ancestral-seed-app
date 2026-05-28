@@ -1375,6 +1375,11 @@ function ChangeRequestDialog({
             <p className="mt-0.5 text-xs text-navy-300">
               Solicitud {request.number} · {request.productName}
             </p>
+            {/* Fix SM3 (#POS-15, auditoría UX): plazo de respuesta
+                visible ANTES de enviar (no solo en el toast posterior). */}
+            <p className="mt-1.5 text-[11px] font-medium text-info-400">
+              Tu tutor responde dentro de las 24-48 hs hábiles.
+            </p>
           </div>
           <button
             type="button"

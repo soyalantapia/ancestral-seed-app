@@ -30,7 +30,9 @@ const typeFilters: Array<{
   { id: 'audit', label: 'Auditoría', kinds: ['audit_proposed', 'audit_accepted'] },
   { id: 'evidence', label: 'Evidencias', kinds: ['evidence_request', 'document_uploaded'] },
   { id: 'message', label: 'Mensajes', kinds: ['message_received'] },
-  { id: 'stage', label: 'Estado', kinds: ['stage_changed', 'cert_published'] },
+  // Fix SM3 (#POS-37): "Estado" era ambiguo con "estado de cuenta".
+  // "Avances" comunica que son cambios de etapa o publicación.
+  { id: 'stage', label: 'Avances', kinds: ['stage_changed', 'cert_published'] },
 ]
 
 const iconMap: Record<NotificationKind, typeof Bell> = {
