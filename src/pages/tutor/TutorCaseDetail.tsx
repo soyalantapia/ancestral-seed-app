@@ -1099,9 +1099,17 @@ function EvaluacionTab({
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-4">
         <p className="max-w-md text-[11px] leading-relaxed text-navy-300">
-          Si encontrás algo a ajustar, dejá una observación en{' '}
-          <strong className="text-navy-500">Mensajes</strong> y la IA reprocesa
-          la evaluación.
+          {/* Fix SB13 (#TUT-19, auditoría UX): antes el copy decía "dejá
+              una observación en Mensajes" — pero Mensajes es público
+              con el postulante, y el disenso técnico con la IA NO
+              debería serlo. Ahora redirigimos a Notas internas
+              (privado al equipo). */}
+          Si encontrás algo a ajustar,{' '}
+          <strong className="text-navy-500">
+            registralo en Notas internas
+          </strong>
+          . La discrepancia técnica con la IA es información de equipo,
+          no del postulante.
         </p>
         <button
           type="button"
