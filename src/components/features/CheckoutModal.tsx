@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Banknote,
@@ -368,101 +368,119 @@ export function CheckoutModal({
                     label="Nombre del titular"
                     error={touched.holder ? fieldErrors.holder : null}
                   >
-                    <input
-                      type="text"
-                      value={holder}
-                      onChange={(e) => setHolder(e.target.value)}
-                      onBlur={() => setTouched((t) => ({ ...t, holder: true }))}
-                      placeholder="Como figura en la tarjeta"
-                      autoComplete="cc-name"
-                      aria-invalid={
-                        touched.holder && fieldErrors.holder !== null
-                      }
-                      className={cn(
-                        'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm text-navy-500 focus:outline-none focus:ring-2',
-                        touched.holder && fieldErrors.holder
-                          ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
-                          : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
-                      )}
-                    />
+                    {(errorId) => (
+                      <input
+                        type="text"
+                        value={holder}
+                        onChange={(e) => setHolder(e.target.value)}
+                        onBlur={() =>
+                          setTouched((t) => ({ ...t, holder: true }))
+                        }
+                        placeholder="Como figura en la tarjeta"
+                        autoComplete="cc-name"
+                        aria-invalid={
+                          touched.holder && fieldErrors.holder !== null
+                        }
+                        aria-describedby={errorId}
+                        className={cn(
+                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm text-navy-500 focus:outline-none focus:ring-2',
+                          touched.holder && fieldErrors.holder
+                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                        )}
+                      />
+                    )}
                   </FieldRow>
                   <FieldRow
                     label="Número de tarjeta"
                     error={touched.number ? fieldErrors.number : null}
                   >
-                    <input
-                      type="text"
-                      value={number}
-                      onChange={(e) =>
-                        setNumber(formatCardNumber(e.target.value))
-                      }
-                      onBlur={() => setTouched((t) => ({ ...t, number: true }))}
-                      placeholder="1234 5678 9012 3456"
-                      autoComplete="cc-number"
-                      inputMode="numeric"
-                      aria-invalid={
-                        touched.number && fieldErrors.number !== null
-                      }
-                      className={cn(
-                        'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                        touched.number && fieldErrors.number
-                          ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
-                          : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
-                      )}
-                    />
+                    {(errorId) => (
+                      <input
+                        type="text"
+                        value={number}
+                        onChange={(e) =>
+                          setNumber(formatCardNumber(e.target.value))
+                        }
+                        onBlur={() =>
+                          setTouched((t) => ({ ...t, number: true }))
+                        }
+                        placeholder="1234 5678 9012 3456"
+                        autoComplete="cc-number"
+                        inputMode="numeric"
+                        aria-invalid={
+                          touched.number && fieldErrors.number !== null
+                        }
+                        aria-describedby={errorId}
+                        className={cn(
+                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                          touched.number && fieldErrors.number
+                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                        )}
+                      />
+                    )}
                   </FieldRow>
                   <div className="grid grid-cols-2 gap-3">
                     <FieldRow
                       label="Vencimiento"
                       error={touched.expiry ? fieldErrors.expiry : null}
                     >
-                      <input
-                        type="text"
-                        value={expiry}
-                        onChange={(e) =>
-                          setExpiry(formatExpiry(e.target.value))
-                        }
-                        onBlur={() =>
-                          setTouched((t) => ({ ...t, expiry: true }))
-                        }
-                        placeholder="MM/AA"
-                        autoComplete="cc-exp"
-                        inputMode="numeric"
-                        aria-invalid={
-                          touched.expiry && fieldErrors.expiry !== null
-                        }
-                        className={cn(
-                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                          touched.expiry && fieldErrors.expiry
-                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
-                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
-                        )}
-                      />
+                      {(errorId) => (
+                        <input
+                          type="text"
+                          value={expiry}
+                          onChange={(e) =>
+                            setExpiry(formatExpiry(e.target.value))
+                          }
+                          onBlur={() =>
+                            setTouched((t) => ({ ...t, expiry: true }))
+                          }
+                          placeholder="MM/AA"
+                          autoComplete="cc-exp"
+                          inputMode="numeric"
+                          aria-invalid={
+                            touched.expiry && fieldErrors.expiry !== null
+                          }
+                          aria-describedby={errorId}
+                          className={cn(
+                            'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                            touched.expiry && fieldErrors.expiry
+                              ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                              : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                          )}
+                        />
+                      )}
                     </FieldRow>
                     <FieldRow
                       label="CVV"
                       error={touched.cvv ? fieldErrors.cvv : null}
                     >
-                      <input
-                        type="text"
-                        value={cvv}
-                        onChange={(e) =>
-                          setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
-                        }
-                        onBlur={() => setTouched((t) => ({ ...t, cvv: true }))}
-                        placeholder="123"
-                        autoComplete="cc-csc"
-                        inputMode="numeric"
-                        aria-invalid={
-                          touched.cvv && fieldErrors.cvv !== null
-                        }
-                        className={cn(
-                          'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                          touched.cvv && fieldErrors.cvv
-                            ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
-                            : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
-                        )}
-                      />
+                      {(errorId) => (
+                        <input
+                          type="text"
+                          value={cvv}
+                          onChange={(e) =>
+                            setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
+                          }
+                          onBlur={() =>
+                            setTouched((t) => ({ ...t, cvv: true }))
+                          }
+                          placeholder="123"
+                          autoComplete="cc-csc"
+                          inputMode="numeric"
+                          aria-invalid={
+                            touched.cvv && fieldErrors.cvv !== null
+                          }
+                          aria-describedby={errorId}
+                          className={cn(
+                            'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
+                            touched.cvv && fieldErrors.cvv
+                              ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
+                              : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
+                          )}
+                        />
+                      )}
                     </FieldRow>
                   </div>
                   <p className="flex items-center gap-1.5 text-[11px] text-navy-300">
@@ -630,6 +648,14 @@ export function CheckoutModal({
  * Wrapper de campo del formulario de tarjeta con label arriba y
  * mensaje de error abajo. Fix V2-POS-14 — feedback visible cuando el
  * campo está tocado y es inválido.
+ *
+ * Fix V3-POS-11 (auditoría v3): antes el `<p>` de error no estaba
+ * vinculado al input via `aria-describedby` — los screen readers
+ * leían "inválido" sin contexto del mensaje. Ahora generamos un id
+ * único por instancia con `useId()`, lo asignamos al `<p>` y lo
+ * exponemos al children via render-prop (el caller hace
+ * aria-describedby={errorId} en el input). Mantiene la API simple
+ * sin acoplar el FieldRow al tipo de input.
  */
 function FieldRow({
   label,
@@ -638,14 +664,23 @@ function FieldRow({
 }: {
   label: string
   error: string | null
-  children: React.ReactNode
+  children: (
+    errorId: string | undefined,
+  ) => React.ReactNode
 }) {
+  const reactId = useId()
+  const errorId = error ? `err-${reactId}` : undefined
   return (
     <div>
       <label className="text-xs font-bold text-navy-500">{label}</label>
-      {children}
+      {children(errorId)}
       {error && (
-        <p className="mt-1 text-[11px] font-semibold text-error-400">{error}</p>
+        <p
+          id={errorId}
+          className="mt-1 text-[11px] font-semibold text-error-400"
+        >
+          {error}
+        </p>
       )}
     </div>
   )

@@ -24,9 +24,11 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
 import { GuidedTour } from './GuidedTour'
+import { PageMeta } from './PageMeta'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
+import { resetDemoStores } from '@/store/resetDemo'
 import { cn } from '@/lib/utils'
 
 // Fix SM3 (#POS-42, auditoría UX): Documentos antes vivía en "Mi
@@ -70,6 +72,11 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
     setConfirmLogout(false)
     // Navegar primero (replace evita stacking con el Navigate de RequireAuth).
     navigate('/login', { replace: true })
+    // Fix V3-POS-05 (auditoría v3): limpiar TODOS los stores del demo
+    // antes del clearSession para evitar cross-account leaks en
+    // navegadores compartidos (kioskos, equipos de pruebas). El flag
+    // forLogout también limpia el draft del CertifyForm y las notifs.
+    resetDemoStores({ forLogout: true })
     // Limpiar sesión al final.
     clearSession()
     toast.success('Sesión cerrada')
@@ -190,6 +197,21 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      {/*
+        Fix V3-PUB-02 (auditoría v3): el `noindex` prop de PageMeta era
+        DEAD CODE — ningún callsite lo pasaba. V2-PUB-07 había
+        agregado el wiring (omitir og:image, JSON-LD, etc. cuando
+        noindex=true) pero nadie lo invocaba. Ahora el dashboard del
+        postulante aplica `noindex` por default desde el Layout — TODAS
+        las subrutas privadas (/inicio, /mis-certificaciones,
+        /calendario, /pagos, /perfil, /ayuda, /settings,
+        /notificaciones) heredan el meta robots noindex,nofollow.
+
+        Si una subruta específica necesita ser indexable, puede
+        sobreescribir con su propio <PageMeta noindex={false} ... />
+        más abajo en el árbol.
+      */}
+      <PageMeta noindex />
       <SkipToContent />
       <Header />
 

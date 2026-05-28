@@ -4,6 +4,8 @@ import { useInternalNotesStore } from './internalNotes'
 import { useCertChecklistStore } from './certChecklist'
 import { useCoverByRequestStore } from './coverByRequest'
 import { useLastVisitStore } from './lastVisit'
+import { useCertifyFormStore } from './certifyForm'
+import { useNotificationsStore } from './notifications'
 
 /**
  * Fix V3-TUT-09 + V3-POS-20 + V3-POS-05 (auditoría v3):
@@ -36,7 +38,21 @@ import { useLastVisitStore } from './lastVisit'
  * - `useNotificationsStore` (parte del demo pero su reset puede
  *   confundir si el user ya leyó algunas)
  */
-export function resetDemoStores(): readonly string[] {
+/**
+ * Fix V3-POS-05 (auditoría v3): el logout y "Eliminar cuenta" no
+ * limpiaban los stores del v2. En navegador compartido / kiosko /
+ * equipo de pruebas, el siguiente usuario veía la portada elegida,
+ * el draft del CertifyForm y las notas internas del anterior. Esta
+ * función tiene una variante `forLogout: true` que ADEMÁS limpia:
+ *
+ * - `useCertifyFormStore` (draft de postulación con datos personales)
+ * - `useNotificationsStore` (historial de notifs)
+ *
+ * Para "Restaurar demo" del kanban del tutor preferimos NO borrar
+ * estos dos (el reviewer puede estar a mitad de un draft o quiere
+ * mantener las notifs), pero para logout sí los limpiamos.
+ */
+export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string[] {
   const touched: string[] = []
 
   // Stores con API reset() expuesta
@@ -92,6 +108,38 @@ export function resetDemoStores(): readonly string[] {
     touched.push('lastVisit')
   } catch {
     /* noop */
+  }
+
+  // Limpiezas adicionales solo en logout / delete-account — datos
+  // que el "Restaurar demo" prefiere mantener (draft en progreso,
+  // notifs leídas).
+  if (opts?.forLogout) {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      for (const key of [
+        'ancestral-seed-certify-form-v2',
+        'ancestral-seed-notifications',
+      ]) {
+        try {
+          window.localStorage.removeItem(key)
+        } catch {
+          /* noop */
+        }
+      }
+    }
+    try {
+      useCertifyFormStore.getState().reset()
+      touched.push('certifyForm')
+    } catch {
+      /* noop */
+    }
+    try {
+      // useNotificationsStore no expone reset oficialmente; lo
+      // limpiamos con setState directo a un array vacío.
+      useNotificationsStore.setState({ items: [] })
+      touched.push('notifications')
+    } catch {
+      /* noop */
+    }
   }
 
   return touched

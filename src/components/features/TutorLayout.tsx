@@ -30,8 +30,10 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
 import { GuidedTour } from './GuidedTour'
+import { PageMeta } from './PageMeta'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
+import { resetDemoStores } from '@/store/resetDemo'
 import {
   mockIssuedCertifications,
   mockTutor,
@@ -128,6 +130,10 @@ export function TutorLayout() {
     setDrawerOpen(false)
     setConfirmLogout(false)
     navigate('/login', { replace: true })
+    // Fix V3-POS-05 (auditoría v3): mismo cleanup que DashboardLayout
+    // — limpiar los stores del demo antes del clearSession para evitar
+    // cross-account leaks.
+    resetDemoStores({ forLogout: true })
     clearSession()
     toast.success('Sesión cerrada')
   }
@@ -177,6 +183,12 @@ export function TutorLayout() {
 
   return (
     <div className="flex min-h-screen bg-white">
+      {/* Fix V3-PUB-02 (auditoría v3): igual que en DashboardLayout,
+          el panel del tutor es 100% privado. Aplicamos noindex desde
+          el Layout para que TODAS las subrutas (/tutor/dashboard,
+          /tutor/casos, /tutor/certificaciones, /tutor/tareas,
+          /tutor/agenda) hereden el meta robots. */}
+      <PageMeta noindex />
       <SkipToContent />
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col bg-navy-500 text-white md:flex">

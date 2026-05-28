@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { useSettingsStore } from '@/store/settings'
+import { resetDemoStores } from '@/store/resetDemo'
 import { cn } from '@/lib/utils'
 
 /**
@@ -181,6 +182,9 @@ export function CommandPalette() {
               group: 'Acciones' as const,
               icon: LogOut,
               action: () => {
+                // Fix V3-POS-05: limpiar stores del demo antes del
+                // clearSession (cross-account leak fix).
+                resetDemoStores({ forLogout: true })
                 clearSession()
                 navigate('/login', { replace: true })
                 close()

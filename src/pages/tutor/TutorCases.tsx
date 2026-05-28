@@ -253,8 +253,18 @@ export default function TutorCases() {
           .filter((r) => !r.done)
           .map((r) => r.label)
           .join(' · ')
+        // Fix V3-TUT-03: si el salto falla por una etapa INTERMEDIA,
+        // el toast aclara cuál fue — no solo "no podés avanzar a X"
+        // sino "no podés avanzar a X porque en Y faltan: A · B".
+        const failedStage = STAGES.find(
+          (s) => s.id === advanceCheck.failedAt,
+        )
+        const intermediateNote =
+          advanceCheck.failedAt && advanceCheck.failedAt !== moving.stage
+            ? ` (bloqueado en "${failedStage?.label ?? advanceCheck.failedAt}")`
+            : ''
         toast.error(
-          `No podés avanzar "${moving.productName}" a ${STAGES[toIdx].label}: ${pendings || advanceCheck.reason}. ` +
+          `No podés avanzar "${moving.productName}" a ${STAGES[toIdx].label}${intermediateNote}: ${pendings || advanceCheck.reason}. ` +
             `Ingresá al caso y resolvelo desde ahí.`,
         )
         setDraggingId(null)

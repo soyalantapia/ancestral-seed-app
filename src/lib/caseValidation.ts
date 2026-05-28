@@ -139,7 +139,7 @@ export function validateCaseAdvance(
     evidenceEvals: Array<{ verdict: EvidenceVerdict }>
     scoringValues: ScoringValue[]
   },
-): AdvanceCheck & { isBackwards: boolean } {
+): AdvanceCheck & { isBackwards: boolean; failedAt?: CaseStage } {
   const STAGE_ORDER: CaseStage[] = [
     'postulado',
     'revision-inicial',
@@ -157,6 +157,38 @@ export function validateCaseAdvance(
   if (isBackwards) {
     return { ok: true, reason: '', requirements: [], isBackwards: true }
   }
-  const check = computeCanAdvance(caseData, data.evidenceEvals, data.scoringValues)
-  return { ...check, isBackwards: false }
+
+  /**
+   * Fix V3-TUT-03 (auditoría v3): antes solo validábamos los
+   * requirements de la PRÓXIMA etapa (caseData.stage → siguiente en
+   * STAGE_ORDER). Si el tutor arrastraba de "Postulado" directo a
+   * "Auditoría", se aplicaba solo el check "postulado → revisión
+   * inicial" y el resto pasaba sin verificar. Los requirements de
+   * "elegible" y "diagnóstico" quedaban silenciosos.
+   *
+   * Ahora simulamos el paso por cada etapa intermedia: para cada
+   * `stage` entre fromIdx+1 y toIdx, evaluamos `computeCanAdvance()`
+   * como si el caso estuviera EN esa etapa. Si alguna falla,
+   * retornamos esa etapa con sus requirements pendientes (el caller
+   * puede mostrar "no podés saltar a X porque en Y faltan: A · B").
+   */
+  for (let i = fromIdx; i < toIdx; i++) {
+    const stepStage = STAGE_ORDER[i]
+    const simulated: TutorCase = { ...caseData, stage: stepStage }
+    const check = computeCanAdvance(
+      simulated,
+      data.evidenceEvals,
+      data.scoringValues,
+    )
+    if (!check.ok) {
+      return { ...check, isBackwards: false, failedAt: stepStage }
+    }
+  }
+
+  return {
+    ok: true,
+    reason: '',
+    requirements: [],
+    isBackwards: false,
+  }
 }

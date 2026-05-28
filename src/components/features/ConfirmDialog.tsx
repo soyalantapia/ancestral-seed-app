@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -51,6 +51,18 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null)
+  /**
+   * Fix V3-POS-12 + V3-PUB-12 (auditoría v3): antes los ids
+   * `confirm-dialog-title` y `confirm-dialog-description` eran
+   * estáticos — si dos ConfirmDialog convivían (raro pero posible:
+   * MyProfile pendingTab abierto + notif que dispara otro confirm),
+   * aria-labelledby de ambos apuntaban al mismo id y los screen
+   * readers leían el primero solamente. Ahora generamos ids únicos
+   * con `useId()` por instancia.
+   */
+  const reactId = useId()
+  const titleId = `cd-${reactId}-title`
+  const descId = `cd-${reactId}-desc`
 
   /**
    * ESC cancela siempre. Enter confirma SOLO si el foco está en el
@@ -108,8 +120,8 @@ export function ConfirmDialog({
           <motion.div
             role="alertdialog"
             aria-modal="true"
-            aria-labelledby="confirm-dialog-title"
-            aria-describedby="confirm-dialog-description"
+            aria-labelledby={titleId}
+            aria-describedby={descId}
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
@@ -128,10 +140,7 @@ export function ConfirmDialog({
                 >
                   <AlertTriangle className="h-5 w-5" />
                 </span>
-                <h3
-                  id="confirm-dialog-title"
-                  className="text-lg font-bold text-navy-500"
-                >
+                <h3 id={titleId} className="text-lg font-bold text-navy-500">
                   {title}
                 </h3>
               </div>
@@ -145,7 +154,7 @@ export function ConfirmDialog({
               </button>
             </div>
             <p
-              id="confirm-dialog-description"
+              id={descId}
               className="mt-3 whitespace-pre-line text-sm leading-relaxed text-navy-500"
             >
               {description}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSettingsStore } from '@/store/settings'
+import { resetDemoStores } from '@/store/resetDemo'
 import { ThemeToggle } from '@/components/features/ThemeToggle'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import { cn } from '@/lib/utils'
@@ -809,6 +810,15 @@ function DeleteAccountModal({
             type="button"
             disabled={!canDelete}
             onClick={() => {
+              // Fix V3-POS-05 (auditoría v3): el delete-account no
+              // limpiaba ningún store local — el siguiente user en el
+              // navegador veía el draft del CertifyForm, las notas, la
+              // portada y el lastVisit del anterior. Ahora limpiamos
+              // TODO con `resetDemoStores({ forLogout: true })` antes
+              // de cerrar el modal. La sesión queda intacta porque el
+              // delete real lo procesa el backend; localmente solo
+              // garantizamos que no haya leakage.
+              resetDemoStores({ forLogout: true })
               toast.success('Solicitud de eliminación enviada — vas a recibir un email para confirmarla')
               onClose()
             }}
