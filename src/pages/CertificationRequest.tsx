@@ -766,8 +766,61 @@ function DatosTab({ request }: { request: CertificationRequestType }) {
 
 // ─── Tab: Evidencias ─────────────────────────────────────────────────────────
 
+/**
+ * Slots de evidencias solicitadas explícitamente por el tutor — Fix
+ * SB8 (#POS-16, auditoría UX). Antes el postulante veía solo 3 grupos
+ * genéricos (Fotos / Videos / Documentos) sin saber qué pidió el tutor
+ * específicamente. Ahora cada solicitud del request tiene su slot
+ * dedicado con título + descripción + deadline + estado.
+ *
+ * En producción esto vive en el backend (request.tutorRequests).
+ * Por ahora lo hidratamos por requestId desde un map local.
+ */
+interface RequestedEvidenceSlot {
+  id: string
+  title: string
+  description: string
+  dueDate: string
+  /** Tipos de archivo aceptados. Define el accept del input. */
+  acceptedKinds: Array<'image' | 'video' | 'document'>
+}
+
+const REQUESTED_EVIDENCES_BY_REQUEST: Record<string, RequestedEvidenceSlot[]> = {
+  'req-001': [
+    {
+      id: 'req-001-aval',
+      title: 'Aval del cacique o autoridad comunitaria',
+      description:
+        'Documento firmado por la autoridad de la comunidad que certifica el vínculo del producto/servicio con el saber ancestral.',
+      dueDate: '2026-03-15',
+      acceptedKinds: ['document', 'image'],
+    },
+    {
+      id: 'req-001-process',
+      title: 'Video del proceso de filigrana paso a paso',
+      description:
+        'Grabación mostrando desde el hilado hasta la pieza terminada. Mínimo 3 minutos.',
+      dueDate: '2026-03-20',
+      acceptedKinds: ['video'],
+    },
+  ],
+}
+
 function EvidenciasTab({ request }: { request: CertificationRequestType }) {
   const [items, setItems] = useState<EvidenceFile[]>(request.evidences ?? [])
+  /**
+   * Track de qué slots ya fueron cumplidos en esta sesión. En producción
+   * vendría linkeado por slotId → evidenceId. Acá mantenemos un map
+   * simple de slotId → evidenceId asignado por el postulante.
+   */
+  const [slotFulfillments, setSlotFulfillments] = useState<
+    Record<string, EvidenceFile>
+  >({})
+
+  const requestedSlots = REQUESTED_EVIDENCES_BY_REQUEST[request.id] ?? []
+  const pendingSlotsCount = requestedSlots.filter(
+    (s) => !slotFulfillments[s.id],
+  ).length
 
   const groups: Array<{ kind: EvidenceFile['kind']; title: string; icon: typeof ImageIcon }> = [
     { kind: 'image', title: 'Fotos', icon: ImageIcon },
@@ -789,6 +842,28 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
     toast.success(`${files.length} archivo(s) subido(s)`)
   }
 
+  const handleSlotUpload = (slot: RequestedEvidenceSlot) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      const kind: EvidenceFile['kind'] = file.type.startsWith('image/')
+        ? 'image'
+        : file.type.startsWith('video/')
+          ? 'video'
+          : 'document'
+      const evidence: EvidenceFile = {
+        id: `e-slot-${slot.id}-${Date.now()}`,
+        name: file.name,
+        kind,
+        sizeKb: Math.round(file.size / 1024),
+        uploadedAt: new Date().toISOString(),
+      }
+      setItems((prev) => [...prev, evidence])
+      setSlotFulfillments((prev) => ({ ...prev, [slot.id]: evidence }))
+      toast.success(`Evidencia "${slot.title}" enviada al tutor`)
+      ;(e.target as HTMLInputElement).value = ''
+    }
+
   return (
     <div className="space-y-6">
       <div>
@@ -798,6 +873,89 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
           de la auditoría.
         </p>
       </div>
+
+      {/* Bloque "Pedidas por el tutor" — solo si hay slots definidos */}
+      {requestedSlots.length > 0 && (
+        <section className="rounded-2xl border-2 border-dashed border-gold-300/70 bg-gold-50/40 p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="inline-flex items-center gap-2 text-sm font-bold text-navy-500">
+              <AlertTriangle className="h-4 w-4 text-gold-700" />
+              Evidencias solicitadas por tu tutor
+            </h3>
+            <span className="rounded-full bg-gold-500/15 px-2.5 py-0.5 text-[11px] font-bold text-gold-700">
+              {pendingSlotsCount} pendiente
+              {pendingSlotsCount === 1 ? '' : 's'} de {requestedSlots.length}
+            </span>
+          </div>
+          <ul className="mt-4 space-y-3">
+            {requestedSlots.map((slot) => {
+              const fulfilled = slotFulfillments[slot.id]
+              const accept = slot.acceptedKinds
+                .map((k) =>
+                  k === 'image'
+                    ? 'image/*'
+                    : k === 'video'
+                      ? 'video/*'
+                      : '.pdf,.doc,.docx',
+                )
+                .join(',')
+              return (
+                <li
+                  key={slot.id}
+                  className={cn(
+                    'rounded-xl border bg-white p-4 transition-colors',
+                    fulfilled
+                      ? 'border-success-300 bg-success-100/30'
+                      : 'border-neutral-200',
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-navy-500">
+                        {slot.title}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-navy-300">
+                        {slot.description}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-medium text-navy-300">
+                        Plazo:{' '}
+                        <span className="text-navy-500">
+                          {new Date(slot.dueDate).toLocaleDateString('es-AR', {
+                            day: '2-digit',
+                            month: 'long',
+                          })}
+                        </span>
+                      </p>
+                    </div>
+                    {fulfilled ? (
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success-300 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
+                          <Check className="h-3 w-3" strokeWidth={3} />
+                          Enviada
+                        </span>
+                        <span className="text-[10px] text-navy-300">
+                          {fulfilled.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <label className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-navy-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-navy-400">
+                        <Upload className="h-3.5 w-3.5" />
+                        Subir
+                        <input
+                          type="file"
+                          hidden
+                          accept={accept}
+                          onChange={handleSlotUpload(slot)}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       {groups.map((g) => {
         const groupItems = items.filter((it) => it.kind === g.kind)
