@@ -426,7 +426,10 @@ export default function TutorCertifications() {
               `Incidencia "${kind}" registrada en ${incidentFor.id}`,
             )
              
-            console.info('Incidencia detail:', detail)
+            if (import.meta.env.DEV) {
+              // eslint-disable-next-line no-console
+              console.info('Incidencia detail:', detail)
+            }
             setIncidentFor(null)
           }}
         />

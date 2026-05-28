@@ -17,9 +17,9 @@ import { toast } from 'sonner'
 import {
   STAGE_SLA_DAYS,
   mockTutor,
-  mockTutorCases,
 } from '@/services/mocks/data'
 import type { CaseRisk, CaseStage, TutorCase } from '@/types'
+import { useTutorCasesStore } from '@/store/tutorCases'
 import { cn } from '@/lib/utils'
 
 function daysInStageFromCase(c: TutorCase): number {
@@ -45,11 +45,19 @@ const STAGES: Array<{ id: CaseStage; label: string }> = [
 ]
 
 export default function TutorCases() {
-  const [cases, setCases] = useState<TutorCase[]>(mockTutorCases)
+  // Cases persistidos en zustand store (key tutor-cases-v1). Antes el
+  // useState local hacía que un drag/drop o "Crear solicitud" se
+  // perdiera al refrescar/navegar.
+  const cases = useTutorCasesStore((s) => s.cases)
+  const moveCase = useTutorCasesStore((s) => s.moveCase)
+  const addCase = useTutorCasesStore((s) => s.addCase)
+  const assignTutor = useTutorCasesStore((s) => s.assignTutor)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [hoverColumn, setHoverColumn] = useState<CaseStage | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [slaFilter, setSlaFilter] = useState<'all' | 'alerts'>('all')
+  // QT6: anuncio a screen readers cuando se mueve un caso
+  const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
   const kanbanRef = useRef<HTMLDivElement | null>(null)
 
   const total = cases.length
@@ -102,7 +110,7 @@ export default function TutorCases() {
       region: data.region,
       createdAt: new Date().toISOString(),
     }
-    setCases((prev) => [newCase, ...prev])
+    addCase(newCase)
     setCreateOpen(false)
     toast.success(`Solicitud ${nextId} creada en Postulados`)
   }
@@ -123,12 +131,35 @@ export default function TutorCases() {
       setHoverColumn(null)
       return
     }
-    setCases((prev) =>
-      prev.map((c) => (c.id === draggingId ? { ...c, stage: target } : c)),
-    )
+
+    // QT5: validar salto de etapas. Si el tutor arrastra saltando >1
+    // etapa hacia adelante, requerir confirmación para evitar avances
+    // accidentales. Volver atrás siempre OK (corrección de errores).
+    const fromIdx = STAGES.findIndex((s) => s.id === moving.stage)
+    const toIdx = STAGES.findIndex((s) => s.id === target)
+    const jump = toIdx - fromIdx
+    if (jump > 1) {
+      const ok = window.confirm(
+        `Estás saltando ${jump} etapas (de "${STAGES[fromIdx].label}" a "${STAGES[toIdx].label}"). ` +
+          `Esto puede dejar el caso sin auditoría completa. ¿Continuar?`,
+      )
+      if (!ok) {
+        setDraggingId(null)
+        setHoverColumn(null)
+        return
+      }
+    }
+
+    moveCase(draggingId, target)
     toast.success(
       `${moving.productName} movido a ${STAGES.find((s) => s.id === target)?.label}`,
     )
+
+    // QT6: anunciar el movimiento para screen readers
+    setLiveAnnouncement(
+      `Caso ${moving.id} ${moving.productName} movido de ${STAGES[fromIdx].label} a ${STAGES[toIdx].label}`,
+    )
+
     setDraggingId(null)
     setHoverColumn(null)
   }
@@ -245,6 +276,17 @@ export default function TutorCases() {
         </div>
       )}
 
+      {/* QT6: anuncio aria-live para screen readers cuando un caso se
+          mueve de columna. visualmente invisible, accesible a NVDA/JAWS. */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {liveAnnouncement}
+      </div>
+
       {/* Kanban */}
       <div
         ref={kanbanRef}
@@ -300,21 +342,11 @@ export default function TutorCases() {
                           setHoverColumn(null)
                         }}
                         onAssignSelf={() => {
-                          setCases((prev) =>
-                            prev.map((x) =>
-                              x.id === c.id
-                                ? {
-                                    ...x,
-                                    tutorId: mockTutor.id,
-                                    tutorName: mockTutor.name.replace(
-                                      'Lic. ',
-                                      '',
-                                    ),
-                                    tutorAvatarUrl: mockTutor.avatarUrl,
-                                  }
-                                : x,
-                            ),
-                          )
+                          assignTutor(c.id, {
+                            id: mockTutor.id,
+                            name: mockTutor.name.replace('Lic. ', ''),
+                            avatarUrl: mockTutor.avatarUrl,
+                          })
                           toast.success('Te asignaste el caso')
                         }}
                       />

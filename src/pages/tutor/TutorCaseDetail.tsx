@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowLeft,
@@ -112,7 +112,19 @@ export default function TutorCaseDetail() {
   // En prod, esto vendría de una API. Acá uso mock + state local.
   const initialCase = mockTutorCases.find((c) => c.id === id)
   const [caseData, setCaseData] = useState<TutorCase | undefined>(initialCase)
-  const [tab, setTab] = useState<Tab>('resumen')
+
+  // Tab activa en search param (?tab=evaluacion). Sobrevive refresh y
+  // permite linkear directamente a una sección del caso.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const TAB_IDS: Tab[] = ['resumen', 'evidencias', 'evaluacion', 'mensajes', 'historial']
+  const rawTab = searchParams.get('tab')
+  const tab: Tab = TAB_IDS.includes(rawTab as Tab) ? (rawTab as Tab) : 'resumen'
+  const setTab = (next: Tab) => {
+    const params = new URLSearchParams(searchParams)
+    if (next === 'resumen') params.delete('tab')
+    else params.set('tab', next)
+    setSearchParams(params, { replace: false })
+  }
 
   // Stage advance modal
   const [stageModalOpen, setStageModalOpen] = useState(false)
@@ -334,9 +346,12 @@ export default function TutorCaseDetail() {
                       : prev,
                   )
                    
-                  console.info(
-                    `[Firma] ${caseData.id} firmado por tutor con score ${score} → ${category}`,
-                  )
+                  if (import.meta.env.DEV) {
+                    // eslint-disable-next-line no-console
+                    console.info(
+                      `[Firma] ${caseData.id} firmado por tutor con score ${score} → ${category}`,
+                    )
+                  }
                 }}
               />
             )}
@@ -885,6 +900,12 @@ function EvaluacionTab({
   // solo firma. El score se computa con los pesos del antropólogo.
   const finalScore = computeWeightedScore(values)
 
+  // "Aún no evaluado" si TODOS los valores son 0. Cubre casos en estadios
+  // tempranos (Postulado, Revisión, Elegible, Diagnóstico, Auditoría)
+  // donde la IA todavía no procesó las evidencias. Sin esto el usuario ve
+  // "0/100" que parece veredicto negativo.
+  const notYetEvaluated = values.length === 0 || values.every((v) => v.score === 0)
+
   // Agrupar criterios por dimensión (orden del antropólogo).
   const dimensionOrder: ScoringDimension[] = [
     'cultural',
@@ -930,45 +951,60 @@ function EvaluacionTab({
         </div>
       </div>
 
-      <div className="rounded-2xl bg-gold-100/50 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-gold-700">
-              Score ponderado IA
-            </p>
-            <p className="mt-1 text-3xl font-bold text-navy-500">
-              {finalScore}
-              <span className="text-base text-navy-300">/100</span>
-            </p>
-            <p className="mt-0.5 text-xs text-navy-300">
-              Calculado con los pesos del antropólogo (suma = 100%).
-            </p>
-            {category.num && (
-              <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-navy-500 ring-1 ring-gold-300">
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[10px] text-navy-500">
-                  {category.num}
-                </span>
-                {category.label}
+      {notYetEvaluated ? (
+        // Empty state — caso en estadio temprano, IA no procesó aún
+        <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-100/50 p-6 text-center">
+          <Clock className="mx-auto h-8 w-8 text-navy-300" />
+          <p className="mt-3 text-sm font-bold text-navy-500">
+            Aún no evaluado por IA
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-navy-300">
+            La evaluación con las 14 variables del antropólogo se ejecuta
+            cuando el caso pasa a <strong>Auditoría</strong>. Mientras tanto
+            podés revisar las evidencias y mensajes del postulante.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-gold-100/50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-gold-700">
+                Score ponderado IA
               </p>
-            )}
-          </div>
-          <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white sm:w-64">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all',
-                finalScore >= 80
-                  ? 'bg-success-300'
-                  : finalScore >= 60
-                    ? 'bg-info-400'
-                    : finalScore >= 40
-                      ? 'bg-warning-400'
-                      : 'bg-error-400',
+              <p className="mt-1 text-3xl font-bold text-navy-500">
+                {finalScore}
+                <span className="text-base text-navy-300">/100</span>
+              </p>
+              <p className="mt-0.5 text-xs text-navy-300">
+                Calculado con los pesos del antropólogo (suma = 100%).
+              </p>
+              {category.num && (
+                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[11px] font-bold text-navy-500 ring-1 ring-gold-300">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[10px] text-navy-500">
+                    {category.num}
+                  </span>
+                  {category.label}
+                </p>
               )}
-              style={{ width: `${finalScore}%` }}
-            />
+            </div>
+            <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white sm:w-64">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all',
+                  finalScore >= 80
+                    ? 'bg-success-300'
+                    : finalScore >= 60
+                      ? 'bg-info-400'
+                      : finalScore >= 40
+                        ? 'bg-warning-400'
+                        : 'bg-error-400',
+                )}
+                style={{ width: `${finalScore}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {dimensionOrder.map((dim) => {
         const criteria = SCORING_CRITERIA.filter((c) => c.dimension === dim)
