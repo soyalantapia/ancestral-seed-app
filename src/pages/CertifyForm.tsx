@@ -1064,16 +1064,63 @@ function StepEvidencias() {
   const cover = watch('coverImageName')
   const docs = (watch('references') as string) ?? ''
 
-  const addPhoto = (name: string) => {
-    setValue('galleryNames', [...gallery, name].slice(0, 12))
-    if (!cover) setValue('coverImageName', name, { shouldValidate: true })
+  /**
+   * Fix SB3 (#POS-26, auditoría UX): antes solo aparecía un chip con
+   * "foto.jpg". Ahora generamos thumbnails con URL.createObjectURL
+   * para que el postulante vea exactamente qué subió. El map
+   * `previewUrls` sobrevive a re-renders mientras el componente esté
+   * montado; el cleanup revoca los blob URLs al desmontar para evitar
+   * leaks de memoria.
+   */
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    return () => {
+      // Cleanup global al desmontar — revocamos TODAS las URLs del map.
+      Object.values(previewUrls).forEach((u) => URL.revokeObjectURL(u))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const addPhotos = (files: File[]) => {
+    const newNames: string[] = []
+    const newPreviews: Record<string, string> = {}
+    files.forEach((f) => {
+      newNames.push(f.name)
+      // Solo creamos preview si es imagen (PNG/JPG/WebP/etc) — los
+      // otros tipos se ignoran para preview pero se cuentan igual.
+      if (f.type.startsWith('image/') && !previewUrls[f.name]) {
+        newPreviews[f.name] = URL.createObjectURL(f)
+      }
+    })
+    if (Object.keys(newPreviews).length > 0) {
+      setPreviewUrls((prev) => ({ ...prev, ...newPreviews }))
+    }
+    const next = [...gallery, ...newNames].slice(0, 12)
+    setValue('galleryNames', next, { shouldValidate: true })
+    if (!cover && newNames[0]) {
+      setValue('coverImageName', newNames[0], { shouldValidate: true })
+    }
   }
   const removePhoto = (i: number) => {
+    const removedName = gallery[i]
     const next = gallery.filter((_, idx) => idx !== i)
-    setValue('galleryNames', next)
-    if (cover && i === gallery.indexOf(cover)) {
+    setValue('galleryNames', next, { shouldValidate: true })
+    if (cover === removedName) {
       setValue('coverImageName', next[0] ?? '', { shouldValidate: true })
     }
+    // Revocar el blob URL del archivo eliminado si lo teníamos.
+    if (previewUrls[removedName]) {
+      URL.revokeObjectURL(previewUrls[removedName])
+      setPreviewUrls((prev) => {
+        const { [removedName]: _, ...rest } = prev
+        return rest
+      })
+    }
+  }
+  const setCover = (name: string) => {
+    setValue('coverImageName', name, { shouldValidate: true })
+    toast.success('Portada actualizada')
   }
 
   return (
@@ -1098,36 +1145,80 @@ function StepEvidencias() {
             label="Subir imágen"
             accept="image/*"
             multiple
-            onPick={(names) => names.forEach(addPhoto)}
+            onPickFiles={addPhotos}
           />
           <UploadPill
             icon={Camera}
             label="Tomar foto"
             accept="image/*"
             capture
-            onPick={(names) => names.forEach(addPhoto)}
+            onPickFiles={addPhotos}
           />
         </EvidenceSection>
 
         {gallery.length > 0 && (
-          <ul className="-mt-3 flex flex-wrap gap-2">
-            {gallery.map((name, i) => (
-              <li
-                key={i}
-                className="inline-flex items-center gap-2 rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold text-gold-700"
-              >
-                <ImageIcon className="h-3 w-3" />
-                {name}
-                <button
-                  type="button"
-                  onClick={() => removePhoto(i)}
-                  className="ml-1 text-gold-700/70 hover:text-error-400"
-                  aria-label="Quitar"
+          <ul className="-mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {gallery.map((name, i) => {
+              const url = previewUrls[name]
+              const isCover = cover === name
+              return (
+                <li
+                  key={`${name}-${i}`}
+                  className={cn(
+                    'group relative aspect-square overflow-hidden rounded-2xl border-2 bg-neutral-100 transition-all',
+                    isCover
+                      ? 'border-gold-500 ring-2 ring-gold-200'
+                      : 'border-neutral-200 hover:border-navy-300',
+                  )}
                 >
-                  ×
-                </button>
-              </li>
-            ))}
+                  {url ? (
+                    <img
+                      src={url}
+                      alt={name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    // Si no es imagen (entró sin preview) o el File no
+                    // está disponible (re-mount), mostrar placeholder.
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-2 text-center text-navy-300">
+                      <ImageIcon className="h-8 w-8" />
+                      <p className="line-clamp-2 text-[10px] font-medium">
+                        {name}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Badge "Portada" en la cover */}
+                  {isCover && (
+                    <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-gold-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-navy-500 shadow">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      Portada
+                    </span>
+                  )}
+
+                  {/* Botón quitar */}
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-error-400 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                    aria-label={`Quitar ${name}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+
+                  {/* Botón "Hacer portada" si no es la actual */}
+                  {!isCover && (
+                    <button
+                      type="button"
+                      onClick={() => setCover(name)}
+                      className="absolute inset-x-2 bottom-2 inline-flex items-center justify-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold text-navy-500 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                    >
+                      Usar como portada
+                    </button>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         )}
         <FieldError name="coverImageName" />
@@ -1197,6 +1288,7 @@ function UploadPill({
   multiple = false,
   capture = false,
   onPick,
+  onPickFiles,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any
@@ -1204,7 +1296,13 @@ function UploadPill({
   accept: string
   multiple?: boolean
   capture?: boolean
-  onPick: (names: string[]) => void
+  /** Callback con solo los nombres. Para casos donde alcanza la metadata. */
+  onPick?: (names: string[]) => void
+  /**
+   * Callback con los File completos. Necesario para generar thumbnails
+   * con URL.createObjectURL() en StepEvidencias (#POS-26).
+   */
+  onPickFiles?: (files: File[]) => void
 }) {
   return (
     <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-neutral-200 px-4 py-2 text-xs font-semibold text-navy-300 transition-colors hover:bg-neutral-300 hover:text-navy-500 md:text-sm">
@@ -1218,7 +1316,12 @@ function UploadPill({
         className="hidden"
         onChange={(e) => {
           const files = Array.from(e.target.files ?? [])
-          if (files.length) onPick(files.map((f) => f.name))
+          if (files.length) {
+            onPick?.(files.map((f) => f.name))
+            onPickFiles?.(files)
+            // Resetear value para permitir re-subir el mismo archivo
+            ;(e.target as HTMLInputElement).value = ''
+          }
         }}
       />
     </label>
