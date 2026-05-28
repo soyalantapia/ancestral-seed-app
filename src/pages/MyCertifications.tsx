@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AlertCircle,
+  Award,
   Calendar,
   ChevronDown,
   Clock,
   FileText,
   MoreHorizontal,
+  PauseCircle,
   Plus,
   Search,
   SlidersHorizontal,
@@ -15,9 +17,22 @@ import {
 } from 'lucide-react'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import { StageStatusBadge } from '@/components/features/StagePipeline'
+import { useCertifyFormStore } from '@/store/certifyForm'
+import { STAGES } from '@/lib/copy'
 import { cn } from '@/lib/utils'
 
-const tabs = ['En curso', 'En emisión'] as const
+/**
+ * Fix SB4 (#POS-11, auditoría UX): antes solo "En curso" y "En emisión".
+ * El postulante con certificación EMITIDA no la encontraba acá, y los
+ * borradores postergados tampoco aparecían.
+ *
+ * Ahora 4 tabs cubren todos los estados de vida del journey:
+ * - En curso: postulaciones activas con tutor revisando
+ * - En emisión: aprobadas, esperando emisión administrativa
+ * - Certificadas: con licencia ya otorgada → link a /certificado/[slug]
+ * - Postergadas: borradores guardados en el CertifyForm store
+ */
+const tabs = ['En curso', 'En emisión', 'Certificadas', 'Postergadas'] as const
 type Tab = (typeof tabs)[number]
 
 const sortOptions = [
@@ -28,6 +43,26 @@ const sortOptions = [
 ] as const
 type SortId = (typeof sortOptions)[number]['id']
 
+/**
+ * Mapeo tab → status del request. "Certificadas" corresponde al status
+ * 'Certificado' del modelo (singular en types/index.ts), "Postergadas"
+ * no es un status de request sino del store del CertifyForm.
+ */
+function statusForTab(tab: Tab): 'En curso' | 'En emisión' | 'Certificado' | null {
+  if (tab === 'En curso') return 'En curso'
+  if (tab === 'En emisión') return 'En emisión'
+  if (tab === 'Certificadas') return 'Certificado'
+  return null // Postergadas no tiene status
+}
+
+/** Estado del wizard postergado — derivado del store. */
+interface PostponedDraft {
+  productName: string
+  applicantName: string
+  step: number
+  totalSteps: number
+}
+
 export default function MyCertifications() {
   const [tab, setTab] = useState<Tab>('En curso')
   const [query, setQuery] = useState('')
@@ -36,8 +71,33 @@ export default function MyCertifications() {
   const [filterPending, setFilterPending] = useState(false)
   const [filterUpcoming, setFilterUpcoming] = useState(false)
 
+  // Borrador del CertifyForm (para tab "Postergadas")
+  const formData = useCertifyFormStore((s) => s.data)
+  const formStep = useCertifyFormStore((s) => s.step)
+  const resetForm = useCertifyFormStore((s) => s.reset)
+
+  const postponedDraft = useMemo<PostponedDraft | null>(() => {
+    const hasSignificant = Boolean(
+      formData.applicantName?.trim() ||
+        formData.productName?.trim() ||
+        formData.communityName?.trim() ||
+        formData.communityActivity?.trim() ||
+        formData.processDescription?.trim() ||
+        (formData.galleryNames && formData.galleryNames.length > 0),
+    )
+    if (!hasSignificant) return null
+    return {
+      productName: formData.productName?.trim() || 'Borrador sin título',
+      applicantName: formData.applicantName?.trim() || 'Sin nombre',
+      step: formStep,
+      totalSteps: 7,
+    }
+  }, [formData, formStep])
+
   const requests = useMemo(() => {
-    let r = mockCertificationRequests.filter((r) => r.status === tab)
+    const status = statusForTab(tab)
+    if (status === null) return [] // Postergadas no usa requests
+    let r = mockCertificationRequests.filter((r) => r.status === status)
     if (query) {
       r = r.filter((x) => x.productName.toLowerCase().includes(query.toLowerCase()))
     }
@@ -61,9 +121,19 @@ export default function MyCertifications() {
     return sorted
   }, [tab, query, sortBy, filterPending, filterUpcoming])
 
+  // Conteo por tab — el bottom-counter del chip de la tab muestra la
+  // cantidad real de items disponibles en cada tab.
+  function countForTab(t: Tab): number {
+    const status = statusForTab(t)
+    if (status === null) {
+      return postponedDraft ? 1 : 0
+    }
+    return mockCertificationRequests.filter((r) => r.status === status).length
+  }
+
   const activeFiltersCount = (filterPending ? 1 : 0) + (filterUpcoming ? 1 : 0)
   const allRequests = mockCertificationRequests
-  const isEmpty = allRequests.length === 0
+  const isEmpty = allRequests.length === 0 && !postponedDraft
 
   // First-time empty state
   if (isEmpty) {
@@ -126,9 +196,9 @@ export default function MyCertifications() {
 
       {/* Tabs */}
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {tabs.map((t) => {
-            const count = mockCertificationRequests.filter((r) => r.status === t).length
+            const count = countForTab(t)
             return (
               <button
                 key={t}
@@ -240,10 +310,90 @@ export default function MyCertifications() {
         </div>
       </div>
 
-      {/* List */}
-      {requests.length === 0 ? (
-        <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center text-sm text-navy-300">
-          No hay resultados para los filtros aplicados.
+      {/* List — depende del tab activo */}
+      {tab === 'Postergadas' ? (
+        postponedDraft ? (
+          <ul className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <li className="rounded-3xl border-2 border-dashed border-gold-300 bg-gold-50/40 p-6 shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
+                    Borrador postergado
+                  </p>
+                  <p className="mt-1 text-base font-bold text-navy-500">
+                    {postponedDraft.productName}
+                  </p>
+                </div>
+                <PauseCircle className="h-6 w-6 shrink-0 text-gold-700" />
+              </div>
+              <dl className="mt-4 space-y-2 text-sm">
+                <Row
+                  icon={TrendingUp}
+                  label="Progreso:"
+                  value={`Paso ${postponedDraft.step + 1} de ${postponedDraft.totalSteps}`}
+                />
+                <Row
+                  icon={Clock}
+                  label="Guardamos por:"
+                  value="60 días desde la última edición"
+                />
+              </dl>
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        'Vas a borrar el borrador. Esta acción no se puede deshacer.',
+                      )
+                    ) {
+                      resetForm()
+                    }
+                  }}
+                  className="inline-flex items-center rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  Descartar borrador
+                </button>
+                <Link
+                  to="/certificar"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-navy-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+                >
+                  <Plus className="h-4 w-4" />
+                  Retomar
+                </Link>
+              </div>
+            </li>
+          </ul>
+        ) : (
+          <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center">
+            <PauseCircle className="mx-auto h-8 w-8 text-navy-300" />
+            <p className="mt-3 text-sm font-bold text-navy-500">
+              Sin borradores postergados
+            </p>
+            <p className="mt-1 text-xs text-navy-300">
+              Cuando dejes una postulación a medias, va a aparecer acá
+              durante 60 días.
+            </p>
+          </div>
+        )
+      ) : requests.length === 0 ? (
+        <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center">
+          {tab === 'Certificadas' ? (
+            <>
+              <Award className="mx-auto h-8 w-8 text-navy-300" />
+              <p className="mt-3 text-sm font-bold text-navy-500">
+                Todavía no tenés certificaciones emitidas
+              </p>
+              <p className="mt-1 text-xs text-navy-300">
+                Cuando se emita la primera, vas a poder bajar el sello
+                oficial y compartirlo desde acá.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-navy-300">
+              No hay resultados para los filtros aplicados.
+            </p>
+          )}
         </div>
       ) : (
         <ul className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -262,7 +412,21 @@ export default function MyCertifications() {
               </div>
 
               <dl className="mt-3 space-y-2 text-sm">
-                <Row icon={Clock} label="Estado:" value={<StageStatusBadge status={r.status === 'En emisión' ? 'En emisión' : 'Prediagnóstico'} />} />
+                <Row
+                  icon={Clock}
+                  label="Estado:"
+                  value={
+                    <StageStatusBadge
+                      status={
+                        r.status === 'En emisión'
+                          ? 'En emisión'
+                          : r.status === 'Certificado'
+                            ? 'Vigente'
+                            : STAGES[r.currentStage]?.label ?? 'En curso'
+                      }
+                    />
+                  }
+                />
                 <Row icon={TrendingUp} label="Progreso:" value={r.progressLabel} />
                 <Row icon={Calendar} label="Fecha de creación:" value={r.createdAt} />
                 {r.pendingItems.length > 0 && (
