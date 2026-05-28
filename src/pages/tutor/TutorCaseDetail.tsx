@@ -23,12 +23,17 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  StickyNote,
   Users,
   Video,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Breadcrumbs } from '@/components/features/Breadcrumbs'
+import {
+  InternalNotesPanel,
+  caseEntityKey,
+} from '@/components/features/InternalNotesPanel'
 import {
   MESSAGE_TEMPLATES,
   SCORING_CRITERIA,
@@ -67,13 +72,24 @@ const STAGE_ORDER: CaseStage[] = [
   'certificacion',
 ]
 
-type Tab = 'resumen' | 'evidencias' | 'evaluacion' | 'mensajes' | 'historial'
+type Tab =
+  | 'resumen'
+  | 'evidencias'
+  | 'evaluacion'
+  | 'mensajes'
+  | 'notas'
+  | 'historial'
 
 const TABS: Array<{ id: Tab; label: string; icon: typeof FileText }> = [
   { id: 'resumen', label: 'Resumen', icon: FileText },
   { id: 'evidencias', label: 'Evidencias', icon: FileCheck2 },
   { id: 'evaluacion', label: 'Evaluación', icon: Star },
   { id: 'mensajes', label: 'Mensajes', icon: MessageSquare },
+  // Notas internas — SA5 fix (#TUT-15). Va entre Mensajes (público con
+  // postulante) e Historial (log inmutable) porque son la dimensión
+  // PRIVADA del equipo tutor. Las 3 tabs juntas cubren las tres
+  // dimensiones de comunicación del expediente.
+  { id: 'notas', label: 'Notas internas', icon: StickyNote },
   { id: 'historial', label: 'Historial', icon: Clock },
 ]
 
@@ -176,7 +192,14 @@ export default function TutorCaseDetail() {
 
   // Tab label legible para el breadcrumb (capitalizado)
   const tabLabel = (
-    { resumen: 'Resumen', evidencias: 'Evidencias', evaluacion: 'Evaluación', mensajes: 'Mensajes', historial: 'Historial' } as const
+    {
+      resumen: 'Resumen',
+      evidencias: 'Evidencias',
+      evaluacion: 'Evaluación',
+      mensajes: 'Mensajes',
+      notas: 'Notas internas',
+      historial: 'Historial',
+    } as const
   )[tab]
 
   return (
@@ -378,6 +401,17 @@ export default function TutorCaseDetail() {
               <MensajesTab
                 caseData={caseData}
                 onOpenTemplate={() => setOpenTemplateModal(true)}
+              />
+            )}
+            {tab === 'notas' && (
+              <InternalNotesPanel
+                entityKey={caseEntityKey(caseData.id)}
+                currentUser={{
+                  // En producción esto viene de useAuthStore. Hardcoded
+                  // al tutor mock por ahora.
+                  name: 'Lic. Patricia Vega',
+                  initials: 'PV',
+                }}
               />
             )}
             {tab === 'historial' && <HistorialTab caseData={caseData} />}
