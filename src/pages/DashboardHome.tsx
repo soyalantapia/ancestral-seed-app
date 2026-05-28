@@ -210,9 +210,13 @@ export default function DashboardHome() {
   const newEventsSinceLastVisit = useMemo(() => {
     if (!lastVisitSnapshot) return []
     const since = new Date(lastVisitSnapshot).getTime()
+    // Fix V3-POS-01 (auditoría v2): agregamos `requestId` al shape de
+    // cada evento para que el dedupe contra el NBA sea fine-grained
+    // (solo dedupea eventos del MISMO request que el NBA, no todos).
     const events: Array<{
       kind: 'message' | 'evidence' | 'stage' | 'payment' | 'meeting'
       label: string
+      requestId: string
       requestName: string
       at: string
     }> = []
@@ -224,6 +228,7 @@ export default function DashboardHome() {
           events.push({
             kind: 'message',
             label: h.title,
+            requestId: r.id,
             requestName: r.productName,
             at: h.at,
           })
@@ -231,6 +236,7 @@ export default function DashboardHome() {
           events.push({
             kind: 'evidence',
             label: h.title,
+            requestId: r.id,
             requestName: r.productName,
             at: h.at,
           })
@@ -238,6 +244,7 @@ export default function DashboardHome() {
           events.push({
             kind: 'stage',
             label: h.title,
+            requestId: r.id,
             requestName: r.productName,
             at: h.at,
           })
@@ -245,6 +252,7 @@ export default function DashboardHome() {
           events.push({
             kind: 'payment',
             label: h.title,
+            requestId: r.id,
             requestName: r.productName,
             at: h.at,
           })
@@ -405,15 +413,23 @@ export default function DashboardHome() {
       )}
 
       {/* ─── Lo nuevo desde tu última visita ──────────────────────────── */}
-      {/* Fix V2-POS-02 (auditoría v2): si el NBA arriba ya está hablando
-          de pagos vencidos, mostrar eventos `payment` repetidos abajo
-          es ruido — el user ya tiene la info. Filtramos los eventos
-          'payment' cuando el NBA es de tipo CreditCard. */}
+      {/* Fix V2-POS-02 + V3-POS-01 (auditoría v3):
+          v2 filtraba TODOS los eventos `payment` cuando el NBA era
+          CreditCard — pero si Camila tenía 2 pagos vencidos en DOS
+          requests distintos, el RecentActivity ocultaba ambos.
+          v3 dedupea solo los `payment` del MISMO requestId que el NBA
+          (gracias al `requestId` que ahora viaja en cada evento). */}
       {lastVisitSnapshot &&
         (() => {
           const filteredEvents =
-            nextBestAction?.icon === CreditCard
-              ? newEventsSinceLastVisit.filter((e) => e.kind !== 'payment')
+            nextBestAction?.icon === CreditCard && nextBestAction.requestId
+              ? newEventsSinceLastVisit.filter(
+                  (e) =>
+                    !(
+                      e.kind === 'payment' &&
+                      e.requestId === nextBestAction.requestId
+                    ),
+                )
               : newEventsSinceLastVisit
           return filteredEvents.length > 0 ? (
             <RecentActivitySummary
@@ -641,6 +657,11 @@ function computeNextBestAction(args: {
       body: `${formatMoney(overdue.amount, overdue.currency)} · ${when}.`,
       ctaLabel: 'Ver y pagar',
       ctaTo: `/mis-certificaciones/${overdue.requestId}?tab=pagos`,
+      // Fix V3-POS-01: exponer el requestId que dispara el NBA para
+      // que el dedupe del RecentActivitySummary pueda filtrar SOLO
+      // los eventos `payment` de ese request (no todos los pagos
+      // cross-request que el postulante quiere ver).
+      requestId: overdue.requestId,
     }
   }
 
@@ -656,6 +677,7 @@ function computeNextBestAction(args: {
       body: `Propuesta para el ${d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })} a las ${d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}.`,
       ctaLabel: 'Aceptar o reagendar',
       ctaTo: `/mis-certificaciones/${meeting.requestId}?tab=evaluacion`,
+      requestId: meeting.requestId,
     }
   }
 
@@ -669,6 +691,7 @@ function computeNextBestAction(args: {
       body: `Continuá el avance de "${inProgress.productName}".`,
       ctaLabel: 'Resolver',
       ctaTo: `/mis-certificaciones/${inProgress.id}?tab=evidencias`,
+      requestId: inProgress.id,
     }
   }
 
@@ -682,6 +705,7 @@ function computeNextBestAction(args: {
     body: 'Sumá fotos, descripción y destacados para que tu ficha luzca completa.',
     ctaLabel: 'Editar mi perfil',
     ctaTo: firstReq ? '/mi-perfil' : '/mi-perfil',
+    requestId: undefined,
   }
 }
 

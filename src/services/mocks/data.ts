@@ -523,6 +523,13 @@ export const mockCertificationRequests: CertificationRequest[] = [
       { id: 'h-105', kind: 'stage_changed', title: 'Auditoría completada', actor: 'Auditor', at: '2026-01-18T17:00:00-03:00' },
       { id: 'h-106', kind: 'stage_changed', title: 'Evaluación en curso', actor: 'Sistema', at: '2026-04-28T09:15:00-03:00' },
       { id: 'h-107', kind: 'audit_accepted', title: 'Reunión de cierre confirmada', description: '20/05 14:00 GMT-3 · Mtra. Sofía Quispe', actor: 'Tú', at: '2026-04-22T18:42:00-03:00' },
+      // Fix V3-POS-16 (auditoría v3): req-002 (Tejido en telar) no
+      // tenía eventos recientes — el postulante percibía esa
+      // certificación como "muerta" desde el RecentActivity comparado
+      // con req-001 que sí los tenía. Agregamos eventos relativos que
+      // mantienen actividad simétrica entre los dos requests del demo.
+      relativeEvent({ id: 'h-108', kind: 'message_sent', title: 'Mensaje de la auditora', description: 'Mtra. Sofía Quispe te avisa que firmó la evaluación', actor: 'Auditor' }, { days: 4 }),
+      relativeEvent({ id: 'h-109', kind: 'stage_changed', title: 'Cierre de evaluación', description: 'Listo para emisión del hash blockchain', actor: 'Sistema' }, { hours: 18 }),
     ],
     threads: {
       'm-002': [

@@ -1227,12 +1227,18 @@ function MensajesTab({
    * Contador en el header refuerza el contraste (oficiales · ~muchos
    * informales).
    */
-  // Fix V2-TUT-12 (auditoría v2): officialCount estaba hardcoded a 3
-  // siempre. El header decía "3 mensajes en el expediente" sin
-  // importar cuántos mostraba la lista. Ahora computamos del array
-  // real de mensajes (stub — en prod sería del mockMessagesByCase[id]).
+  // Fix V2-TUT-12 + V3-TUT-12 (auditoría v2 + v3): antes
+  // `officialCount` se computaba en MensajesTab con un array stub
+  // separado del que se renderizaba más abajo (3 ChatBubbles
+  // hardcoded). Si alguien sumaba un mensaje al render, el contador
+  // del header NO se actualizaba. Ahora ambos consumen del MISMO
+  // array `officialMessages` para garantizar coherencia entre
+  // contador y lista. En prod esto vendría de mockMessagesByCase.
   const officialMessages = useMemo(
-    () => [1, 2, 3].map((i) => ({ id: `${caseData.id}-msg-${i}` })),
+    () =>
+      ['msg-1', 'msg-2', 'msg-3'].map((suffix) => ({
+        id: `${caseData.id}-${suffix}`,
+      })),
     [caseData.id],
   )
   const officialCount = officialMessages.length

@@ -368,9 +368,17 @@ function HeroVideoPlaceholder() {
             // Ahora `bottom-12` (48px) lo deja apenas arriba del
             // overlay, y mantiene su propio fondo `bg-black/70`
             // para máximo contraste.
+            //
+            // Fix V3-PUB-09 (auditoría v3): el padding `px-2.5 py-1.5`
+            // daba un touch target de ~32×24px — debajo del mínimo
+            // recomendado por WCAG 2.5.5 (44×44px). Touch fail rate
+            // alto en mobile con guantes / dedos grandes. Subido a
+            // `min-h-[44px] min-w-[44px]` con padding que centra el
+            // ícono. El "fondo visible" sigue siendo el píldoro
+            // compacto pero el área tocable cumple el target real.
             className={
-              'group absolute right-3 bottom-12 z-10 flex items-center gap-1.5 ' +
-              'rounded-full bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white ' +
+              'group absolute right-3 bottom-12 z-10 flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 ' +
+              'rounded-full bg-black/70 px-3 py-2 text-xs font-medium text-white ' +
               'backdrop-blur-sm transition hover:bg-black/85 ' +
               'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ' +
               'focus-visible:ring-offset-navy-500 focus-visible:outline-none'

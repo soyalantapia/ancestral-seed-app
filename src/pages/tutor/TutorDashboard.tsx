@@ -31,7 +31,7 @@ import type { ApprovalSignature, TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import { useTutorCasesStore } from '@/store/tutorCases'
-import { useTutorTasksStore } from '@/store/tutorTasks'
+import { useTutorTasksStore, type TaskFilter } from '@/store/tutorTasks'
 import { cn } from '@/lib/utils'
 
 const periods = [
@@ -539,8 +539,15 @@ function TasksCard({
   onToggle,
 }: {
   tasks: TutorTask[]
-  filter: 'all' | 'urgent' | 'today' | 'this_week'
-  onFilter: (f: 'all' | 'urgent' | 'today' | 'this_week') => void
+  /**
+   * Fix V3-TUT-04 (auditoría v3): antes el tipo del filtro estaba
+   * literalmente duplicado en TutorDashboard.tsx (dos veces: prop y
+   * setter) Y en el store. Cualquier cambio (agregar 'overdue', etc.)
+   * requería tocar 3 lugares. Ahora importamos `TaskFilter` del store
+   * — single source of truth.
+   */
+  filter: TaskFilter
+  onFilter: (f: TaskFilter) => void
   onToggle: (id: string) => void
 }) {
   const filtered = tasks.filter((t) => {

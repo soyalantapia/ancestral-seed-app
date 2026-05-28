@@ -2318,27 +2318,42 @@ async function downloadActa(
   // Fix SB9 (#TUT-28, auditoría UX): acta era .txt plano con
   // separadores ASCII — flojo para llevar a Trámites. Ahora PDF real
   // con jsPDF + sello + hash blockchain.
-  const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
-  const blob = buildActaPdf({
-    certId: cert.id,
-    productName: cert.productName,
-    authorName: cert.authorName,
-    authorRole: extra.authorRole,
-    community: extra.community,
-    productType: extra.productType,
-    productSector: extra.productSector,
-    scoreLabel: cert.scoreLabel,
-    status: cert.status,
-    category: cert.category,
-    country: cert.country,
-    region: cert.region,
-    issuedAt: cert.issuedAt,
-    expiresAt: cert.expiresAt,
-    // El cert blockchain hash vive en la ficha pública por slug. Para
-    // el acta usamos un derived hash estable (mismo patrón que /verificar).
-    hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
-  })
-  downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
+  //
+  // Fix V3-POS-13 (auditoría v3): wrap en try/catch — dynamic import
+  // de jsPDF puede fallar (offline, CSP). Antes el error subía sin
+  // feedback al user (callsite mostraba toast.success por adelantado).
+  const loadingId = toast.loading('Generando acta…')
+  try {
+    const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
+    const blob = buildActaPdf({
+      certId: cert.id,
+      productName: cert.productName,
+      authorName: cert.authorName,
+      authorRole: extra.authorRole,
+      community: extra.community,
+      productType: extra.productType,
+      productSector: extra.productSector,
+      scoreLabel: cert.scoreLabel,
+      status: cert.status,
+      category: cert.category,
+      country: cert.country,
+      region: cert.region,
+      issuedAt: cert.issuedAt,
+      expiresAt: cert.expiresAt,
+      // El cert blockchain hash vive en la ficha pública por slug. Para
+      // el acta usamos un derived hash estable (mismo patrón que /verificar).
+      hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
+    })
+    downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
+    toast.dismiss(loadingId)
+  } catch (err) {
+    toast.dismiss(loadingId)
+    toast.error('No pudimos generar el acta — revisá tu conexión o reintentá.')
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[acta PDF]', err)
+    }
+  }
 }
 
 function buildMailtoForAuthor(

@@ -451,24 +451,46 @@ export default function Pagos() {
                           // — inconsistente con CertificationRequest
                           // que descarga PDF real. Ahora ambos paths
                           // usan buildPaymentReceiptPdf de @/lib/pdf.
-                          toast.info('Generando comprobante…')
-                          const {
-                            buildPaymentReceiptPdf,
-                            downloadPdfBlob,
-                          } = await import('@/lib/pdf')
-                          const blob = buildPaymentReceiptPdf({
-                            id: p.id,
-                            concept: p.concept,
-                            requestNumber: p.requestNumber,
-                            requestName: p.requestName,
-                            amount: p.amount,
-                            currency: p.currency,
-                            status: p.status,
-                            dueDate: p.dueDate,
-                            paidAt: p.paidAt,
-                          })
-                          downloadPdfBlob(`factura-${p.id}.pdf`, blob)
-                          toast.success(`Factura ${p.id} descargada`)
+                          //
+                          // Fix V3-POS-13 (auditoría v3): el dynamic
+                          // import de jsPDF puede fallar (offline,
+                          // chunk cache miss, CSP). Antes el
+                          // toast.info("Generando…") quedaba colgado
+                          // sin reemplazo. Ahora envolvemos en try/catch
+                          // y mostramos toast.error específico,
+                          // descartando el toast loading con id estable.
+                          const loadingId = toast.loading(
+                            'Generando comprobante…',
+                          )
+                          try {
+                            const {
+                              buildPaymentReceiptPdf,
+                              downloadPdfBlob,
+                            } = await import('@/lib/pdf')
+                            const blob = buildPaymentReceiptPdf({
+                              id: p.id,
+                              concept: p.concept,
+                              requestNumber: p.requestNumber,
+                              requestName: p.requestName,
+                              amount: p.amount,
+                              currency: p.currency,
+                              status: p.status,
+                              dueDate: p.dueDate,
+                              paidAt: p.paidAt,
+                            })
+                            downloadPdfBlob(`factura-${p.id}.pdf`, blob)
+                            toast.dismiss(loadingId)
+                            toast.success(`Factura ${p.id} descargada`)
+                          } catch (err) {
+                            toast.dismiss(loadingId)
+                            toast.error(
+                              'No pudimos generar el PDF — revisá tu conexión o reintentá.',
+                            )
+                            if (import.meta.env.DEV) {
+                              // eslint-disable-next-line no-console
+                              console.error('[pago/factura PDF]', err)
+                            }
+                          }
                         }}
                         className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                       >

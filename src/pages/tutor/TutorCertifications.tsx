@@ -35,23 +35,36 @@ const PAGE_SIZE = 8
  * solo se carga cuando el tutor efectivamente descarga.
  */
 async function downloadCertActa(cert: IssuedCertification) {
-  toast.info('Generando PDF…')
-  const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
-  const blob = buildActaPdf({
-    certId: cert.id,
-    productName: cert.productName,
-    authorName: cert.authorName,
-    scoreLabel: cert.scoreLabel,
-    status: cert.status,
-    category: cert.category,
-    country: cert.country,
-    region: cert.region,
-    issuedAt: cert.issuedAt,
-    expiresAt: cert.expiresAt,
-    hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
-  })
-  downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
-  toast.success(`Acta de ${cert.id} descargada`)
+  // Fix V3-POS-13 (auditoría v3): igual patrón que /pagos — wrap en
+  // try/catch, dismiss del loading toast con id estable, mensaje de
+  // error específico si falla.
+  const loadingId = toast.loading('Generando PDF…')
+  try {
+    const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
+    const blob = buildActaPdf({
+      certId: cert.id,
+      productName: cert.productName,
+      authorName: cert.authorName,
+      scoreLabel: cert.scoreLabel,
+      status: cert.status,
+      category: cert.category,
+      country: cert.country,
+      region: cert.region,
+      issuedAt: cert.issuedAt,
+      expiresAt: cert.expiresAt,
+      hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
+    })
+    downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
+    toast.dismiss(loadingId)
+    toast.success(`Acta de ${cert.id} descargada`)
+  } catch (err) {
+    toast.dismiss(loadingId)
+    toast.error('No pudimos generar el PDF — revisá tu conexión o reintentá.')
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[tutor/acta PDF]', err)
+    }
+  }
 }
 
 const STATUS_META: Record<

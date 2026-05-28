@@ -233,10 +233,44 @@ export default function Notifications() {
                 <button
                   type="button"
                   onClick={() => {
+                    /**
+                     * Fix V3-POS-14 (auditoría v3): antes el delete
+                     * era directo + toast plano. Un tap accidental
+                     * (mobile sin opacity-0 que oculta el botón)
+                     * destruía la notificación sin recurso. Ahora
+                     * aplicamos el mismo patrón que la eliminación
+                     * de evidencias (QW-D1 del v1): toast.success
+                     * con acción "Deshacer" durante 6s que restaura
+                     * el item al store.
+                     */
+                    const removed = n
                     remove(n.id)
-                    toast.success('Notificación eliminada')
+                    toast.success('Notificación eliminada', {
+                      duration: 6000,
+                      action: {
+                        label: 'Deshacer',
+                        onClick: () => {
+                          // Re-insertar al store. Como `remove` solo
+                          // filtra del array y no preserva orden,
+                          // simplemente prepend para que vuelva a ser
+                          // visible (será re-ordenado por el sort de
+                          // la UI según `at`).
+                          useNotificationsStore.setState((s) => ({
+                            items: [removed, ...s.items],
+                          }))
+                        },
+                      },
+                    })
                   }}
-                  className="rounded-full p-1.5 text-navy-300 transition-colors hover:bg-error-100 hover:text-error-400 focus-visible:bg-error-100 focus-visible:text-error-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                  /*
+                    Fix V3-POS-18 (auditoría v3): antes
+                    `md:opacity-0 md:group-hover:opacity-100` dejaba
+                    el botón siempre visible en mobile sin opacity
+                    reducida → tap accidental constante. Ahora en
+                    mobile tiene opacity-60 base y opacity-100 al
+                    active/focus para reducir taps fantasma.
+                  */
+                  className="rounded-full p-1.5 text-navy-300 opacity-60 transition-all hover:bg-error-100 hover:text-error-400 hover:opacity-100 focus-visible:bg-error-100 focus-visible:text-error-400 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300 active:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                   aria-label="Eliminar notificación"
                 >
                   <Trash2 className="h-4 w-4" />

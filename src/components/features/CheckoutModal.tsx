@@ -99,6 +99,15 @@ export function CheckoutModal({
   }>({ holder: false, number: false, expiry: false, cvv: false })
   // Transfer file
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
+  /**
+   * Fix V3-POS-07 (auditoría v3): igual que con los campos de tarjeta,
+   * antes la tab Transferencia solo tiraba `toast.error('Adjuntá el
+   * comprobante')` si el user clickeaba "Confirmar pago" sin file.
+   * No había border-error en el upload area ni aria-invalid. Ahora
+   * trackear `transferTouched` paralelo al patrón `touched` de la
+   * tab Card, marcamos visualmente el upload area cuando es inválido.
+   */
+  const [transferTouched, setTransferTouched] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset state cuando se abre con un item nuevo (por si el user cerró
@@ -118,6 +127,7 @@ export function CheckoutModal({
         expiry: false,
         cvv: false,
       })
+      setTransferTouched(false)
     }
   }, [open, item?.id])
 
@@ -217,6 +227,9 @@ export function CheckoutModal({
 
   function handleSubmitTransfer() {
     if (!evidenceFile) {
+      // Fix V3-POS-07: marcar como touched para revelar feedback in-field
+      // además del toast.error.
+      setTransferTouched(true)
       toast.error('Adjuntá el comprobante para confirmar')
       return
     }
@@ -572,14 +585,27 @@ export function CheckoutModal({
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-neutral-300 bg-white px-4 py-5 text-xs font-semibold text-navy-500 transition-colors hover:border-gold-500 hover:bg-gold-50"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Subir foto o PDF del comprobante
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          aria-invalid={transferTouched}
+                          className={cn(
+                            'mt-1 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-white px-4 py-5 text-xs font-semibold text-navy-500 transition-colors hover:border-gold-500 hover:bg-gold-50',
+                            transferTouched
+                              ? 'border-error-400 bg-error-100/30'
+                              : 'border-neutral-300',
+                          )}
+                        >
+                          <Upload className="h-4 w-4" />
+                          Subir foto o PDF del comprobante
+                        </button>
+                        {transferTouched && (
+                          <p className="mt-1 text-[11px] font-semibold text-error-400">
+                            Adjuntá el comprobante para confirmar el pago
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
