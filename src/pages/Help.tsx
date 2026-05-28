@@ -630,6 +630,15 @@ function GlossarySection() {
    * Ahora normalizamos ambos lados con NFD + strip de diacríticos
    * antes de comparar.
    */
+  /**
+   * Fix V4-PUB-06 (auditoría v4): antes el regex codificaba el rango
+   * U+0300–U+036F como caracteres LITERALES no-imprimibles. Si alguien
+   * formateaba el archivo con normalización NFD→NFC o un linter
+   * "limpiaba" diacríticos, el regex se rompía silenciosamente y la
+   * búsqueda perdía la normalización. Ahora usamos escapes Unicode
+   * explícitos `̀-ͯ` — equivalente funcional, robusto a
+   * transformaciones del source.
+   */
   const stripAccents = (s: string): string =>
     s
       .normalize('NFD')

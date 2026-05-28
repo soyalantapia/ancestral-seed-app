@@ -11,8 +11,13 @@ import { persist } from 'zustand/middleware'
  *
  * Este store persiste la firma por caseId. La firma es un evento
  * inmutable en la lógica de negocio (Reglamento art. 4.5), así que
- * una vez firmada NUNCA debería "des-firmarse" en UI — pero
- * dejamos `unsign()` para QA/demo (idempotente: setea false).
+ * una vez firmada NUNCA debería "des-firmarse" en UI.
+ *
+ * Fix V4-TUT-02 (auditoría v4): antes existía un método `unsign()`
+ * que era dead code (nadie lo invocaba) y cuya semántica
+ * contradecía el comentario ("idempotente: setea false" pero el
+ * cuerpo borraba la entrada). Eliminado. Para resetear el demo se
+ * usa `clear()` que borra todas las firmas a la vez.
  *
  * Cuando llegue el backend, el state se hidrata desde
  * `GET /cases/:id` y `sign()` dispara `POST /cases/:id/sign`.
@@ -43,7 +48,6 @@ interface CaseSignaturesState {
     finalScore: number
     category: string
   }) => void
-  unsign: (caseId: string) => void
   /** Limpia todas las firmas — para reset del demo. */
   clear: () => void
 }
@@ -67,12 +71,6 @@ export const useCaseSignaturesStore = create<CaseSignaturesState>()(
             },
           },
         })),
-      unsign: (caseId) =>
-        set((s) => {
-          const next = { ...s.signatures }
-          delete next[caseId]
-          return { signatures: next }
-        }),
       clear: () => set({ signatures: {} }),
     }),
     { name: 'ancestral-seed-case-signatures-v1' },

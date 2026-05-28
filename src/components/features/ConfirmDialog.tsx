@@ -84,8 +84,20 @@ export function ConfirmDialog({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel()
       if (e.key === 'Enter') {
-        // Solo confirmar si el foco está EN el botón confirm.
-        if (document.activeElement === confirmRef.current) {
+        /**
+         * Confirmar SOLO si el foco está en el botón confirm,
+         * O si el foco está en el body (mobile tap pierde focus).
+         * Fix V4-PUB-09 (auditoría v4): antes solo aceptaba focus
+         * en confirmRef — pero en mobile, varios browsers no
+         * mantienen focus en buttons tras tap, y `activeElement`
+         * queda en `document.body`. Sin esto, Enter desde keyboard
+         * externo en iPad/Android no confirmaba.
+         *
+         * NO confirmamos si el foco está en Cancel u otro botón
+         * dentro del dialog (preservamos la protección original).
+         */
+        const ae = document.activeElement
+        if (ae === confirmRef.current || ae === document.body) {
           onConfirm()
         }
       }

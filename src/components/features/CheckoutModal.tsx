@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Banknote,
@@ -178,31 +178,39 @@ export function CheckoutModal({
     return `${digits.slice(0, 2)}/${digits.slice(2)}`
   }
 
-  // Fix V2-POS-14: validez por campo individual (no solo el bool global)
-  const fieldErrors = {
-    holder:
-      holder.trim().length === 0
-        ? 'Ingresá el nombre que figura en la tarjeta'
-        : holder.trim().length < 3
-          ? 'Mínimo 3 caracteres'
-          : null,
-    number: (() => {
-      const digits = number.replace(/\s/g, '')
-      if (digits.length === 0) return 'Ingresá el número de la tarjeta'
-      if (digits.length < 13) return 'Faltan dígitos (mínimo 13)'
-      return null
-    })(),
-    expiry: !/^\d{2}\/\d{2}$/.test(expiry)
-      ? expiry.length === 0
-        ? 'Ingresá el vencimiento (MM/AA)'
-        : 'Formato inválido — usá MM/AA'
-      : null,
-    cvv: !/^\d{3,4}$/.test(cvv)
-      ? cvv.length === 0
-        ? 'Ingresá el CVV'
-        : 'CVV debe tener 3 o 4 dígitos'
-      : null,
-  }
+  /**
+   * Fix V2-POS-14: validez por campo individual (no solo el bool global).
+   * Fix V4-POS-03 (auditoría v4): memoizamos con useMemo para que las
+   * 4 evaluaciones (incluyendo el IIFE de number) no se re-ejecuten en
+   * cada render. Las dependencias son solo los 4 valores de campos.
+   */
+  const fieldErrors = useMemo(
+    () => ({
+      holder:
+        holder.trim().length === 0
+          ? 'Ingresá el nombre que figura en la tarjeta'
+          : holder.trim().length < 3
+            ? 'Mínimo 3 caracteres'
+            : null,
+      number: (() => {
+        const digits = number.replace(/\s/g, '')
+        if (digits.length === 0) return 'Ingresá el número de la tarjeta'
+        if (digits.length < 13) return 'Faltan dígitos (mínimo 13)'
+        return null
+      })(),
+      expiry: !/^\d{2}\/\d{2}$/.test(expiry)
+        ? expiry.length === 0
+          ? 'Ingresá el vencimiento (MM/AA)'
+          : 'Formato inválido — usá MM/AA'
+        : null,
+      cvv: !/^\d{3,4}$/.test(cvv)
+        ? cvv.length === 0
+          ? 'Ingresá el CVV'
+          : 'CVV debe tener 3 o 4 dígitos'
+        : null,
+    }),
+    [holder, number, expiry, cvv],
+  )
   const cardValid =
     !fieldErrors.holder &&
     !fieldErrors.number &&
@@ -592,7 +600,16 @@ export function CheckoutModal({
                       type="file"
                       accept="image/*,application/pdf"
                       className="sr-only"
-                      onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null
+                        setEvidenceFile(file)
+                        // Fix V4-POS-05 (auditoría v4): si el user
+                        // sube file después de fallar submit, limpiar
+                        // el `transferTouched` para que cuando quite
+                        // el file no aparezca error inmediato sin
+                        // haber re-intentado.
+                        if (file) setTransferTouched(false)
+                      }}
                     />
                     {evidenceFile ? (
                       <div className="mt-1 flex items-center justify-between rounded-lg border border-success-300 bg-success-100/40 px-3 py-2">

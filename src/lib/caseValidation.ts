@@ -160,21 +160,38 @@ export function validateCaseAdvance(
 
   /**
    * Fix V3-TUT-03 (auditoría v3): antes solo validábamos los
-   * requirements de la PRÓXIMA etapa (caseData.stage → siguiente en
-   * STAGE_ORDER). Si el tutor arrastraba de "Postulado" directo a
-   * "Auditoría", se aplicaba solo el check "postulado → revisión
-   * inicial" y el resto pasaba sin verificar. Los requirements de
-   * "elegible" y "diagnóstico" quedaban silenciosos.
+   * requirements de la PRÓXIMA etapa.
    *
-   * Ahora simulamos el paso por cada etapa intermedia: para cada
-   * `stage` entre fromIdx+1 y toIdx, evaluamos `computeCanAdvance()`
-   * como si el caso estuviera EN esa etapa. Si alguna falla,
-   * retornamos esa etapa con sus requirements pendientes (el caller
-   * puede mostrar "no podés saltar a X porque en Y faltan: A · B").
+   * Fix V4-TUT-08 (auditoría v4): la simulación heredaba
+   * `pendingItems` del caso original. Si el caso estaba en
+   * `postulado` con un pendingItem "Completar postulación", al
+   * simular etapas posteriores (revision-inicial, elegible) los
+   * checks "Pendientes resueltos" fallaban con el SAME pendingItem
+   * — pero conceptualmente al avanzar la etapa los pendientes de la
+   * etapa origen ya se resolvieron. Falso bloqueo con copy confuso.
+   *
+   * Ahora simulamos como si los `pendingItems` se VACIARAN al
+   * avanzar a la primera etapa intermedia (interpretación: avanzar
+   * implica resolver los pendientes de la etapa actual). Si la
+   * etapa actual tiene pendingItems, validamos su resolución en la
+   * primera iteración (etapa actual, paso i=fromIdx), y para las
+   * etapas posteriores (i > fromIdx) trabajamos con array vacío.
+   *
+   * Esto es coherente con cómo el botón "Avanzar etapa" del
+   * expediente lo maneja: el tutor NO puede avanzar sin resolver los
+   * pendingItems propios de la etapa actual, pero al avanzar los
+   * "vuelve" implícitamente a vacío para la siguiente.
    */
   for (let i = fromIdx; i < toIdx; i++) {
     const stepStage = STAGE_ORDER[i]
-    const simulated: TutorCase = { ...caseData, stage: stepStage }
+    const isOriginStage = i === fromIdx
+    const simulated: TutorCase = {
+      ...caseData,
+      stage: stepStage,
+      // Solo conservamos pendingItems para validar la etapa origen;
+      // las intermedias se simulan con array vacío.
+      pendingItems: isOriginStage ? caseData.pendingItems : [],
+    }
     const check = computeCanAdvance(
       simulated,
       data.evidenceEvals,

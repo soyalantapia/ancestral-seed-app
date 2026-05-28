@@ -23,6 +23,24 @@ import type {
 const PLACEHOLDER = '__placeholder__'
 
 /**
+ * Fix V4-TUT-05 (auditoría v4): la identidad del tutor estaba
+ * literalmente hardcoded ("Lic. Juan Pérez" / "Juan Pérez") en 25+
+ * lugares del módulo. V3-TUT-10 había centralizado vía `tutorIdentity`
+ * pero solo migró 2 callsites externos — el grueso de los mocks
+ * seguía con strings literales. Si alguien cambiaba `mockTutor.name`
+ * los mensajes mock divergían del avatar/header.
+ *
+ * Ahora declaramos las constantes UNA VEZ al inicio del módulo,
+ * antes de cualquier mock que las necesite. Cambiar la identidad =
+ * cambiar 2 strings. El `mockTutor` y `tutorIdentity` derivan de
+ * estos. Los strings narrativos en mensajes históricos también
+ * los usan vía template literal.
+ */
+const TUTOR_NAME = 'Lic. Juan Pérez'
+const TUTOR_SHORT_NAME = 'Juan Pérez'
+const TUTOR_INITIALS = 'JP'
+
+/**
  * Fix V2-POS-01 (auditoría v2): el mock estático tenía history.at
  * fijos en febrero–abril 2026, lo que hacía que el bloque
  * "Lo nuevo desde tu última visita" del DashboardHome se vea VACÍO
@@ -410,7 +428,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
     meetings: [
       {
         id: 'm-001',
-        auditorName: 'Lic. Juan Pérez',
+        auditorName: TUTOR_NAME,
         type: 'Videollamada',
         scheduledAt: '2026-02-12T10:00:00-03:00',
         timezone: 'GMT-3',
@@ -441,7 +459,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
       { id: 'h-001', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2026-02-01T18:30:00-03:00' },
       { id: 'h-002', kind: 'evidence_uploaded', title: 'Evidencias iniciales', description: '4 fotos + 1 video', actor: 'Tú', at: '2026-02-02T10:18:00-03:00' },
       { id: 'h-003', kind: 'document_uploaded', title: 'Aval de la comunidad', description: 'aval-comunidad.pdf', actor: 'Tú', at: '2026-02-03T16:42:00-03:00' },
-      { id: 'h-004', kind: 'stage_changed', title: 'Etapa Prediagnóstico iniciada', description: 'Auditoría asignada a Lic. Juan Pérez', actor: 'Sistema', at: '2026-02-05T09:00:00-03:00' },
+      { id: 'h-004', kind: 'stage_changed', title: 'Etapa Prediagnóstico iniciada', description: `Auditoría asignada a ${TUTOR_NAME}`, actor: 'Sistema', at: '2026-02-05T09:00:00-03:00' },
       { id: 'h-005', kind: 'audit_proposed', title: 'Propuesta de reunión', description: '12/02 a las 10:00 GMT-3', actor: 'Auditor', at: '2026-02-06T11:30:00-03:00' },
       // Fix V2-POS-01: eventos relativos a "hoy" para que el bloque
       // "Lo nuevo desde tu última visita" del DashboardHome SIEMPRE
@@ -451,13 +469,13 @@ export const mockCertificationRequests: CertificationRequest[] = [
       // getter — el `at` se recalcula en cada lectura contra el
       // `Date.now()` actual, no contra el momento de carga del módulo.
       // Soporta sesiones largas del demo sin reload.
-      relativeEvent({ id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: 'Lic. Juan Pérez te respondió sobre los hilos de plata', actor: 'Auditor' }, { days: 3 }),
+      relativeEvent({ id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: `${TUTOR_NAME} te respondió sobre los hilos de plata`, actor: 'Auditor' }, { days: 3 }),
       relativeEvent({ id: 'h-007', kind: 'evidence_uploaded', title: 'Foto adicional del proceso', description: 'detalle-soldadura.jpg', actor: 'Tú' }, { days: 1 }),
       relativeEvent({ id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Auditor' }, { hours: 8 }),
     ],
     threads: {
       'm-001': [
-        { id: 'msg-001', author: 'tutor', authorName: 'Lic. Juan Pérez', body: 'Hola Camila, te propongo una primera reunión para revisar la documentación que enviaste. Confirmame si te queda cómodo el horario.', at: '2026-02-06T11:30:00-03:00' },
+        { id: 'msg-001', author: 'tutor', authorName: TUTOR_NAME, body: 'Hola Camila, te propongo una primera reunión para revisar la documentación que enviaste. Confirmame si te queda cómodo el horario.', at: '2026-02-06T11:30:00-03:00' },
       ],
     },
     submittedData: {
@@ -557,7 +575,7 @@ export const mockNotifications: Notification[] = [
     id: 'n-001',
     kind: 'audit_proposed',
     title: 'Nueva propuesta de auditoría',
-    body: 'Lic. Juan Pérez propuso una videollamada el 12/02 a las 10:00 (GMT-3) para Filigrana ancestral.',
+    body: `${TUTOR_NAME} propuso una videollamada el 12/02 a las 10:00 (GMT-3) para Filigrana ancestral.`,
     createdAt: '2026-05-10T15:30:00-03:00',
     read: false,
     link: '/mis-certificaciones/req-001?tab=evaluacion',
@@ -603,32 +621,40 @@ export const mockNotifications: Notification[] = [
 
 export const mockTutor = {
   id: 't-001',
-  name: 'Lic. Juan Pérez',
+  name: TUTOR_NAME,
   email: 'juan.perez@ancestralseed.io',
   avatarUrl: 'https://i.pravatar.cc/200?img=15',
 }
 
 /**
- * Fix V3-TUT-10 (auditoría v3): "Lic. Juan Pérez" estaba hardcoded
- * en al menos 3 lugares (TutorCaseDetail signAction, NotesDrawer
- * authorName, CertificationRequest TUTOR_PROFILES). Si mañana cambia
- * la persona o la titulación, hay que tocar todos. Helpers shared
- * para que la identidad del tutor logueado venga de UN SOLO lugar.
+ * Fix V3-TUT-10 + V4-TUT-03 + V4-TUT-05 (auditoría v3+v4):
  *
- * En prod esto vendría del JWT del backend; acá derivamos del mockTutor.
+ * V3-TUT-10: la identidad estaba duplicada en múltiples lugares.
+ * V4-TUT-03: el regex `^Lic\.\s+` no cubría otros honoríficos
+ * (Dra, Mtra, Antrop, etc.). Si el mock cambiaba al "Dra. María
+ * Quispe", `shortName` quedaba con el "Dra." pegado.
+ * V4-TUT-05: los strings narrativos del mock seguían hardcoded.
+ *
+ * Ahora derivamos de las constantes TUTOR_* declaradas al inicio
+ * del módulo. Cambiar la identidad = cambiar 3 constantes y todos
+ * los mocks/UI se actualizan en cascada. El regex se amplió para
+ * incluir los honoríficos comunes de auditoría cultural.
  */
+const HONORIFIC_PREFIX_REGEX =
+  /^(Lic|Dr|Dra|Mtra|Mtro|Antrop|Ing|Prof|Mg|Mgtr)\.\s+/
+
 export const tutorIdentity = {
   id: mockTutor.id,
-  name: mockTutor.name,
-  // El nombre "corto" sin la titulación (para iniciales y firmas).
-  shortName: mockTutor.name.replace(/^Lic\.\s+/, ''),
-  initials: mockTutor.name
-    .replace(/^Lic\.\s+/, '')
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join(''),
+  name: TUTOR_NAME,
+  /** El nombre "corto" sin la titulación (para iniciales y firmas). */
+  shortName: TUTOR_SHORT_NAME,
+  initials: TUTOR_INITIALS,
 } as const
+
+// Re-export del regex por si futuras identidades se necesitan
+// derivar dinámicamente desde un nombre con honorífico desconocido.
+export const stripHonorific = (name: string): string =>
+  name.replace(HONORIFIC_PREFIX_REGEX, '')
 
 export const mockTutorCases: TutorCase[] = [
   // Postulados (sin tutor asignado)
@@ -671,7 +697,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: [],
     stage: 'revision-inicial',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Joyería y orfebrería',
     country: 'Argentina',
@@ -689,7 +715,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: ['Evidencias'],
     stage: 'elegible',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Tejidos y textiles',
     country: 'Colombia',
@@ -706,7 +732,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: [],
     stage: 'elegible',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Joyería y orfebrería',
     country: 'Colombia',
@@ -723,7 +749,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: ['Evidencias'],
     stage: 'elegible',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Cocina ancestral',
     country: 'Argentina',
@@ -759,7 +785,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: [],
     stage: 'auditoria',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Productos agroecológicos',
     country: 'Perú',
@@ -777,7 +803,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: ['Firma de evaluación'],
     stage: 'evaluacion',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Medicina ancestral',
     country: 'Bolivia',
@@ -795,7 +821,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: [],
     stage: 'certificacion',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Joyería y orfebrería',
     country: 'Colombia',
@@ -812,7 +838,7 @@ export const mockTutorCases: TutorCase[] = [
     pendingItems: [],
     stage: 'certificacion',
     tutorId: 't-001',
-    tutorName: 'Juan Pérez',
+    tutorName: TUTOR_SHORT_NAME,
     tutorAvatarUrl: 'https://i.pravatar.cc/200?img=15',
     category: 'Tejidos y textiles',
     country: 'Colombia',
@@ -1258,7 +1284,7 @@ export const mockInternalNotes: InternalNote[] = [
   {
     id: 'note-001',
     caseId: 'CE-104',
-    author: 'Juan Pérez',
+    author: TUTOR_SHORT_NAME,
     authorRole: 'tutor',
     body: 'Camila viene con muy buen track de la comunidad. Validar aval con la Mtra. Quispe antes de cerrar diagnóstico.',
     at: '2026-04-25T14:30:00-03:00',
@@ -1267,7 +1293,7 @@ export const mockInternalNotes: InternalNote[] = [
   {
     id: 'note-002',
     caseId: 'CE-104',
-    author: 'Juan Pérez',
+    author: TUTOR_SHORT_NAME,
     authorRole: 'tutor',
     body: 'Falta validar la fecha de la foto de proceso. Pedí aclaración en evidencia e-003.',
     at: '2026-04-28T09:00:00-03:00',
@@ -1275,7 +1301,7 @@ export const mockInternalNotes: InternalNote[] = [
   {
     id: 'note-003',
     caseId: 'CE-108',
-    author: 'Juan Pérez',
+    author: TUTOR_SHORT_NAME,
     authorRole: 'tutor',
     body: 'Pedro va bien, pero la documentación tributaria es un blocker para certificación final.',
     at: '2026-04-20T11:00:00-03:00',
@@ -1414,7 +1440,7 @@ export const mockPendingSignatures: ApprovalSignature[] = [
     caseName: 'Joyería filigrana tradicional',
     applicantName: 'Beatriz Salazar',
     role: 'tutor',
-    signerName: 'Lic. Juan Pérez',
+    signerName: TUTOR_NAME,
     status: 'pending',
     requestedAt: '2026-05-12T10:00:00-03:00',
   },
@@ -1424,7 +1450,7 @@ export const mockPendingSignatures: ApprovalSignature[] = [
     caseName: 'Tejido en telar tradicional',
     applicantName: 'Flor Imbacuán Pantoja',
     role: 'tutor',
-    signerName: 'Lic. Juan Pérez',
+    signerName: TUTOR_NAME,
     status: 'pending',
     requestedAt: '2026-05-13T08:30:00-03:00',
   },
@@ -1434,7 +1460,7 @@ export const mockPendingSignatures: ApprovalSignature[] = [
     caseName: 'Sahumerio ceremonial',
     applicantName: 'Inés Curaca',
     role: 'tutor',
-    signerName: 'Lic. Juan Pérez',
+    signerName: TUTOR_NAME,
     status: 'pending',
     requestedAt: '2026-05-13T14:00:00-03:00',
   },
@@ -1538,7 +1564,7 @@ export const mockImprovementPlans: Record<string, ImprovementPlan> = {
     id: 'plan-001',
     caseId: 'CE-102',
     createdAt: '2026-05-09T10:00:00-03:00',
-    createdBy: 'Lic. Juan Pérez',
+    createdBy: TUTOR_NAME,
     reEvaluationAt: '2026-07-09',
     actions: [
       {
@@ -1662,14 +1688,14 @@ export function getInitialNotesByCert(certId: string): CertExpedienteNote[] {
       },
       {
         id: 'n-002',
-        authorName: 'Juan Pérez',
+        authorName: TUTOR_SHORT_NAME,
         authorInitials: 'JP',
         body: 'Coordinar entrega de avales actualizados para la renovación del próximo año.',
         at: '2026-02-12T10:00:00-03:00',
       },
       {
         id: 'n-003',
-        authorName: 'Juan Pérez',
+        authorName: TUTOR_SHORT_NAME,
         authorInitials: 'JP',
         body: 'Sub-criterio normativo: pendiente verificar nueva normativa local de orfebrería. Pedí documentación adicional al solicitante para cerrar el ciclo de renovación con todo en regla.',
         at: '2026-02-12T10:00:00-03:00',
@@ -1679,7 +1705,7 @@ export function getInitialNotesByCert(certId: string): CertExpedienteNote[] {
   return [
     {
       id: 'n-default-001',
-      authorName: 'Juan Pérez',
+      authorName: TUTOR_SHORT_NAME,
       authorInitials: 'JP',
       body: 'Caso en seguimiento estándar. Sin observaciones particulares al cierre del ciclo.',
       at: new Date().toISOString(),

@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
@@ -445,10 +446,13 @@ export default function TutorCaseDetail() {
               <InternalNotesPanel
                 entityKey={caseEntityKey(caseData.id)}
                 currentUser={{
-                  // En producción esto viene de useAuthStore. Hardcoded
-                  // al tutor mock por ahora.
-                  name: 'Lic. Patricia Vega',
-                  initials: 'PV',
+                  // Fix V4-TUT-04 (auditoría v4): antes era
+                  // "Lic. Patricia Vega" hardcoded — el mismo tutor
+                  // firmaba notas como Patricia Vega en el caso
+                  // activo Y como Juan Pérez en el cert emitido. Ahora
+                  // ambos consumen `tutorIdentity` (single source).
+                  name: tutorIdentity.shortName,
+                  initials: tutorIdentity.initials,
                 }}
               />
             )}
@@ -916,6 +920,17 @@ function EvaluacionTab({
    */
   const signed = useCaseSignaturesStore((s) => s.isSigned(caseData.id))
   const signAction = useCaseSignaturesStore((s) => s.sign)
+  /**
+   * Fix V4-TUT-01 (auditoría v4): si el caso retrocedió de etapa
+   * (por corrección del tutor), la firma persiste por Reglamento
+   * (art. 4.5 inmutabilidad). PERO mostrar "Evaluación firmada"
+   * cuando el caso visualmente está en `auditoria` o anterior es
+   * estado Frankenstein. Mostramos un banner explicativo: la firma
+   * vive en histórico, el caso ahora se está re-evaluando.
+   */
+  const stageIdx = STAGE_ORDER.indexOf(caseData.stage)
+  const evaluacionIdx = STAGE_ORDER.indexOf('evaluacion')
+  const signedButRolledBack = signed && stageIdx < evaluacionIdx
   // La evaluación es 100% IA — el tutor no edita valores individuales,
   // solo firma. El score se computa con los pesos del antropólogo.
   const finalScore = computeWeightedScore(values)
@@ -956,6 +971,27 @@ function EvaluacionTab({
 
   return (
     <div className="space-y-4">
+      {/* Fix V4-TUT-01 (auditoría v4): si el caso retrocedió de
+          etapa después de firmada la evaluación, mostramos un banner
+          que aclara el estado Frankenstein — la firma sigue siendo
+          inmutable por Reglamento art. 4.5 pero el caso ya no está
+          en evaluacion. */}
+      {signedButRolledBack && (
+        <div className="flex items-start gap-2 rounded-2xl border border-warning-300 bg-warning-100/40 p-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning-400" />
+          <div className="text-xs leading-relaxed text-navy-500">
+            <p className="font-bold">
+              Esta evaluación fue firmada en una iteración anterior.
+            </p>
+            <p className="mt-0.5 text-navy-300">
+              El caso fue retrocedido a "{caseData.stage}" para corrección. La
+              firma queda inmutable en el histórico por Reglamento (art. 4.5),
+              pero el flujo activo ya no está en evaluación.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Banner "Generado por IA · no editable"
           Fix QW-B5 (auditoría UX): antes el banner no comunicaba qué
           significaba "firmar" desde el lado de la responsabilidad del

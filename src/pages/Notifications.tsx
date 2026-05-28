@@ -200,7 +200,11 @@ export default function Notifications() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-bold text-navy-500">{n.title}</p>
-                    <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', meta.color)}>
+                    {/* Fix V4-POS-08 (auditoría v4): tags como "AVANCE · ETAPA"
+                        rompían en mobile angosto cortando el `·` al inicio de
+                        línea sin contexto. `whitespace-nowrap` mantiene el
+                        tag entero en una línea. */}
+                    <span className={cn('whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider', meta.color)}>
                       {meta.tag}
                     </span>
                     {!n.read && (
@@ -250,14 +254,26 @@ export default function Notifications() {
                       action: {
                         label: 'Deshacer',
                         onClick: () => {
-                          // Re-insertar al store. Como `remove` solo
-                          // filtra del array y no preserva orden,
-                          // simplemente prepend para que vuelva a ser
-                          // visible (será re-ordenado por el sort de
-                          // la UI según `at`).
-                          useNotificationsStore.setState((s) => ({
-                            items: [removed, ...s.items],
-                          }))
+                          /**
+                           * Fix V4-POS-09 (auditoría v4): antes el
+                           * Deshacer hacía prepend, lo que ponía la
+                           * notif restaurada en TOPE aunque hubiera
+                           * sido la 5ta más vieja. El comentario
+                           * asumía que la UI re-ordenaría por `at`
+                           * — pero no hay sort. Ahora reinsertamos
+                           * en la posición correcta según el ISO
+                           * timestamp `at` (mismo orden DESC que el
+                           * resto de items).
+                           */
+                          useNotificationsStore.setState((s) => {
+                            const next = [...s.items]
+                            const insertAt = next.findIndex(
+                              (item) => item.createdAt < removed.createdAt,
+                            )
+                            if (insertAt === -1) next.push(removed)
+                            else next.splice(insertAt, 0, removed)
+                            return { items: next }
+                          })
                         },
                       },
                     })

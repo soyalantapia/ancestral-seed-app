@@ -287,18 +287,42 @@ export default function DashboardHome() {
 
     const onVisibility = () => {
       if (document.hidden) {
+        /**
+         * Fix V4-POS-01 (auditoría v4): antes solo registrábamos
+         * `hiddenSince` y dependíamos del retorno de la pestaña para
+         * decidir si markVisited. Pero Safari iOS NO garantiza
+         * `pagehide` en cierre abrupto (kill app, low-memory swipe),
+         * y la pestaña puede no volver nunca. El lastVisit quedaba
+         * en el snapshot anterior y la próxima sesión mostraba TODOS
+         * los eventos como nuevos.
+         *
+         * Ahora markVisited también dispara al ENTRAR a hidden
+         * (besides pagehide), lo cual cubre el caso iOS. Si el user
+         * vuelve <5min después, el snapshot ya está actualizado y el
+         * bloque "Lo nuevo" muestra solo eventos posteriores al hide
+         * — correcto. Si vuelve >5min después, idem.
+         *
+         * Tradeoff: si el user cambia de tab y vuelve enseguida,
+         * "perdemos" el snapshot original. Pero como el snapshot del
+         * useState lazy initializer SIGUE intacto durante el lifetime
+         * del componente, el bloque "Lo nuevo" sigue mostrando los
+         * eventos correctos en esta sesión. La pérdida solo aplica al
+         * próximo refresh full-page.
+         */
         hiddenSince = Date.now()
+        markVisited()
       } else if (hiddenSince !== null) {
-        // Volvió a la pestaña — si pasaron >5min, marcamos como
-        // "nueva visita" anclada al momento de salir.
+        // Volvió a la pestaña — el markVisited ya se disparó al
+        // ocultarse, este bloque queda para futuro uso (analytics
+        // de tiempo away, etc.). No-op por ahora.
         if (Date.now() - hiddenSince >= IDLE_MS) {
-          markVisited()
+          // El snapshot ya está actualizado, nada más que hacer.
         }
         hiddenSince = null
       }
     }
     const onPageHide = () => {
-      // Cierre real de la pestaña — marcamos definitivo.
+      // Cierre real de la pestaña — markVisited es idempotente.
       markVisited()
     }
 

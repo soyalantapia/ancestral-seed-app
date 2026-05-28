@@ -282,6 +282,30 @@ function HashModal({
  *
  * @see https://developer.mozilla.org/docs/Web/API/Barcode_Detection_API
  */
+/**
+ * Fix V4-PUB-03 + V4-PUB-04 (auditoría v4): detección iOS-like
+ * memoizada a nivel de módulo. Verifica:
+ *  - userAgent matchea iPhone/iPad/iPod
+ *  - O `platform === 'MacIntel'` con maxTouchPoints>1 Y
+ *    `'ontouchstart' in window` (iPadOS 13+ reporta MacIntel pero
+ *    los Macs desktop con monitores táctiles externos no tienen
+ *    `ontouchstart` en el window root).
+ */
+const IS_IOS_LIKE = (() => {
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+    return false
+  }
+  const ua = navigator.userAgent || ''
+  const platform = navigator.platform || ''
+  if (/iPhone|iPad|iPod/.test(ua)) return true
+  return (
+    platform === 'MacIntel' &&
+    typeof navigator.maxTouchPoints === 'number' &&
+    navigator.maxTouchPoints > 1 &&
+    'ontouchstart' in window
+  )
+})()
+
 interface BarcodeDetectorResult {
   rawValue: string
   format: string
@@ -604,17 +628,19 @@ function QrModal({
                   la única salida real (hash a mano) sin recomendar
                   acciones que no funcionan.
                 */}
-                {(() => {
-                  if (typeof navigator === 'undefined') return false
-                  const ua = navigator.userAgent || ''
-                  const platform = navigator.platform || ''
-                  const isIosLike =
-                    /iPhone|iPad|iPod/.test(ua) ||
-                    (platform === 'MacIntel' &&
-                      typeof navigator.maxTouchPoints === 'number' &&
-                      navigator.maxTouchPoints > 1)
-                  return isIosLike
-                })() && (
+                {/*
+                  Fix V4-PUB-03 + V4-PUB-04 (auditoría v4): antes era
+                  un IIFE que se ejecutaba en CADA render del modal.
+                  Además, el check `platform === 'MacIntel' &&
+                  maxTouchPoints > 1` podía dar falso positivo en
+                  Macs desktop con pantallas táctiles externas
+                  conectadas — un usuario Mac veía el tip iOS falso.
+                  Ahora `IS_IOS_LIKE` se evalúa UNA SOLA VEZ al cargar
+                  el módulo (navigator no cambia en runtime) y el
+                  check incluye `'ontouchstart' in window` para
+                  reducir falsos positivos en Mac.
+                */}
+                {IS_IOS_LIKE && (
                   <p className="mt-2 inline-flex max-w-[22rem] items-start gap-1.5 rounded-lg bg-info-100 px-2.5 py-1.5 text-[11px] leading-relaxed text-info-400">
                     Estás en iOS — el escaneo de QR no está disponible
                     en ningún navegador (Safari, Chrome y Firefox para

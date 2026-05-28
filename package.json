@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "og": "node scripts/generate-og.mjs",
-    "prebuild": "npm run og",
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "prebuild": "npm run og && npm run sitemap",
     "build": "tsc -b && vite build",
     "build:no-msw": "VITE_USE_MSW=false npm run build",
     "lint": "eslint .",

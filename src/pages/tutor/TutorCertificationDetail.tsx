@@ -1071,8 +1071,15 @@ function EvidenciasSection({
                       // este botón pasa a hacer fetch del archivo.
                       if (e.kind === 'image' && e.thumbUrl) {
                         const url = `${import.meta.env.BASE_URL}${e.thumbUrl.replace(/^\//, '')}`
-                        window.open(url, '_blank', 'noopener,noreferrer')
-                        toast.success(`${e.name} abierto en pestaña nueva`)
+                        // Fix V4-PUB-11 (auditoría v4): window.open puede
+                        // retornar null si popup blocker está activo. Antes
+                        // el toast.success aparecía igual. Ahora verificamos.
+                        const opened = window.open(url, '_blank', 'noopener,noreferrer')
+                        if (opened) {
+                          toast.success(`${e.name} abierto en pestaña nueva`)
+                        } else {
+                          toast.error('Tu navegador bloqueó la apertura. Permitilo y reintentá.')
+                        }
                       } else {
                         toast.info(
                           'Vista previa no disponible en demo · el binario real se sirve desde el backend',
@@ -1125,8 +1132,15 @@ function EvidenciasSection({
                       // este botón pasa a hacer fetch del archivo.
                       if (e.kind === 'image' && e.thumbUrl) {
                         const url = `${import.meta.env.BASE_URL}${e.thumbUrl.replace(/^\//, '')}`
-                        window.open(url, '_blank', 'noopener,noreferrer')
-                        toast.success(`${e.name} abierto en pestaña nueva`)
+                        // Fix V4-PUB-11 (auditoría v4): window.open puede
+                        // retornar null si popup blocker está activo. Antes
+                        // el toast.success aparecía igual. Ahora verificamos.
+                        const opened = window.open(url, '_blank', 'noopener,noreferrer')
+                        if (opened) {
+                          toast.success(`${e.name} abierto en pestaña nueva`)
+                        } else {
+                          toast.error('Tu navegador bloqueó la apertura. Permitilo y reintentá.')
+                        }
                       } else {
                         toast.info(
                           'Vista previa no disponible en demo · el binario real se sirve desde el backend',

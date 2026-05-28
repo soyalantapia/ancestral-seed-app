@@ -735,9 +735,14 @@ export default function TutorCases() {
         open={confirmReset}
         title="Restaurar el demo"
         description={
+          /* Fix V4-PUB-12 (auditoría v4): el enum no mencionaba
+             "firmas de evaluación", que también se borran via
+             useCaseSignaturesStore.clear(). El reviewer que firmó
+             3 casos no sabía que las perdía. */
           'Vas a descartar:\n' +
           ' · Movimientos del kanban (drag-and-drop, asignaciones, casos nuevos)\n' +
           ' · Notas internas que agregaste\n' +
+          ' · Firmas de evaluación realizadas\n' +
           ' · Checklist y comentarios del cert emitido\n' +
           ' · Tareas marcadas como hechas y filtros\n' +
           ' · Portada cambiada en evidencias\n' +
@@ -1406,12 +1411,20 @@ function KanbanCardMenu({
       // Preferir alineación a la derecha del botón. Si se sale del
       // viewport (rect.right + width > innerWidth), flipear al lado
       // izquierdo del botón.
+      //
+      // Fix V4-TUT-06 (auditoría v4): antes la rama "no overflowsRight"
+      // calculaba `rect.right - MENU_WIDTH` sin clamp. Si rect.right
+      // era < MENU_WIDTH (card scrolleada off-screen a la izquierda),
+      // el left resultaba negativo y el menú aparecía cortado fuera del
+      // viewport. Ahora envolvemos siempre con Math.max(8, ...).
       const wantRight = rect.right
       const overflowsRight =
         wantRight + 4 > window.innerWidth || wantRight - MENU_WIDTH < 8
-      const left = overflowsRight
-        ? Math.max(8, rect.right - MENU_WIDTH)
-        : rect.right - MENU_WIDTH
+      const desiredLeft = rect.right - MENU_WIDTH
+      const left = Math.max(
+        8,
+        overflowsRight ? desiredLeft : desiredLeft,
+      )
       setPos({ top: rect.bottom + 4, left })
     }
     computePos()
