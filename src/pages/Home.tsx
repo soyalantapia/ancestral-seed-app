@@ -219,43 +219,91 @@ function Hero() {
  * Ref: https://developers.google.com/youtube/iframe_api_reference
  */
 const YT_SHORT_ID = '4gdnaNrQxwY'
+
+/**
+ * URL del embed. Cambio importante (SM8):
+ * - `youtube-nocookie.com` en vez de `youtube.com` — versión de privacy
+ *   enhanced de YouTube que muestra MENOS overlays informativos
+ *   (título/canal/suscribirse aparecen menos agresivamente).
+ * - `iv_load_policy=3` desactiva las anotaciones flotantes.
+ * - `fs=0` quita el botón "fullscreen" del player.
+ * - `disablekb=1` ignora atajos de teclado dentro del iframe (no
+ *   queremos que `k` pause si el user está escribiendo en la página).
+ * - `cc_load_policy=0` no muestra subtítulos por default.
+ * - Mantenemos `mute=1` porque autoplay con sonido está bloqueado por
+ *   policy del browser (Chrome 66+, Safari 11+, Firefox 66+). El truco
+ *   está abajo: activamos el sonido en cuanto el user interactúa con
+ *   CUALQUIER cosa del sitio.
+ */
 const YT_EMBED_URL =
-  `https://www.youtube.com/embed/${YT_SHORT_ID}` +
+  `https://www.youtube-nocookie.com/embed/${YT_SHORT_ID}` +
   `?autoplay=1&mute=1&loop=1&playlist=${YT_SHORT_ID}` +
-  `&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`
+  `&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1` +
+  `&iv_load_policy=3&fs=0&disablekb=1&cc_load_policy=0`
 
 function HeroVideoPlaceholder() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [muted, setMuted] = useState(true)
-  /**
-   * Fix SM2 (#PUB-03, auditoría UX): el botón "Activar sonido" pulsaba
-   * permanentemente mientras el video estaba muteado, peleándole la
-   * atención al título principal del Hero. Ahora pulsa solo los
-   * primeros 5 segundos — el user lo nota al cargar, después queda
-   * estático.
-   */
-  const [pulseEnabled, setPulseEnabled] = useState(true)
-  useEffect(() => {
-    const t = setTimeout(() => setPulseEnabled(false), 5000)
-    return () => clearTimeout(t)
-  }, [])
 
   /**
-   * Toggle mute via YouTube IFrame Player API. El player escucha
-   * postMessage con `{event:'command', func:'unMute'|'mute', args:''}`.
-   * Si el iframe no terminó de cargar, el comando se ignora silenciosamente
-   * — el user puede reintentar.
+   * Manda un comando al player vía postMessage. Si el iframe aún no
+   * cargó, el postMessage se ignora silenciosamente — el user puede
+   * reintentar.
    */
-  function toggleMute() {
+  function sendCommand(func: 'unMute' | 'mute' | 'setVolume', args?: unknown) {
     const win = iframeRef.current?.contentWindow
     if (!win) return
-    const func = muted ? 'unMute' : 'mute'
     win.postMessage(
-      JSON.stringify({ event: 'command', func, args: '' }),
+      JSON.stringify({ event: 'command', func, args: args ?? '' }),
       '*',
     )
+  }
+
+  function toggleMute() {
+    sendCommand(muted ? 'unMute' : 'mute')
     setMuted((m) => !m)
   }
+
+  /**
+   * Auto-unmute on first user interaction (SM8 — sonido "siempre activo").
+   *
+   * Por policy del browser, autoplay con sonido está bloqueado. PERO en
+   * cuanto el usuario interactúa con CUALQUIER elemento de la página
+   * (un click, un scroll, un touch, una tecla), el browser considera
+   * que hay "user gesture" y permite el unMute programático.
+   *
+   * Escuchamos esos eventos a nivel window con `once:true` para que se
+   * disparen una sola vez, y disparamos `unMute` apenas pase. Resultado
+   * percibido: el video arranca silencioso, pero al primer movimiento
+   * del usuario suena solo, sin que tenga que tocar el botón.
+   *
+   * El botón sigue disponible para mute/unmute manual después.
+   */
+  useEffect(() => {
+    if (!muted) return
+    const events: Array<keyof WindowEventMap> = [
+      'pointerdown',
+      'touchstart',
+      'keydown',
+      'scroll',
+      'wheel',
+    ]
+    function onFirstInteraction() {
+      sendCommand('unMute')
+      sendCommand('setVolume', 100)
+      setMuted(false)
+      events.forEach((e) => window.removeEventListener(e, onFirstInteraction))
+    }
+    events.forEach((e) =>
+      window.addEventListener(e, onFirstInteraction, {
+        once: true,
+        passive: true,
+      }),
+    )
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, onFirstInteraction))
+    }
+  }, [muted])
 
   return (
     <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
@@ -278,10 +326,34 @@ function HeroVideoPlaceholder() {
             className="absolute inset-0 h-full w-full border-0"
             loading="lazy"
           />
-          {/* Botón de unmute — único affordance para activar audio.
-              Posicionado abajo-derecha para no tapar contenido principal
-              del Short. Animación pulse cuando está muteado para señalar
-              que es accionable. */}
+
+          {/* SM8 fix: overlay TOP que tapa la franja donde YouTube fuerza
+              el header con título del video / nombre del canal /
+              "Suscribirse" / avatar — sin importar los params del embed,
+              ese chrome aparece on-hover y on-touch. Cubrimos esos ~70px
+              con un gradiente que va del color del marco (navy-500) a
+              transparente, así se mimetiza con el fondo del Hero.
+
+              pointer-events-none para no bloquear clicks del iframe
+              (interacciones del player siguen funcionando si el user
+              clickea en el centro). */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-20 bg-gradient-to-b from-navy-500 via-navy-500/80 to-transparent"
+          />
+
+          {/* SM8 fix: overlay BOTTOM mínimo para que tampoco se vea la
+              franja de "Up next" / sugerencias que YouTube intenta
+              mostrar cerca del final del loop. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-10 bg-gradient-to-t from-navy-500/90 to-transparent"
+          />
+
+          {/* Botón de mute/unmute — más sutil ahora porque el sonido ya
+              se activa solo al primer click/scroll/touch del usuario.
+              Sigue disponible para silenciar manualmente o reactivar
+              después de un mute. */}
           <button
             type="button"
             onClick={toggleMute}
@@ -289,23 +361,16 @@ function HeroVideoPlaceholder() {
             aria-pressed={!muted}
             className={
               'group absolute right-3 bottom-3 z-10 flex items-center gap-1.5 ' +
-              'rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white ' +
+              'rounded-full bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white ' +
               'backdrop-blur-sm transition hover:bg-black/85 ' +
               'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ' +
-              'focus-visible:ring-offset-navy-500 focus-visible:outline-none ' +
-              (muted && pulseEnabled ? 'animate-pulse' : '')
+              'focus-visible:ring-offset-navy-500 focus-visible:outline-none'
             }
           >
             {muted ? (
-              <>
-                <VolumeX className="h-3.5 w-3.5" aria-hidden />
-                <span>Activar sonido</span>
-              </>
+              <VolumeX className="h-3.5 w-3.5" aria-hidden />
             ) : (
-              <>
-                <Volume2 className="h-3.5 w-3.5" aria-hidden />
-                <span>Silenciar</span>
-              </>
+              <Volume2 className="h-3.5 w-3.5" aria-hidden />
             )}
           </button>
         </div>
