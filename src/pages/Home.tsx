@@ -11,6 +11,8 @@ import {
   Shield,
   Sparkles,
   Users,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 
 // Mapa LATAM lazy-loaded — react-simple-maps + d3-geo + topojson son
@@ -193,18 +195,48 @@ function Hero() {
 
 /**
  * Hero video: YouTube Short institucional de Ancestral Seed embebido
- * en formato vertical 9:16. Autoplay con mute (browsers modernos exigen
- * mute para permitir autoplay), loop infinito y sin controles para
- * mantener look limpio. El pattern aztec va como marco decorativo
- * detrás del iframe.
+ * en formato vertical 9:16.
+ *
+ * Trade-off del autoplay con audio: los browsers modernos (Chrome 66+,
+ * Safari 11+, Firefox 66+) bloquean autoplay con sonido hasta que hay
+ * interacción del user con el dominio. Workaround estándar:
+ *
+ * 1. Arrancar con `mute=1` → autoplay funciona inmediatamente.
+ * 2. Mostrar botón overlay "Activar sonido" que des-mutea con un clic.
+ *
+ * Para que postMessage funcione hace falta `enablejsapi=1` en el src.
+ * El comando se manda via `iframe.contentWindow.postMessage` con el
+ * payload que YouTube IFrame Player API espera.
+ *
+ * Ref: https://developers.google.com/youtube/iframe_api_reference
  */
 const YT_SHORT_ID = '4gdnaNrQxwY'
 const YT_EMBED_URL =
   `https://www.youtube.com/embed/${YT_SHORT_ID}` +
   `?autoplay=1&mute=1&loop=1&playlist=${YT_SHORT_ID}` +
-  `&controls=0&modestbranding=1&rel=0&playsinline=1`
+  `&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`
 
 function HeroVideoPlaceholder() {
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [muted, setMuted] = useState(true)
+
+  /**
+   * Toggle mute via YouTube IFrame Player API. El player escucha
+   * postMessage con `{event:'command', func:'unMute'|'mute', args:''}`.
+   * Si el iframe no terminó de cargar, el comando se ignora silenciosamente
+   * — el user puede reintentar.
+   */
+  function toggleMute() {
+    const win = iframeRef.current?.contentWindow
+    if (!win) return
+    const func = muted ? 'unMute' : 'mute'
+    win.postMessage(
+      JSON.stringify({ event: 'command', func, args: '' }),
+      '*',
+    )
+    setMuted((m) => !m)
+  }
+
   return (
     <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
       <div className="relative w-full max-w-[280px] md:max-w-[320px]">
@@ -217,6 +249,7 @@ function HeroVideoPlaceholder() {
         {/* Container del video vertical 9:16 (formato Short de YouTube) */}
         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl bg-navy-500 shadow-2xl">
           <iframe
+            ref={iframeRef}
             src={YT_EMBED_URL}
             title="Video institucional Ancestral Seed"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -225,6 +258,36 @@ function HeroVideoPlaceholder() {
             className="absolute inset-0 h-full w-full border-0"
             loading="lazy"
           />
+          {/* Botón de unmute — único affordance para activar audio.
+              Posicionado abajo-derecha para no tapar contenido principal
+              del Short. Animación pulse cuando está muteado para señalar
+              que es accionable. */}
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? 'Activar sonido del video' : 'Silenciar video'}
+            aria-pressed={!muted}
+            className={
+              'group absolute right-3 bottom-3 z-10 flex items-center gap-1.5 ' +
+              'rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white ' +
+              'backdrop-blur-sm transition hover:bg-black/85 ' +
+              'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ' +
+              'focus-visible:ring-offset-navy-500 focus-visible:outline-none ' +
+              (muted ? 'animate-pulse' : '')
+            }
+          >
+            {muted ? (
+              <>
+                <VolumeX className="h-3.5 w-3.5" aria-hidden />
+                <span>Activar sonido</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className="h-3.5 w-3.5" aria-hidden />
+                <span>Silenciar</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
