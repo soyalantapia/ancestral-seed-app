@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
   Calendar,
+  Compass,
   CreditCard,
   FileCheck2,
   FileText,
@@ -135,6 +136,24 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
             onClose={closeOnNav}
           />
         ))}
+        {/* Fix SM4 (#TUT-33, auditoría UX): si el user tiene rol tutor,
+            link al panel de tutor desde el sidebar del solicitante.
+            Antes solo el TutorLayout tenía "Volver al panel
+            solicitante" — asimetría que dejaba al tutor atrapado si
+            entraba al panel solicitante por error. */}
+        {(user?.role === 'tutor' || user?.roles?.includes('tutor')) && (
+          <>
+            <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
+              Otro rol
+            </p>
+            <SidebarLink
+              to="/tutor/dashboard"
+              icon={Compass}
+              label="Panel de tutor"
+              onClose={closeOnNav}
+            />
+          </>
+        )}
         <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
           Mi cuenta
         </p>

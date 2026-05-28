@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
@@ -35,6 +35,7 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Breadcrumbs } from '@/components/features/Breadcrumbs'
 import {
   SCORING_CRITERIA,
   getChecklistByCert,
@@ -117,7 +118,8 @@ function daysUntil(d: string): number | null {
 
 export default function TutorCertificationDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
+  // navigate removido — el nav manual fue reemplazado por Breadcrumbs
+  // en SM4 (#TUT-27). Si vuelve a hacer falta, importar useNavigate.
   const cert = mockIssuedCertifications.find((c) => c.id === id)
   const [tab, setTab] = useState<Tab>('info')
   const [drawer, setDrawer] = useState<Drawer>(null)
@@ -155,17 +157,17 @@ export default function TutorCertificationDetail() {
     <div className={cn('relative', drawer && 'lg:pr-[640px]')}>
       <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 md:px-8 md:py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm">
-          <button
-            type="button"
-            onClick={() => navigate('/tutor/certificaciones')}
-            className="text-navy-300 transition-colors hover:text-navy-500"
-          >
-            Certificados
-          </button>
-          <ChevronRight className="h-3.5 w-3.5 text-navy-300" />
-          <span className="font-bold text-navy-500">{cert.id}</span>
-        </nav>
+        {/* Fix SM4 (#TUT-27, auditoría UX): antes el nav manual decía
+            "Certificados › CE-001" — inconsistente con el caso activo
+            que usa "Tutor › Casos › CE-101". Ahora usamos el componente
+            Breadcrumbs estándar con jerarquía completa. */}
+        <Breadcrumbs
+          items={[
+            { label: 'Tutor', to: '/tutor/dashboard' },
+            { label: 'Certificaciones', to: '/tutor/certificaciones' },
+            { label: cert.id },
+          ]}
+        />
 
         {/* Header simple */}
         <header className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

@@ -168,12 +168,16 @@ export default function TutorTasks() {
             Mis tareas
           </h1>
           <p className="mt-1 text-sm text-navy-300">
-            Tenés {stats.pending} pendientes
+            {/* Fix SM4 (#TUT-30, auditoría UX): concordancia singular/
+                plural correcta. Antes "1 urgentes" rompía gramaticalmente. */}
+            Tenés {stats.pending}{' '}
+            {stats.pending === 1 ? 'pendiente' : 'pendientes'}
             {stats.urgent > 0 && (
               <>
                 {', '}
                 <strong className="text-error-400">
-                  {stats.urgent} urgentes
+                  {stats.urgent}{' '}
+                  {stats.urgent === 1 ? 'urgente' : 'urgentes'}
                 </strong>
               </>
             )}

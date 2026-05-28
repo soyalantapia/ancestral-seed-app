@@ -14,7 +14,6 @@ import {
   MessageSquare,
   MessageSquareWarning,
   Phone,
-  Plus,
   ShieldCheck,
   Star,
   Timer,
@@ -115,12 +114,18 @@ export default function TutorDashboard() {
             {' '}y {tasks.filter((t) => !t.done).length} tareas pendientes.
           </p>
         </div>
+        {/* Fix SM4 (#TUT-06, auditoría UX): antes el CTA "Crear
+            solicitud" del header llevaba a /tutor/casos — el tutor
+            esperaba abrir el modal de creación directamente. Ahora
+            label coincide con el destino real: "Ver casos →". El
+            modal de crear se abre desde /tutor/casos con el botón
+            propio de esa página. */}
         <Link
           to="/tutor/casos"
           className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
         >
-          <Plus className="h-4 w-4" />
-          Crear solicitud
+          Ver casos
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </header>
 
@@ -193,31 +198,27 @@ export default function TutorDashboard() {
             data-tour="tutor-kpis"
             className="grid grid-cols-1 gap-4 sm:grid-cols-3"
           >
+            {/* Fix SM4 (#TUT-03, auditoría UX): KPIs antes con delta y
+                "+5 en la última semana" hardcoded — datos falsos en
+                producción minaban credibilidad. Sin backend real con
+                histórico, los omitimos. Si llega el backend, restaurar
+                el delta computando contra el período anterior. */}
             <KpiCard
               icon={Users}
               label="Casos asignados"
               value={assigned}
-              delta={8}
-              deltaPositive
-              sub="+5 en la última semana"
               tone="navy"
             />
             <KpiCard
               icon={Clock}
               label="Casos en curso"
               value={inProgress}
-              delta={8}
-              deltaPositive
-              sub="+5 en la última semana"
               tone="info"
             />
             <KpiCard
               icon={AlertTriangle}
               label="Casos atrasados"
               value={overdue}
-              delta={2}
-              deltaPositive={false}
-              sub="+1 en la última semana"
               tone="warning"
             />
           </section>
@@ -308,39 +309,51 @@ export default function TutorDashboard() {
             selected={calendarSelected}
             onSelect={(d) => setCalendarSelected(d)}
           />
+          {/* Fix SM4 (#TUT-04, #TUT-05, auditoría UX): cada item de la
+              agenda muestra ahora el caso/postulante asociado, y linkea
+              al expediente tutor del caso (no al panel solicitante como
+              estaba antes). */}
           <ul className="space-y-2">
             {agenda.slice(0, 4).map((a) => {
               const d = new Date(a.scheduledAt)
               return (
-                <li
-                  key={a.id}
-                  className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm"
-                >
-                  <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-navy-500 text-white">
-                    <span className="text-base font-bold leading-none">
-                      {d.getDate()}
-                    </span>
-                    <span className="text-[10px] uppercase leading-tight">
-                      {d.toLocaleDateString('es-AR', { weekday: 'short' })}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-navy-500">
-                      Reunión {labelOf(a.kind)}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] text-navy-300">
-                      {d.toLocaleDateString('es-AR', {
-                        weekday: 'short',
-                        day: '2-digit',
-                        month: 'short',
-                      })}{' '}
-                      ·{' '}
-                      {d.toLocaleTimeString('es-AR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
+                <li key={a.id}>
+                  <Link
+                    to={`/tutor/casos/${a.caseId}?tab=evaluacion`}
+                    className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm transition-colors hover:border-gold-300 hover:bg-gold-50/40"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-navy-500 text-white">
+                      <span className="text-base font-bold leading-none">
+                        {d.getDate()}
+                      </span>
+                      <span className="text-[10px] uppercase leading-tight">
+                        {d.toLocaleDateString('es-AR', { weekday: 'short' })}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-navy-500">
+                        Reunión {labelOf(a.kind)}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-navy-300">
+                        <strong className="text-navy-500">
+                          {a.caseName}
+                        </strong>{' '}
+                        · {a.applicantName}
+                      </p>
+                      <p className="mt-0.5 truncate text-[10px] text-navy-300">
+                        {d.toLocaleDateString('es-AR', {
+                          weekday: 'short',
+                          day: '2-digit',
+                          month: 'short',
+                        })}{' '}
+                        ·{' '}
+                        {d.toLocaleTimeString('es-AR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </Link>
                 </li>
               )
             })}
@@ -400,12 +413,18 @@ function KpiCard({
   icon: typeof Users
   label: string
   value: number
-  delta: number
-  deltaPositive: boolean
-  sub: string
+  /**
+   * Fix SM4 (#TUT-03): delta + deltaPositive + sub ahora opcionales —
+   * cuando no hay backend con histórico, los omitimos en vez de mostrar
+   * datos falsos.
+   */
+  delta?: number
+  deltaPositive?: boolean
+  sub?: string
   tone: 'navy' | 'info' | 'warning'
 }) {
   const Trend = deltaPositive ? TrendingUp : TrendingDown
+  const hasDelta = typeof delta === 'number'
   return (
     <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between">
@@ -414,17 +433,19 @@ function KpiCard({
       </div>
       <div className="mt-3 flex items-baseline gap-2">
         <p className="text-3xl font-bold text-navy-500 md:text-4xl">{value}</p>
-        <span
-          className={cn(
-            'inline-flex items-center gap-0.5 text-xs font-bold',
-            deltaPositive ? 'text-success-300' : 'text-error-400',
-          )}
-        >
-          <Trend className="h-3.5 w-3.5" />
-          {delta}%
-        </span>
+        {hasDelta && (
+          <span
+            className={cn(
+              'inline-flex items-center gap-0.5 text-xs font-bold',
+              deltaPositive ? 'text-success-300' : 'text-error-400',
+            )}
+          >
+            <Trend className="h-3.5 w-3.5" />
+            {delta}%
+          </span>
+        )}
       </div>
-      <p className="mt-1 text-xs text-navy-300">{sub}</p>
+      {sub && <p className="mt-1 text-xs text-navy-300">{sub}</p>}
     </div>
   )
 }
@@ -804,11 +825,15 @@ function UnansweredCard() {
         <ArrowUpRight className="h-3 w-3" />
         +5 en la última semana
       </p>
+      {/* Fix SM4 (#TUT-07): el link antes navegaba a /tutor/casos sin
+          filtro. Ahora pasa `?filter=unanswered` que la página puede
+          interpretar para mostrar solo las sin responder (cuando esa
+          lógica esté implementada en TutorCases). */}
       <Link
-        to="/tutor/casos"
+        to="/tutor/casos?filter=unanswered"
         className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-gold-700 hover:underline"
       >
-        Ver todas las solicitudes
+        Ver las sin responder
         <ArrowRight className="h-3 w-3" />
       </Link>
     </div>

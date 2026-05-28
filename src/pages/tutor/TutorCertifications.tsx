@@ -164,7 +164,11 @@ export default function TutorCertifications() {
           value={stats.vencido}
           delta={3}
           deltaPositive={false}
-          sub="+3 en la última semana"
+          // Fix SM4 (#TUT-25): "+3 en la última semana" con icono
+          // flecha abajo rojo + signo "+" creaba contradicción
+          // ("subió 3" pero ícono dice "mal"). Ahora el copy refleja
+          // la dirección de negocio: más vencidos = peor.
+          sub="Subieron 3 esta semana"
         />
         <StatCard
           label="Denegados"
