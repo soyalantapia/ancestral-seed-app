@@ -119,15 +119,17 @@ export default function Directory() {
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-8 md:py-8">
           <div className="relative">
-            <button
-              type="button"
-              className="absolute left-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-navy-500 text-white transition-colors hover:bg-navy-400"
-              aria-label="Buscar"
+            {/* Fix SM2 (#PUB-09): antes había <button> con onClick
+                vacío — affordance falso. Ahora es un <span> decorativo
+                con pointer-events-none (la búsqueda es onChange real). */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-navy-500 text-white"
             >
               <Search className="h-4 w-4" />
-            </button>
+            </span>
             <Input
-              placeholder="Buscar por nombre, ID o hash..."
+              placeholder="Buscar por nombre, región, autor o hash..."
               value={filters.query ?? ''}
               onChange={(e) => updateFilter('query', e.target.value)}
               className="h-12 rounded-full border-neutral-300 pl-14"

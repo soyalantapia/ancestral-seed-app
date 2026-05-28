@@ -257,10 +257,14 @@ export default function CertificationDetail() {
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-7 border-t border-neutral-200 pt-5">
+                  {/* Fix SM2 (#PUB-14): antes "Puntaje 100/100" hardcoded
+                      en todos los certs — se devaluaba. Ahora mostramos
+                      la fecha de auditoría que es información concreta y
+                      única por cert. */}
                   <Stat
                     icon={Star}
-                    label="Puntaje"
-                    value="100/100"
+                    label="Auditado"
+                    value={formatDate(cert.issuedAt)}
                     iconBg="bg-gold-500"
                     iconColor="text-navy-500"
                   />

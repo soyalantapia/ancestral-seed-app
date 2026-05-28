@@ -369,7 +369,10 @@ function ProfileStats({
                   <dt className="text-[10px] font-medium uppercase tracking-widest text-navy-300">
                     {s.label}
                   </dt>
-                  <dd className="mt-0.5 truncate text-base font-bold text-navy-500 md:text-lg">
+                  {/* Fix SM2 (#PUB-21): antes truncate cortaba "Sierra
+                      Nevada de Santa Marta" → ahora line-clamp-2 + texto
+                      más compacto para que se lea completo. */}
+                  <dd className="mt-0.5 line-clamp-2 text-sm font-bold text-navy-500 md:text-base">
                     {s.value}
                   </dd>
                 </div>

@@ -67,8 +67,10 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                {/* Fix SM2 (#PUB-31): "Q&A" rompía el tono — el resto
+                    usa "Ayuda" (y la ruta es /ayuda). */}
                 <Link to="/ayuda" className="transition-colors hover:text-gold-400">
-                  Q&amp;A
+                  Ayuda
                 </Link>
               </li>
             </ul>

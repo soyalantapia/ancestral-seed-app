@@ -25,12 +25,17 @@ import { useAuthStore } from '@/store/auth'
 import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
+/**
+ * Fix SM2 (#PUB-32, auditoría UX): el Header desktop antes tenía 6
+ * navItems + 3 CTAs (9 elementos clickables visibles entre md y lg).
+ * Reducidos a 3 esenciales (LATAM, Nosotros, Certificados). Beneficios
+ * y Proceso siguen siendo accesibles desde el scroll de la landing.
+ * "Cómo te protegemos" (antes "Blockchain") es la sección de
+ * acordeón explicativa — más honesto el label nuevo (#PUB-07).
+ */
 const navItems = [
-  { to: '/#beneficios', label: 'Beneficios' },
   { to: '/#latam-al-mundo', label: 'LATAM al mundo' },
   { to: '/#nosotros', label: 'Nosotros' },
-  { to: '/#como-funciona', label: 'Blockchain' },
-  { to: '/#proceso', label: 'Proceso' },
   { to: '/directorio', label: 'Certificados' },
 ]
 

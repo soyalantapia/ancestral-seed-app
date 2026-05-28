@@ -66,7 +66,7 @@ const LANDING_SECTIONS = [
   { id: 'beneficios', label: 'Beneficios' },
   { id: 'latam-al-mundo', label: 'LATAM al mundo' },
   { id: 'nosotros', label: 'Nosotros' },
-  { id: 'como-funciona', label: 'Blockchain' },
+  { id: 'como-funciona', label: 'Cómo te protegemos' },
   { id: 'proceso', label: 'Proceso' },
   { id: 'certificados', label: 'Certificados' },
 ] as const
@@ -227,6 +227,18 @@ const YT_EMBED_URL =
 function HeroVideoPlaceholder() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [muted, setMuted] = useState(true)
+  /**
+   * Fix SM2 (#PUB-03, auditoría UX): el botón "Activar sonido" pulsaba
+   * permanentemente mientras el video estaba muteado, peleándole la
+   * atención al título principal del Hero. Ahora pulsa solo los
+   * primeros 5 segundos — el user lo nota al cargar, después queda
+   * estático.
+   */
+  const [pulseEnabled, setPulseEnabled] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setPulseEnabled(false), 5000)
+    return () => clearTimeout(t)
+  }, [])
 
   /**
    * Toggle mute via YouTube IFrame Player API. El player escucha
@@ -281,7 +293,7 @@ function HeroVideoPlaceholder() {
               'backdrop-blur-sm transition hover:bg-black/85 ' +
               'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ' +
               'focus-visible:ring-offset-navy-500 focus-visible:outline-none ' +
-              (muted ? 'animate-pulse' : '')
+              (muted && pulseEnabled ? 'animate-pulse' : '')
             }
           >
             {muted ? (
@@ -916,7 +928,7 @@ function CTASection() {
         <div className="absolute inset-0 bg-navy-500/70" />
         <div className="relative z-10 flex flex-col items-center px-6 py-14 text-center text-white md:px-12 md:py-20">
           <h3 className="text-2xl font-bold md:text-3xl lg:text-[32px]">
-            Comienza tu certificación ancestral
+            Comenzá tu certificación ancestral
           </h3>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-neutral-200 md:text-base">
             Te acompañamos en todo el proceso con guías, videos y soporte
