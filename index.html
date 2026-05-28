@@ -6,24 +6,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#001c38" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f7f5ee" media="(prefers-color-scheme: light)" />
-    <!-- Standard meta (Android Chrome + nuevos navegadores). El apple-
-         está deprecado en Chrome pero iOS Safari aún lo lee, lo
-         mantenemos por compatibilidad. -->
+
+    <!-- Mobile web app standard meta. apple-mobile-web-app-capable
+         está deprecado en Chrome pero iOS Safari lo lee aún. -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Ancestral Seed" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <title>Ancestral Seed · Certificación digital</title>
+
+    <!-- Title + description estándar -->
+    <title>Ancestral Seed · Certificación digital de saberes ancestrales</title>
     <meta
       name="description"
-      content="Plataforma de certificación digital de saberes ancestrales y semillas nativas."
+      content="Validamos la autenticidad de productos, servicios y saberes ancestrales con auditoría cultural y registro inmutable en blockchain."
     />
+
+    <!-- ─── Open Graph (Facebook / WhatsApp / LinkedIn / Telegram) ──
+         Importante: SVG NO es soportado por WhatsApp en og:image.
+         Usamos PNG 1200×630 generado por scripts/generate-og.mjs.
+
+         og:image debe ser URL ABSOLUTA. En producción
+         (gh-pages) queda https://soyalantapia.github.io/ancestral-seed-app/og-image.png
+         En dev queda http://localhost:5175/og-image.png — los crawlers
+         igual leen las absolutas de prod. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ancestral Seed" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:url" content="https://soyalantapia.github.io/ancestral-seed-app/" />
+    <meta property="og:title" content="Ancestral Seed · Certificación digital" />
+    <meta
+      property="og:description"
+      content="Validamos saberes ancestrales con auditoría cultural y blockchain inmutable. Conocé los 18+ certificados emitidos en LATAM."
+    />
+    <meta
+      property="og:image"
+      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Logo de Ancestral Seed con la frase: Saberes ancestrales, certificados con tecnología."
+    />
+
+    <!-- ─── Twitter / X cards ─────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@ancestralseed" />
+    <meta name="twitter:title" content="Ancestral Seed · Certificación digital" />
+    <meta
+      name="twitter:description"
+      content="Validamos saberes ancestrales con auditoría cultural y blockchain inmutable."
+    />
+    <meta
+      name="twitter:image"
+      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png"
+    />
+
+    <!-- ─── Schema.org JSON-LD (Google / buscadores) ──────────────── -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Ancestral Seed",
+        "alternateName": "AS · Seed One Global Corp",
+        "url": "https://soyalantapia.github.io/ancestral-seed-app/",
+        "logo": "https://soyalantapia.github.io/ancestral-seed-app/logo-mark.png",
+        "image": "https://soyalantapia.github.io/ancestral-seed-app/og-image.png",
+        "description": "Plataforma de certificación digital de productos, servicios y saberes ancestrales mediante auditoría cultural y registro inmutable en blockchain.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Miami Beach",
+          "addressRegion": "FL",
+          "addressCountry": "US"
+        },
+        "email": "info@ancestralseed.com",
+        "telephone": "+54-9-11-4937-8422"
+      }
+    </script>
+
     <script>
       // Decode SPA redirect from 404.html
       ;(function (l) {

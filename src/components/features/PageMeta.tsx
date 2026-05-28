@@ -4,21 +4,18 @@ import { Helmet } from 'react-helmet-async'
  * Componente "drop-in" para meta tags por ruta.
  *
  * Reglas:
- * - `title` aparece como `<title>` y como `og:title` (concatena " · Ancestral Seed" salvo en `/`).
- * - `description` se inyecta en `<meta name="description">`, `og:description` y `twitter:description`.
- * - `image` es absoluta (preferentemente desde `import.meta.env.BASE_URL`); si es relativa al BASE_URL,
- *   armar con `${import.meta.env.BASE_URL}assets/og.png` antes de pasarla.
- * - `noindex` agrega `<meta name="robots" content="noindex">` para vistas privadas.
- * - `jsonLd` permite inyectar un schema.org JSON-LD (Product, Person, BreadcrumbList, etc.)
- *   para que Google rinda rich snippets en fichas públicas.
+ * - `title` aparece como `<title>` y como `og:title`.
+ * - `description` se inyecta en `<meta name="description">`, `og:description`
+ *   y `twitter:description`.
+ * - `image` se prefiere absoluta. Si no se pasa, fallback al OG default
+ *   (`/og-image.png`) — así CUALQUIER ruta tiene preview rico en WhatsApp.
+ * - `canonical` arma la URL absoluta; si no se pasa, deriva de la URL actual.
+ * - `noindex` agrega robots noindex,nofollow para vistas privadas.
+ * - `jsonLd` permite inyectar schema.org JSON-LD.
  *
- * Uso típico en una página:
- *   <PageMeta
- *     title="Filigrana ancestral"
- *     description="Producto certificado por Ancestral Seed."
- *     image={absoluteCoverUrl}
- *     jsonLd={{ '@context': 'https://schema.org', '@type': 'Product', ... }}
- *   />
+ * Fix SM7 (preview WhatsApp): antes muchas rutas no pasaban `image`,
+ * así que WhatsApp mostraba un preview con texto pelado. Ahora el
+ * fallback al OG default garantiza preview SIEMPRE con imagen.
  */
 interface PageMetaProps {
   title?: string
@@ -33,7 +30,31 @@ interface PageMetaProps {
 const SUFFIX = 'Ancestral Seed · Certificación digital'
 
 const DEFAULT_DESCRIPTION =
-  'Validamos la autenticidad de productos y saberes originarios mediante un sistema de certificación cultural, auditoría y tecnología blockchain.'
+  'Validamos saberes ancestrales con auditoría cultural y blockchain inmutable. Plataforma de certificación digital.'
+
+/**
+ * URL absoluta del sitio en producción. Se usa para que og:image y
+ * canonical funcionen sin importar dónde se renderice el HTML — los
+ * crawlers de WhatsApp/X/etc no ejecutan JS y necesitan absolutas.
+ */
+const SITE_URL = 'https://soyalantapia.github.io/ancestral-seed-app'
+
+/**
+ * Imagen OG default — 1200×630 PNG en /public/og-image.png. Generada
+ * por `scripts/generate-og.mjs` a partir del SVG fuente.
+ */
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`
+
+/**
+ * Si la URL pasada es relativa, la prefijamos con SITE_URL. Si ya es
+ * absoluta (https://), la dejamos como está. Para BASE_URL local
+ * convertimos a absoluta de prod.
+ */
+function toAbsolute(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  if (url.startsWith('/')) return `${SITE_URL}${url}`
+  return `${SITE_URL}/${url}`
+}
 
 export function PageMeta({
   title,
@@ -44,11 +65,15 @@ export function PageMeta({
   jsonLd,
 }: PageMetaProps) {
   const fullTitle = title ? `${title} · ${SUFFIX}` : SUFFIX
+  const ogImage = image ? toAbsolute(image) : DEFAULT_OG_IMAGE
+  const canonicalUrl =
+    canonical ??
+    (typeof window !== 'undefined' ? window.location.href : SITE_URL)
   return (
     <Helmet prioritizeSeoTags>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
-      {canonical && <link rel="canonical" href={canonical} />}
+      <link rel="canonical" href={canonicalUrl} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
 
       {/* OpenGraph */}
@@ -56,13 +81,23 @@ export function PageMeta({
       <meta property="og:description" content={description} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Ancestral Seed" />
-      {image && <meta property="og:image" content={image} />}
+      <meta property="og:locale" content="es_AR" />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:type" content="image/png" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta
+        property="og:image:alt"
+        content={title ? `${title} — Ancestral Seed` : 'Ancestral Seed · Certificación digital'}
+      />
 
       {/* Twitter */}
-      <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@ancestralseed" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      {image && <meta name="twitter:image" content={image} />}
+      <meta name="twitter:image" content={ogImage} />
 
       {jsonLd && (
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
