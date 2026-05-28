@@ -84,30 +84,24 @@ export default function CertificationDetail() {
       : [cert.coverUrl, cert.coverUrl, cert.coverUrl, cert.coverUrl]
   ).map(resolveAsset)
 
-  const handleDownload = () => {
-    const payload = {
+  const handleDownload = async () => {
+    // Fix SB9 (#PUB-15, auditoría UX): antes la "Descarga" entregaba un
+    // .json crudo que no servía para mostrar/imprimir. Ahora generamos
+    // PDF real con jsPDF.
+    const { buildCertificatePdf, downloadPdfBlob } = await import('@/lib/pdf')
+    const blob = buildCertificatePdf({
       title: cert.title,
-      author: authorName,
+      authorName,
       region,
       issuedBy: cert.issuedBy,
       issuedAt: cert.issuedAt,
       expiresAt: cert.expiresAt,
-      status: cert.status,
       hash: cert.hash,
       description: cert.description,
-      verifyUrl: typeof window !== 'undefined' ? window.location.href : '',
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
+      verifyUrl:
+        typeof window !== 'undefined' ? window.location.href : undefined,
     })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${cert.slug}-certificado.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    downloadPdfBlob(`${cert.slug}-certificado.pdf`, blob)
     toast.success('Certificado descargado')
   }
 

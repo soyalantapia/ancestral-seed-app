@@ -17,6 +17,12 @@ import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import type { CertificationRequest, EvidenceFile, PaymentItem } from '@/types'
 import { buildPlaceholderQrSvg, cn, downloadBlob } from '@/lib/utils'
+import {
+  buildCertificatePdf,
+  buildEvidenceReceiptPdf,
+  buildPaymentReceiptPdf,
+  downloadPdfBlob,
+} from '@/lib/pdf'
 
 type Tab = 'certificados' | 'avales' | 'facturas'
 
@@ -253,8 +259,22 @@ function CertificatesGrid({
                 <button
                   type="button"
                   onClick={() => {
-                    const content = buildCertPdfContent(req)
-                    downloadBlob(`certificado-${req.number.replace('#', '')}.txt`, content)
+                    // Fix SB9 (#POS-35, auditoría UX): PDF real con
+                    // jsPDF en vez de .txt placeholder.
+                    const blob = buildCertificatePdf({
+                      title: req.productName,
+                      authorName: 'Camila Montes',
+                      region: 'Colombia · Caribe colombiano',
+                      issuedBy: 'Ancestral Seed Foundation',
+                      issuedAt: req.createdAt,
+                      hash: `0xAS-${req.id.slice(-8).toUpperCase()}`,
+                      description: req.progressLabel,
+                      verifyUrl: `${window.location.origin}${import.meta.env.BASE_URL || '/'}verificar?id=${req.id}`,
+                    })
+                    downloadPdfBlob(
+                      `certificado-${req.number.replace('#', '')}.pdf`,
+                      blob,
+                    )
                     toast.success(`Certificado ${req.number} descargado`)
                   }}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
@@ -341,8 +361,20 @@ function EvidencesList({
             <button
               type="button"
               onClick={() => {
-                downloadBlob(`${e.name}.txt`, buildEvidenceContent(e))
-                toast.success(`${e.name} descargado`)
+                // Fix SB9: constancia PDF en vez de .txt placeholder.
+                const blob = buildEvidenceReceiptPdf({
+                  id: e.id,
+                  name: e.name,
+                  kind: e.kind,
+                  sizeKb: e.sizeKb,
+                  uploadedAt: e.uploadedAt,
+                  thumbUrl: e.thumbUrl,
+                })
+                downloadPdfBlob(
+                  `constancia-evidencia-${e.id}.pdf`,
+                  blob,
+                )
+                toast.success(`Constancia de "${e.name}" descargada`)
               }}
               className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
             >
@@ -409,7 +441,19 @@ function InvoicesList({
             <button
               type="button"
               onClick={() => {
-                downloadBlob(`factura-${i.id}.txt`, buildInvoiceContent(i))
+                // Fix SB9: factura PDF en vez de .txt.
+                const blob = buildPaymentReceiptPdf({
+                  id: i.id,
+                  concept: i.concept,
+                  requestNumber: i.req.number,
+                  requestName: i.req.productName,
+                  amount: i.amount,
+                  currency: i.currency,
+                  status: i.status,
+                  dueDate: i.dueDate,
+                  paidAt: i.paidAt,
+                })
+                downloadPdfBlob(`factura-${i.id}.pdf`, blob)
                 toast.success(`Factura ${i.id} descargada`)
               }}
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gold-500 px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
@@ -424,58 +468,9 @@ function InvoicesList({
   )
 }
 
-function buildCertPdfContent(req: CertificationRequest): string {
-  return [
-    '═══════════════════════════════════════════════════════════════',
-    '       ANCESTRAL SEED — CERTIFICADO',
-    '═══════════════════════════════════════════════════════════════',
-    '',
-    `Número: ${req.number}`,
-    `Producto / Servicio: ${req.productName}`,
-    `Estado: ${req.status}`,
-    `Creado: ${req.createdAt}`,
-    `Avance: ${req.progressLabel}`,
-    '',
-    'Etapas:',
-    ...req.stages.map(
-      (s, i) =>
-        `  ${i + 1}. ${s.label} — ${s.status.toUpperCase()}${s.date ? ` (${s.date})` : ''}`,
-    ),
-    '',
-    `Descargado el ${new Date().toLocaleString('es-AR')}`,
-    'Documento de validez oficial — Ancestral Seed Foundation',
-  ].join('\n')
-}
-
-function buildEvidenceContent(e: EvidenceFile): string {
-  return [
-    `Archivo: ${e.name}`,
-    `Tipo: ${e.kind}`,
-    `Tamaño: ${e.sizeKb} KB`,
-    `Subido: ${e.uploadedAt}`,
-    '',
-    '(Este es un placeholder mock. En producción acá descargaría el binario real desde el storage.)',
-  ].join('\n')
-}
-
-function buildInvoiceContent(i: PaymentItem): string {
-  return [
-    '═══════════════════════════════════════════════════════════════',
-    '       ANCESTRAL SEED — FACTURA',
-    '═══════════════════════════════════════════════════════════════',
-    '',
-    `Identificador: ${i.id}`,
-    `Concepto: ${i.concept}`,
-    `Monto: ${i.currency} ${i.amount.toLocaleString('es-AR')}`,
-    `Estado: ${i.status}`,
-    `Vencimiento: ${i.dueDate}`,
-    i.paidAt ? `Pagada el: ${i.paidAt}` : '',
-    '',
-    `Generada el ${new Date().toLocaleString('es-AR')}`,
-  ]
-    .filter(Boolean)
-    .join('\n')
-}
+// buildCertPdfContent/buildEvidenceContent/buildInvoiceContent
+// eliminados — reemplazados por @/lib/pdf que genera PDFs reales con
+// jsPDF (SB9 / #POS-35).
 
 function EmptyState({ text }: { text: string }) {
   return (

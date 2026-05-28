@@ -194,7 +194,7 @@ export default function TutorCertificationDetail() {
               type="button"
               onClick={() => {
                 downloadActa(cert, extra)
-                toast.success(`acta-${cert.id}.txt descargada`)
+                toast.success(`acta-${cert.id}.pdf descargada`)
               }}
               className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
             >
@@ -2178,86 +2178,37 @@ function blockchainHashFor(certId: string): string {
 }
 
 /** Genera el contenido del acta en texto plano para descargar. */
-function buildActaContent(
-  cert: (typeof mockIssuedCertifications)[number],
-  extra: ReturnType<typeof getExpedienteData>,
-): string {
-  const hash = blockchainHashFor(cert.id)
-  const lines = [
-    '═══════════════════════════════════════════════════════════════',
-    '         ANCESTRAL SEED — ACTA DE CERTIFICACIÓN',
-    '═══════════════════════════════════════════════════════════════',
-    '',
-    `Identificador del expediente: ${cert.id}`,
-    `Estado: ${cert.status.toUpperCase()}`,
-    `Puntaje final: ${cert.scoreLabel}`,
-    `Fecha de emisión: ${cert.issuedAt}`,
-    `Fecha de vencimiento: ${cert.expiresAt}`,
-    '',
-    '───────────────────────────────────────────────────────────────',
-    'AUTOR',
-    '───────────────────────────────────────────────────────────────',
-    `Nombre: ${cert.authorName}`,
-    `Rol: ${extra.authorRole ?? '—'}`,
-    `Comunidad: ${extra.community ?? '—'}`,
-    `País / región: ${cert.country} · ${cert.region}`,
-    `Teléfono: ${extra.authorPhone ?? '—'}`,
-    `Email: ${extra.authorEmail ?? '—'}`,
-    '',
-    '───────────────────────────────────────────────────────────────',
-    'PRODUCTO / SERVICIO CERTIFICADO',
-    '───────────────────────────────────────────────────────────────',
-    `Nombre: ${cert.productName}`,
-    `Tipo: ${extra.productType ?? '—'}`,
-    `Sector: ${extra.productSector ?? '—'}`,
-    `Categoría: ${cert.category}`,
-    `Subcategoría: ${extra.productSubcategory ?? '—'}`,
-    '',
-    'Descripción de la producción:',
-    extra.productionDescription ?? '—',
-    '',
-    `Responsable de producción: ${extra.productionResponsible ?? '—'}`,
-    `Capacidad productiva: ${extra.productionCapacity ?? '—'}`,
-    `Modalidad de producción: ${extra.productionMode ?? '—'}`,
-    `Identificación de lotes: ${extra.batchIdentifier ?? '—'}`,
-    '',
-    '───────────────────────────────────────────────────────────────',
-    'RENOVACIÓN',
-    '───────────────────────────────────────────────────────────────',
-    `Última renovación: ${extra.lastRenewalAt ?? '—'}`,
-    `Próxima renovación: ${extra.nextRenewalAt ?? '—'}`,
-    `Ciclo: cada ${extra.renewalCycleMonths ?? '—'} meses`,
-    '',
-    '───────────────────────────────────────────────────────────────',
-    'REGISTRO EN BLOCKCHAIN',
-    '───────────────────────────────────────────────────────────────',
-    `Red: Polygon Mainnet`,
-    `Hash de transacción: ${hash}`,
-    `Verificable en: https://polygonscan.com/search?q=${hash}`,
-    `Ficha pública: ${publicCertUrl(cert.id)}`,
-    '',
-    '═══════════════════════════════════════════════════════════════',
-    `Acta generada el ${new Date().toLocaleString('es-AR')}`,
-    'Documento de validez oficial — Ancestral Seed Foundation',
-    '═══════════════════════════════════════════════════════════════',
-  ]
-  return lines.join('\n')
-}
+// buildActaContent eliminado — reemplazado por buildActaPdf de
+// @/lib/pdf que genera PDF real con jsPDF (SB9 / #TUT-28).
 
-function downloadActa(
+async function downloadActa(
   cert: (typeof mockIssuedCertifications)[number],
   extra: ReturnType<typeof getExpedienteData>,
 ) {
-  const content = buildActaContent(cert, extra)
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `acta-${cert.id}.txt`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  // Fix SB9 (#TUT-28, auditoría UX): acta era .txt plano con
+  // separadores ASCII — flojo para llevar a Trámites. Ahora PDF real
+  // con jsPDF + sello + hash blockchain.
+  const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
+  const blob = buildActaPdf({
+    certId: cert.id,
+    productName: cert.productName,
+    authorName: cert.authorName,
+    authorRole: extra.authorRole,
+    community: extra.community,
+    productType: extra.productType,
+    productSector: extra.productSector,
+    scoreLabel: cert.scoreLabel,
+    status: cert.status,
+    category: cert.category,
+    country: cert.country,
+    region: cert.region,
+    issuedAt: cert.issuedAt,
+    expiresAt: cert.expiresAt,
+    // El cert blockchain hash vive en la ficha pública por slug. Para
+    // el acta usamos un derived hash estable (mismo patrón que /verificar).
+    hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
+  })
+  downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
 }
 
 function buildMailtoForAuthor(
@@ -2317,7 +2268,7 @@ function MoreActionsDrawer({
       sub: 'Documento oficial · TXT',
       onClick: () => {
         downloadActa(cert, extra)
-        toast.success(`acta-${cert.id}.txt descargada`)
+        toast.success(`acta-${cert.id}.pdf descargada`)
         onClose()
       },
     },
