@@ -12,12 +12,29 @@ export default defineConfig(({ command }) => ({
     react(),
     tailwindcss(),
     /**
-     * PWA: solo en producción para no chocar con el service worker de MSW
-     * que se registra en dev. En prod ambos coexisten: MSW intercepta /api/*
-     * (registrado primero en bootstrap) y Workbox cachea el resto.
+     * PWA + MSW coexistencia.
+     *
+     * Bug crítico (mayo 2026): VitePWA con `registerType: 'autoUpdate'`
+     * inyectaba un `<script>` que en window.load registraba `sw.js`
+     * al MISMO scope que el SW de MSW (/ancestral-seed-app/). El
+     * segundo registro REEMPLAZA al primero, así que Workbox terminaba
+     * pisando a MSW → todas las requests a /api/* iban al network →
+     * 404 + HTML del SPA fallback → "Algo salió mal cargando los
+     * certificados / No encontramos lo que estás buscando".
+     *
+     * Solución: `injectRegister: null` desactiva la inyección automática
+     * del script de registro. El manifest sigue commiteado (la app es
+     * instalable como PWA si MSW está OFF), pero ningún SW de Workbox
+     * se registra automáticamente. MSW es el único SW activo mientras
+     * VITE_USE_MSW != 'false'.
+     *
+     * Cuando exista backend real (`npm run build:no-msw`), se puede
+     * cambiar a `injectRegister: 'auto'` y Workbox toma el control sin
+     * conflicto.
      */
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null, // ← NO auto-register; MSW maneja el SW
       includeAssets: ['favicon.svg', 'logo-mark.png', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
         name: 'Ancestral Seed · Certificación digital',

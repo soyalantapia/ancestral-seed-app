@@ -49,6 +49,22 @@ function classifyHttp(status: number): ApiError['code'] {
   return 'unknown'
 }
 
+/**
+ * Detecta si el response es HTML (el SPA fallback de GH Pages cuando la
+ * ruta no existe). Pasa si content-type empieza con "text/html" o si
+ * el body arranca con "<".
+ *
+ * Esto cubre el caso patológico: MSW no está controlando la página, la
+ * request sale al network, GH Pages no encuentra `/api/...` como archivo
+ * y devuelve `index.html` con status 200 o 404. Sin esta detección, el
+ * cliente intentaría `res.json()` y crashearía con un syntax error
+ * confuso ("Unexpected token <").
+ */
+function isHtmlResponse(res: Response): boolean {
+  const ct = res.headers.get('content-type') || ''
+  return ct.toLowerCase().includes('text/html')
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response
   try {
@@ -60,6 +76,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     // TypeError → red caída, CORS bloqueado, DNS fallido, etc.
     throw new ApiError('network', ERRORS.network)
   }
+
+  // Defensive check: si el server devuelve HTML, MSW no está
+  // controlando la página y caímos al SPA fallback. Diagnóstico
+  // explícito para el dev en consola + error tipado para la UI.
+  if (isHtmlResponse(res)) {
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[api] Recibí HTML en vez de JSON para ${path}. ` +
+          `Probablemente MSW no está controlando la página. ` +
+          `Verificá navigator.serviceWorker.controller.`,
+      )
+    }
+    throw new ApiError(
+      'server',
+      'No pudimos cargar los datos. Probá refrescar la página (Cmd+Shift+R) y reintentar.',
+      res.status,
+    )
+  }
+
   if (!res.ok) {
     const code = classifyHttp(res.status)
     const fallback =
