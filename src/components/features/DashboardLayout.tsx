@@ -337,7 +337,13 @@ function SidebarLink({
     <NavLink
       to={to}
       onClick={onClose}
-      end={to === '/inicio' || to === '/mis-certificaciones'}
+      // Fix V2-POS-17 (auditoría v2): antes /mis-certificaciones
+      // tenía end=true → NO se marcaba activo al estar en
+      // /mis-certificaciones/req-001 (la subruta del detail).
+      // Solo /inicio justifica `end` (el index del dashboard).
+      // Las rutas con detail/hijo deben seguir marcadas activas
+      // en toda la rama.
+      end={to === '/inicio'}
       className={({ isActive }) =>
         cn(
           'inline-flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors',

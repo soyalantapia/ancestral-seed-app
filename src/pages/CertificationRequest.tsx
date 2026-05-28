@@ -925,6 +925,17 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                       : '.pdf,.doc,.docx',
                 )
                 .join(',')
+              // Fix V2-POS-03 (auditoría v2): los slots mostraban "Plazo:
+              // 15 de marzo" sin alerta visual de vencido. Con today =
+              // 28 de mayo y slot del 15 de marzo, eran 74 días pasados
+              // y el postulante podía pensar que tenía tiempo. Por
+              // Reglamento 4.6 son 30 días corridos máximo. Ahora
+              // computamos `expired` y la card cambia de tono + label.
+              const dueTs = new Date(slot.dueDate).getTime()
+              const expired = !fulfilled && dueTs < Date.now()
+              const daysLate = expired
+                ? Math.ceil((Date.now() - dueTs) / 86_400_000)
+                : 0
               return (
                 <li
                   key={slot.id}
@@ -932,7 +943,9 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                     'rounded-xl border bg-white p-4 transition-colors',
                     fulfilled
                       ? 'border-success-300 bg-success-100/30'
-                      : 'border-neutral-200',
+                      : expired
+                        ? 'border-error-400 bg-error-100/30'
+                        : 'border-neutral-200',
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -945,12 +958,22 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                       </p>
                       <p className="mt-1.5 text-[11px] font-medium text-navy-300">
                         Plazo:{' '}
-                        <span className="text-navy-500">
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            expired ? 'text-error-400' : 'text-navy-500',
+                          )}
+                        >
                           {new Date(slot.dueDate).toLocaleDateString('es-AR', {
                             day: '2-digit',
                             month: 'long',
                           })}
                         </span>
+                        {expired && (
+                          <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-error-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                            Vencido hace {daysLate}d
+                          </span>
+                        )}
                       </p>
                     </div>
                     {fulfilled ? (
@@ -1157,11 +1180,9 @@ function PagosTab({ request }: { request: CertificationRequestType }) {
         method: result.method,
       },
     }))
-    if (result.method === 'card') {
-      toast.success('Pago confirmado — vas a recibir el recibo por email')
-    } else {
-      toast.success('Comprobante recibido — revisamos en menos de 24h')
-    }
+    // Fix V2-POS-15 (auditoría v2): doble feedback removido (idem
+    // Pagos.tsx). El modal de éxito + el listado actualizado son
+    // suficientes; el toast era ruido encima de la animación.
   }
 
   return (

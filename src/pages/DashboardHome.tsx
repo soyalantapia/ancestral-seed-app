@@ -253,10 +253,26 @@ export default function DashboardHome() {
     return events.sort((a, b) => b.at.localeCompare(a.at))
   }, [lastVisitSnapshot, requests])
 
-  // Marcar la visita actual al montar — la próxima vez que vuelva,
-  // el snapshot apuntará al timestamp de esta sesión.
+  /**
+   * Fix V2-POS-01 (auditoría v2): antes markVisited() corría al MONTAR.
+   * El snapshot ya quedaba capturado en el useState lazy initializer,
+   * pero esto creaba dos problemas en demo:
+   *
+   * 1. En Strict Mode (React 19 dev) el effect corre dos veces y
+   *    pisaba el lastVisit ANTES de leerlo en el effect que computa
+   *    los eventos nuevos.
+   * 2. Si el usuario abría y cerraba el dashboard sin recargar la
+   *    página entera, el snapshot también se actualizaba al instante,
+   *    haciendo que la próxima entrada nunca tuviera "nuevo".
+   *
+   * Ahora corre al DESMONTAR (cleanup function). El snapshot inicial
+   * sirve para esta sesión; el next-visit pointer queda anclado al
+   * timestamp EN QUE EL USUARIO ABANDONÓ — no al que entró.
+   */
   useEffect(() => {
-    markVisited()
+    return () => {
+      markVisited()
+    }
   }, [markVisited])
   const firstName = name
 
@@ -701,15 +717,20 @@ function QuickActionsRow({ inProgressId }: { inProgressId?: string }) {
    *   → vive en el header público y en Cmd+K, no acá.
    * - "Contactar soporte" ya está en el sidebar (Ayuda) y en el header
    *   → no duplicamos.
-   * Si el user tiene una solicitud en proceso, ordenamos "Subir evidencias"
-   * primero (es la acción más frecuente día a día).
+   *
+   * Fix V2-POS-09 (auditoría v2): si el user tiene una solicitud en
+   * proceso, la card "En proceso" YA tiene un CTA "Añadir evidencias"
+   * arriba del fold + el NBA puede mostrar otro si hay pendingItems.
+   * Eran tres caminos al mismo destino. Acá removemos la repetición:
+   * cuando hay inProgressId la quick action complementaria es
+   * "Mis certificaciones" (atajo al hub), no otra evidencia.
    */
   const actions = inProgressId
     ? [
         {
-          icon: Upload,
-          label: 'Subir evidencias',
-          to: `/mis-certificaciones/${inProgressId}?tab=evidencias`,
+          icon: FileText,
+          label: 'Mis certificaciones',
+          to: '/mis-certificaciones',
           tone: 'gold' as const,
         },
         {

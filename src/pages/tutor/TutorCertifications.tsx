@@ -25,6 +25,35 @@ import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
 const PAGE_SIZE = 8
 
+/**
+ * Fix V2-TUT-19 (auditoría v2): la fila tenía un `toast.success` falso
+ * en "Descargar PDF" mientras el detail SÍ generaba el PDF real con
+ * jsPDF. Misma acción, dos comportamientos. Esta función centraliza
+ * la descarga real reusando `buildActaPdf` del módulo `@/lib/pdf`.
+ *
+ * El módulo se importa con dynamic import porque jsPDF pesa ~280KB y
+ * solo se carga cuando el tutor efectivamente descarga.
+ */
+async function downloadCertActa(cert: IssuedCertification) {
+  toast.info('Generando PDF…')
+  const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
+  const blob = buildActaPdf({
+    certId: cert.id,
+    productName: cert.productName,
+    authorName: cert.authorName,
+    scoreLabel: cert.scoreLabel,
+    status: cert.status,
+    category: cert.category,
+    country: cert.country,
+    region: cert.region,
+    issuedAt: cert.issuedAt,
+    expiresAt: cert.expiresAt,
+    hash: `0xAS-CERT-${cert.id.replace(/[^A-Z0-9]/gi, '').toUpperCase()}`,
+  })
+  downloadPdfBlob(`acta-${cert.id}.pdf`, blob)
+  toast.success(`Acta de ${cert.id} descargada`)
+}
+
 const STATUS_META: Record<
   IssuedCertStatus,
   { label: string; className: string }
@@ -144,39 +173,16 @@ export default function TutorCertifications() {
       </header>
 
       {/* KPIs */}
+      {/* Fix V2-TUT-07 (auditoría v2): los 4 KPIs tenían deltas
+          hardcoded "+N en la última semana" — exactamente el patrón
+          que SM4 había desterrado del TutorDashboard. Decisión a
+          medias. Para consistencia con el resto del producto, ahora
+          sin delta — los números son lo que son. */}
       <section className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard
-          label="Vigentes"
-          value={stats.vigente}
-          delta={2}
-          deltaPositive
-          sub="+2 en la última semana"
-        />
-        <StatCard
-          label="En renovación"
-          value={stats.renovacion}
-          delta={1}
-          deltaPositive
-          sub="+1 en la última semana"
-        />
-        <StatCard
-          label="Vencidos"
-          value={stats.vencido}
-          delta={3}
-          deltaPositive={false}
-          // Fix SM4 (#TUT-25): "+3 en la última semana" con icono
-          // flecha abajo rojo + signo "+" creaba contradicción
-          // ("subió 3" pero ícono dice "mal"). Ahora el copy refleja
-          // la dirección de negocio: más vencidos = peor.
-          sub="Subieron 3 esta semana"
-        />
-        <StatCard
-          label="Denegados"
-          value={stats.denegado}
-          delta={2}
-          deltaPositive={false}
-          sub="+2 en la última semana"
-        />
+        <StatCard label="Vigentes" value={stats.vigente} />
+        <StatCard label="En renovación" value={stats.renovacion} />
+        <StatCard label="Vencidos" value={stats.vencido} />
+        <StatCard label="Denegados" value={stats.denegado} />
       </section>
 
       {/* Filters row */}
@@ -371,6 +377,7 @@ export default function TutorCertifications() {
                         setOpenRow(openRow === c.id ? null : c.id)
                       }
                       onView={() => navigate(`/tutor/certificaciones/${c.id}`)}
+                      onDownload={() => downloadCertActa(c)}
                       onRenew={() => setRenewFor(c)}
                       onIncident={() => setIncidentFor(c)}
                     />
@@ -774,27 +781,33 @@ function StatCard({
 }: {
   label: string
   value: number
-  delta: number
-  deltaPositive: boolean
-  sub: string
+  /** Fix V2-TUT-07 (auditoría v2): opcionalizados los props del delta
+   *  para poder ocultarlos por completo. Si no se pasan, la card
+   *  muestra solo label + número, sin métrica fake al lado. */
+  delta?: number
+  deltaPositive?: boolean
+  sub?: string
 }) {
+  const showDelta = typeof delta === 'number' && typeof deltaPositive === 'boolean'
   const Trend = deltaPositive ? TrendingUp : TrendingDown
   return (
     <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-navy-500">{label}</p>
       <div className="mt-2 flex items-baseline gap-2">
         <p className="text-3xl font-bold text-navy-500 md:text-4xl">{value}</p>
-        <span
-          className={cn(
-            'inline-flex items-center gap-0.5 text-xs font-bold',
-            deltaPositive ? 'text-success-300' : 'text-error-400',
-          )}
-        >
-          <Trend className="h-3.5 w-3.5" />
-          {delta}
-        </span>
+        {showDelta && (
+          <span
+            className={cn(
+              'inline-flex items-center gap-0.5 text-xs font-bold',
+              deltaPositive ? 'text-success-300' : 'text-error-400',
+            )}
+          >
+            <Trend className="h-3.5 w-3.5" />
+            {delta}
+          </span>
+        )}
       </div>
-      <p className="mt-1 text-xs text-navy-300">{sub}</p>
+      {sub && <p className="mt-1 text-xs text-navy-300">{sub}</p>}
     </div>
   )
 }
@@ -852,12 +865,17 @@ function RowMenu({
   open,
   onToggle,
   onView,
+  onDownload,
   onRenew,
   onIncident,
 }: {
   open: boolean
   onToggle: () => void
   onView: () => void
+  /** Fix V2-TUT-19 (auditoría v2): antes el botón solo disparaba
+   *  `toast.success('Descargando PDF…')` sin descargar nada.
+   *  Inconsistencia con el detalle del cert que SÍ genera el PDF real. */
+  onDownload: () => void
   onRenew: () => void
   onIncident: () => void
 }) {
@@ -870,7 +888,7 @@ function RowMenu({
     {
       icon: Download,
       label: 'Descargar PDF',
-      onClick: () => toast.success('Descargando PDF…'),
+      onClick: onDownload,
     },
     {
       icon: TrendingUp,

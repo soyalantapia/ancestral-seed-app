@@ -67,6 +67,10 @@ export default function TutorCases() {
   // QT6: anuncio a screen readers cuando se mueve un caso
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('')
   const kanbanRef = useRef<HTMLDivElement | null>(null)
+  // Fix V2-TUT-05 (auditoría v2): la vista Lista necesita su propio ref
+  // para que "Ver casos en alerta" haga scroll a la tabla en vez de
+  // saltar al kanban (que está unmounted cuando view === 'list').
+  const rowAreaRef = useRef<HTMLElement | null>(null)
   /**
    * Fix SB14 (#TUT-09, auditoría UX): el kanban de 7 columnas no entra
    * en pantalla 13" — el tutor tenía que scrollear horizontalmente para
@@ -151,8 +155,13 @@ export default function TutorCases() {
   const handleViewAlerts = () => {
     setSlaFilter('alerts')
     toast.success('Mostrando solo casos con SLA en alerta')
+    // Fix V2-TUT-05 (auditoría v2): kanbanRef no existe cuando la
+    // vista activa es Lista (componente unmounted) → scrollIntoView
+    // no hace nada y el tutor queda donde estaba sin feedback. Ahora
+    // hacemos scroll a la tabla cuando estamos en Lista.
     setTimeout(() => {
-      kanbanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const target = view === 'list' ? rowAreaRef.current : kanbanRef.current
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 60)
   }
 
@@ -423,7 +432,10 @@ export default function TutorCases() {
 
       {/* Vista lista — Fix SB14 (#TUT-09) */}
       {view === 'list' && (
-        <section className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <section
+          ref={rowAreaRef}
+          className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm"
+        >
           <table className="min-w-full text-sm">
             <thead className="bg-neutral-100">
               <tr>
@@ -445,6 +457,16 @@ export default function TutorCases() {
                 <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-widest text-navy-300">
                   Scoring IA
                 </th>
+                {/* Fix V2-TUT-04 (auditoría v2): la vista Lista venía
+                    sin acciones por fila. El tutor con muchos casos que
+                    abría Lista buscando velocidad terminaba volviendo
+                    al Kanban porque "mover" solo se podía desde ahí.
+                    Ahora la acción más frecuente (avanzar, asignarme,
+                    abrir expediente) está a un click sin salir de Lista. */}
+                <th
+                  className="w-12 px-4 py-3 text-right text-[11px] font-bold uppercase tracking-widest text-navy-300"
+                  aria-label="Acciones"
+                />
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
@@ -504,13 +526,39 @@ export default function TutorCases() {
                           : 'Pendiente'}
                       </span>
                     </td>
+                    <td
+                      className="px-4 py-3 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ListRowMenu
+                        caseData={c}
+                        onAssignSelf={() => {
+                          assignTutor(c.id, {
+                            id: mockTutor.id,
+                            name: mockTutor.name.replace('Lic. ', ''),
+                            avatarUrl: mockTutor.avatarUrl,
+                          })
+                          toast.success(`Te asignaste ${c.id}`)
+                        }}
+                        onMoveTo={(target) => {
+                          // Reusa handleDrop para que las validaciones
+                          // (canAdvance, riesgos, etc.) se apliquen
+                          // igual que en el kanban (fix SB6).
+                          setDraggingId(c.id)
+                          setTimeout(() => handleDrop(target), 0)
+                        }}
+                        onOpen={() =>
+                          navigateRouter(`/tutor/casos/${c.id}`)
+                        }
+                      />
+                    </td>
                   </tr>
                 )
               })}
               {visibleCases.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-4 py-12 text-center text-sm text-navy-300"
                   >
                     No hay casos con los filtros actuales.
@@ -842,6 +890,100 @@ function FilterPill({ label }: { label: string }) {
       {label}
       <ChevronDown className="h-3.5 w-3.5 text-navy-300" />
     </button>
+  )
+}
+
+/**
+ * Menú de acciones por fila para la vista Lista (fix V2-TUT-04).
+ * Mismo trío de acciones que el CaseCard del kanban:
+ *  - Asignarme (si el caso no tiene tutor)
+ *  - Avanzar a la siguiente etapa (si hay una)
+ *  - Abrir expediente
+ *
+ * Reusa la validación SB6 vía onMoveTo (que delega en handleDrop del
+ * padre con dragging simulado), así que los gates "Tutor asignado",
+ * "Scoring IA disponible" etc. funcionan igual.
+ */
+function ListRowMenu({
+  caseData: c,
+  onAssignSelf,
+  onMoveTo,
+  onOpen,
+}: {
+  caseData: TutorCase
+  onAssignSelf: () => void
+  onMoveTo: (target: CaseStage) => void
+  onOpen: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const idx = STAGES.findIndex((s) => s.id === c.stage)
+  const nextStage = STAGES[idx + 1]
+  return (
+    <div className="relative inline-block">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={`Acciones del caso ${c.id}`}
+        aria-expanded={open}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-200 hover:text-navy-500"
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+          <ul className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 text-left shadow-lg">
+            {!c.tutorId && (
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAssignSelf()
+                    setOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  Asignarme este caso
+                </button>
+              </li>
+            )}
+            {nextStage && (
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onMoveTo(nextStage.id)
+                    setOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  <ArrowUpDown className="h-3.5 w-3.5 rotate-90" />
+                  Mover a {nextStage.label}
+                </button>
+              </li>
+            )}
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                  onOpen()
+                  setOpen(false)
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                Abrir expediente
+              </button>
+            </li>
+          </ul>
+        </>
+      )}
+    </div>
   )
 }
 

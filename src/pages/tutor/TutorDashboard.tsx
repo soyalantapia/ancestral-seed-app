@@ -4,7 +4,6 @@ import { useAuthStore } from '@/store/auth'
 import {
   AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
   Check,
   CheckSquare,
   Clock,
@@ -821,9 +820,13 @@ function UnansweredCard() {
       </div>
       <p className="mt-3 text-xs text-navy-300">Más de 48h sin respuesta</p>
       <p className="mt-2 text-4xl font-bold text-navy-500">7</p>
-      <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-error-400">
-        <ArrowUpRight className="h-3 w-3" />
-        +5 en la última semana
+      {/* Fix V2-TUT-01 (auditoría v2): tenía delta hardcoded
+          "+5 en la última semana" en rojo. Inconsistente con el fix SM4
+          que ya había eliminado los deltas fake de los KPIs del mismo
+          dashboard. La métrica accionable real es el tiempo promedio de
+          respuesta — eso le dice algo al tutor, no un delta inventado. */}
+      <p className="mt-1 text-xs font-semibold text-navy-300">
+        Promedio de respuesta: 36h
       </p>
       {/* Fix SM4 (#TUT-07): el link antes navegaba a /tutor/casos sin
           filtro. Ahora pasa `?filter=unanswered` que la página puede

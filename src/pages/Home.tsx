@@ -359,8 +359,15 @@ function HeroVideoPlaceholder() {
             onClick={toggleMute}
             aria-label={muted ? 'Activar sonido del video' : 'Silenciar video'}
             aria-pressed={!muted}
+            // Fix V2-PUB-01 (auditoría v2): antes el botón estaba a
+            // `bottom-3` (12px). El overlay navy bottom mide h-10
+            // (40px). El botón quedaba VISUALMENTE comido por el
+            // gradiente — en mobile angosto era casi invisible.
+            // Ahora `bottom-12` (48px) lo deja apenas arriba del
+            // overlay, y mantiene su propio fondo `bg-black/70`
+            // para máximo contraste.
             className={
-              'group absolute right-3 bottom-3 z-10 flex items-center gap-1.5 ' +
+              'group absolute right-3 bottom-12 z-10 flex items-center gap-1.5 ' +
               'rounded-full bg-black/70 px-2.5 py-1.5 text-xs font-medium text-white ' +
               'backdrop-blur-sm transition hover:bg-black/85 ' +
               'focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ' +

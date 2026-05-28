@@ -21,26 +21,11 @@ import {
 } from '@/components/features/CheckoutModal'
 import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
-function buildPaymentReceipt(p: FlatPayment): string {
-  return [
-    '═══════════════════════════════════════════════════════════════',
-    '       ANCESTRAL SEED — COMPROBANTE DE PAGO',
-    '═══════════════════════════════════════════════════════════════',
-    '',
-    `Identificador: ${p.id}`,
-    `Concepto: ${p.concept}`,
-    `Solicitud: ${p.requestNumber} · ${p.requestName}`,
-    `Monto: ${p.currency} ${p.amount.toLocaleString('es-AR')}`,
-    `Estado: ${p.status.toUpperCase()}`,
-    `Vencimiento: ${p.dueDate}`,
-    p.paidAt ? `Pagado el: ${p.paidAt}` : '',
-    '',
-    `Generado el ${new Date().toLocaleString('es-AR')}`,
-    'Documento de validez oficial — Ancestral Seed Foundation',
-  ]
-    .filter(Boolean)
-    .join('\n')
-}
+// Fix V2-POS-10 (auditoría v2): buildPaymentReceipt() generaba un
+// .txt plano con separadores ASCII. Migrado a buildPaymentReceiptPdf
+// de @/lib/pdf (mismo PDF que la pantalla CertificationRequest),
+// para que la factura sea consistente en TODOS los puntos de
+// descarga. Stub removido.
 
 type FlatPayment = {
   id: string
@@ -157,13 +142,12 @@ export default function Pagos() {
         method: result.method,
       },
     }))
-    if (result.method === 'card') {
-      toast.success('Pago confirmado — vas a recibir el recibo por email')
-    } else {
-      toast.success(
-        'Comprobante recibido — lo revisamos en menos de 24h',
-      )
-    }
+    // Fix V2-POS-15 (auditoría v2): antes el modal mostraba una pantalla
+    // de éxito de 1.2s ("¡Pago confirmado!" + CheckCircle + copy
+    // detallado) y al cerrar disparábamos toast.success con copy casi
+    // idéntico. Doble feedback ruidoso. La info ya está en el modal +
+    // la card del listado pasa a "Pagado" automáticamente — el toast
+    // es redundante.
   }
 
   const pendingCount = allPayments.filter(
@@ -461,11 +445,29 @@ export default function Pagos() {
                     ) : p.invoiceUrl ? (
                       <button
                         type="button"
-                        onClick={() => {
-                          downloadBlob(
-                            `factura-${p.id}.txt`,
-                            buildPaymentReceipt(p),
-                          )
+                        onClick={async () => {
+                          // Fix V2-POS-10 (auditoría v2): antes
+                          // descargaba un .txt con separadores ASCII
+                          // — inconsistente con CertificationRequest
+                          // que descarga PDF real. Ahora ambos paths
+                          // usan buildPaymentReceiptPdf de @/lib/pdf.
+                          toast.info('Generando comprobante…')
+                          const {
+                            buildPaymentReceiptPdf,
+                            downloadPdfBlob,
+                          } = await import('@/lib/pdf')
+                          const blob = buildPaymentReceiptPdf({
+                            id: p.id,
+                            concept: p.concept,
+                            requestNumber: p.requestNumber,
+                            requestName: p.requestName,
+                            amount: p.amount,
+                            currency: p.currency,
+                            status: p.status,
+                            dueDate: p.dueDate,
+                            paidAt: p.paidAt,
+                          })
+                          downloadPdfBlob(`factura-${p.id}.pdf`, blob)
                           toast.success(`Factura ${p.id} descargada`)
                         }}
                         className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"

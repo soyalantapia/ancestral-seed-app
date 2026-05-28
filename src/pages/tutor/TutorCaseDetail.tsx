@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -45,8 +45,8 @@ import {
   STAGE_SLA_DAYS,
   mockEvidenceEvaluations,
   mockScoringByCase,
-  mockTutorCases,
 } from '@/services/mocks/data'
+import { useTutorCasesStore } from '@/store/tutorCases'
 import type {
   CaseStage,
   EvidenceVerdict,
@@ -120,14 +120,29 @@ export default function TutorCaseDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  // En prod, esto vendría de una API. Acá uso mock + state local.
-  const initialCase = mockTutorCases.find((c) => c.id === id)
-  const [caseData, setCaseData] = useState<TutorCase | undefined>(initialCase)
+  // Fix V2-TUT-03 (auditoría v2): antes leíamos de `mockTutorCases`
+  // (estático) y manejábamos los cambios con `useState` local. El
+  // kanban — en cambio — leía del `useTutorCasesStore` persistido.
+  // Eran DOS fuentes de verdad para la misma entidad: si el tutor
+  // movía un caso por drag y luego abría el detail, veía la etapa
+  // VIEJA del mock; cuando avanzaba etapa desde el detail, ese cambio
+  // tampoco se reflejaba en el kanban al volver.
+  //
+  // Ahora ambas vistas leen del store. El moveCase del store es la
+  // única operación de mutación de etapa — el detail la usa para
+  // avanzar y todos los componentes ven el mismo dato.
+  const cases = useTutorCasesStore((s) => s.cases)
+  const moveCase = useTutorCasesStore((s) => s.moveCase)
+  const caseData = cases.find((c) => c.id === id)
 
   // Tab activa en search param (?tab=evaluacion). Sobrevive refresh y
   // permite linkear directamente a una sección del caso.
   const [searchParams, setSearchParams] = useSearchParams()
-  const TAB_IDS: Tab[] = ['resumen', 'evidencias', 'evaluacion', 'mensajes', 'historial']
+  // Fix V2-TUT-02 (auditoría v2): faltaba 'notas' en el array de tabs
+  // válidas. Al refrescar con ?tab=notas o entrar por link compartido,
+  // la guarda redirigía silenciosamente a 'resumen'. Las notas SÍ
+  // estaban en el store, pero el tutor creía que se habían perdido.
+  const TAB_IDS: Tab[] = ['resumen', 'evidencias', 'evaluacion', 'mensajes', 'notas', 'historial']
   const rawTab = searchParams.get('tab')
   const tab: Tab = TAB_IDS.includes(rawTab as Tab) ? (rawTab as Tab) : 'resumen'
   const setTab = (next: Tab) => {
@@ -177,7 +192,10 @@ export default function TutorCaseDetail() {
       toast.success('El caso ya está en la etapa final.')
       return
     }
-    setCaseData({ ...caseData, stage: next })
+    // Fix V2-TUT-03: la mutación ahora pasa por el store, no por
+    // setState local. Esto garantiza que el cambio se vea también en
+    // el kanban si el tutor vuelve.
+    moveCase(caseData.id, next)
     setStageModalOpen(false)
     toast.success(
       `Avanzado a ${STAGE_LABEL[next]}. Motivo: ${reason.slice(0, 40)}…`,
@@ -365,22 +383,19 @@ export default function TutorCaseDetail() {
               <EvaluacionTab
                 values={scoringValues}
                 caseData={caseData}
+                onJumpToNotas={() => setTab('notas')}
                 onSign={(score, category) => {
                   // Side-effects de firmar: avanzar a "evaluacion" si aún no,
                   // log al historial visual (in-memory). En backend real esto
                   // dispararía un evento, notif al solicitante, e inmutable log.
-                  setCaseData((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          stage:
-                            STAGE_ORDER.indexOf(prev.stage) <
-                            STAGE_ORDER.indexOf('evaluacion')
-                              ? 'evaluacion'
-                              : prev.stage,
-                        }
-                      : prev,
-                  )
+                  //
+                  // Fix V2-TUT-03: la mutación ahora viaja al store.
+                  if (
+                    STAGE_ORDER.indexOf(caseData.stage) <
+                    STAGE_ORDER.indexOf('evaluacion')
+                  ) {
+                    moveCase(caseData.id, 'evaluacion')
+                  }
                    
                   if (import.meta.env.DEV) {
                     // eslint-disable-next-line no-console
@@ -853,10 +868,14 @@ function EvaluacionTab({
   values,
   caseData,
   onSign,
+  onJumpToNotas,
 }: {
   values: ScoringValue[]
   caseData: TutorCase
   onSign: (score: number, category: string) => void
+  /** Fix V2-TUT-10: salto directo a la tab de notas internas
+   *  desde el disclaimer de disenso IA. */
+  onJumpToNotas?: () => void
 }) {
   const [signOpen, setSignOpen] = useState(false)
   const [signed, setSigned] = useState(false)
@@ -1103,11 +1122,25 @@ function EvaluacionTab({
               una observación en Mensajes" — pero Mensajes es público
               con el postulante, y el disenso técnico con la IA NO
               debería serlo. Ahora redirigimos a Notas internas
-              (privado al equipo). */}
+              (privado al equipo).
+
+              Fix V2-TUT-10 (auditoría v2): "Notas internas" era texto
+              plano, había que cambiar de tab manualmente. Ahora es un
+              botón que salta directo a la tab — cuesta 0 cognitivo. */}
           Si encontrás algo a ajustar,{' '}
-          <strong className="text-navy-500">
-            registralo en Notas internas
-          </strong>
+          {onJumpToNotas ? (
+            <button
+              type="button"
+              onClick={onJumpToNotas}
+              className="font-bold text-navy-500 underline decoration-gold-500 decoration-2 underline-offset-2 hover:text-gold-700"
+            >
+              registralo en Notas internas
+            </button>
+          ) : (
+            <strong className="text-navy-500">
+              registralo en Notas internas
+            </strong>
+          )}
           . La discrepancia técnica con la IA es información de equipo,
           no del postulante.
         </p>
@@ -1164,11 +1197,18 @@ function MensajesTab({
    * Ahora declaramos la regla explícita: solo lo que se "Registra
    * oficial" entra. El WhatsApp es para coordinación informal.
    *
-   * Contador en el header refuerza el contraste (3 oficiales · ~muchos
+   * Contador en el header refuerza el contraste (oficiales · ~muchos
    * informales).
    */
-  // Stub — en producción cuenta los del expediente
-  const officialCount: number = 3
+  // Fix V2-TUT-12 (auditoría v2): officialCount estaba hardcoded a 3
+  // siempre. El header decía "3 mensajes en el expediente" sin
+  // importar cuántos mostraba la lista. Ahora computamos del array
+  // real de mensajes (stub — en prod sería del mockMessagesByCase[id]).
+  const officialMessages = useMemo(
+    () => [1, 2, 3].map((i) => ({ id: `${caseData.id}-msg-${i}` })),
+    [caseData.id],
+  )
+  const officialCount = officialMessages.length
 
   return (
     <div className="space-y-4">

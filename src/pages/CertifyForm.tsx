@@ -1456,6 +1456,45 @@ function StepRevision({
         ['Identificación', data.batchType],
       ],
     },
+    // Fix V2-POS-04 (auditoría v2): faltaban Evidencias y Privacidad
+    // en la pantalla de revisión. Eran 4/6 secciones — el postulante
+    // no podía ver qué fotos iban a quedar publicadas ni si tildó
+    // "perfil público" sin volver atrás manualmente. Cerramos las 6.
+    {
+      title: 'Evidencias',
+      step: 4,
+      items: [
+        ['Portada', data.coverImageName],
+        [
+          'Fotos del producto',
+          data.galleryNames && data.galleryNames.length > 0
+            ? `${data.galleryNames.length} foto${data.galleryNames.length === 1 ? '' : 's'} subidas`
+            : undefined,
+        ],
+        ['Video del proceso', data.videoUrl || undefined],
+        ['Referencias / fuentes', data.references || undefined],
+      ],
+    },
+    {
+      title: 'Privacidad',
+      step: 5,
+      items: [
+        [
+          'Términos y condiciones',
+          data.acceptTerms ? 'Aceptados' : undefined,
+        ],
+        [
+          'Política de datos',
+          data.acceptDataPolicy ? 'Aceptada' : undefined,
+        ],
+        [
+          'Perfil público en el directorio',
+          data.acceptPublic
+            ? 'Sí · tu producto puede aparecer en /directorio una vez emitido'
+            : 'No · solo el comprador con QR/hash podrá verificarlo',
+        ],
+      ],
+    },
   ]
   return (
     <div>
@@ -1722,7 +1761,25 @@ function ResumeOrFreshDialog({
 
   // Descripción contextual: si tenemos nombre del producto, lo mostramos
   // para que el user identifique de qué postulación habla.
-  const subject = productName || applicantName || 'una postulación a medias'
+  //
+  // Fix V2-POS-05 (auditoría v2): si solo se cargó applicantName (paso
+  // 1 sin producto todavía) el fallback usaba el nombre del solicitante
+  // y la frase quedaba "Guardamos tus avances de **Camila Montes**"
+  // — confuso porque Camila es la cuenta del user, no el producto.
+  // Ahora si no hay productName y solo hay applicantName, usamos un
+  // copy explícito de "tu postulación a tu nombre" en vez del nombre
+  // pelado.
+  const hasProductName = (productName ?? '').trim().length > 0
+  const subjectNode = hasProductName ? (
+    <strong className="text-navy-500">{productName}</strong>
+  ) : applicantName ? (
+    <>
+      tu postulación a nombre de{' '}
+      <strong className="text-navy-500">{applicantName}</strong>
+    </>
+  ) : (
+    <strong className="text-navy-500">una postulación a medias</strong>
+  )
   const stepLabel = currentStep > 0 ? ` (paso ${currentStep + 1} de 7)` : ''
 
   return (
@@ -1764,8 +1821,7 @@ function ResumeOrFreshDialog({
               Tenés una postulación a medias
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-navy-300">
-              Guardamos tus avances de{' '}
-              <strong className="text-navy-500">{subject}</strong>
+              Guardamos tus avances de {subjectNode}
               {stepLabel}. ¿Querés continuarla o empezás una nueva?
             </p>
 

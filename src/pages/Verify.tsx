@@ -571,10 +571,25 @@ function QrModal({
                 <p className="mt-3 text-sm font-bold text-navy-500">
                   Tu navegador no escanea QR
                 </p>
+                {/* Fix V2-PUB-02 (auditoría v2): antes el copy sugería
+                    "Subir foto del QR" como alternativa, pero esa
+                    función TAMBIÉN usa BarcodeDetector y falla con el
+                    mismo error. En Safari iOS quedaba en loop de
+                    frustración. Ahora damos la única salida que SÍ
+                    funciona (hash a mano) + tip específico para iOS. */}
                 <p className="mt-1 text-xs leading-relaxed text-navy-300">
-                  La lectura de QR requiere Chrome, Edge u Opera 83+. Podés
-                  subir una foto del código o ingresar el hash a mano.
+                  La lectura de QR requiere Chrome, Edge u Opera 83+.
+                  Como tampoco vas a poder subir foto, ingresá el hash
+                  del certificado a mano (lo encontrás bajo el QR).
                 </p>
+                {/^iPhone|iPad|iPod/.test(
+                  typeof navigator !== 'undefined' ? navigator.platform : '',
+                ) && (
+                  <p className="mt-2 inline-flex max-w-[20rem] items-start gap-1.5 rounded-lg bg-info-100 px-2.5 py-1.5 text-[11px] leading-relaxed text-info-400">
+                    Tip iOS: instalá Chrome desde la App Store y reabrí
+                    este link — el escaneo funciona ahí.
+                  </p>
+                )}
               </>
             )}
             {state.kind === 'error' && (
@@ -594,25 +609,31 @@ function QrModal({
 
       {/* Acciones siempre disponibles. La opción de subir foto es el
           fallback más útil porque sirve tanto para sin-cámara como
-          para QR impreso que el user ya tiene en una foto. */}
+          para QR impreso que el user ya tiene en una foto.
+
+          Fix V2-PUB-02 (auditoría v2): cuando el browser no soporta
+          BarcodeDetector, la opción "Subir foto del QR" tampoco funciona
+          (usa la misma API). Ocultarla evita el loop de frustración. */}
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        <label
-          className={cn(
-            buttonVariants({ variant: 'outlineNavy', size: 'md' }),
-            'flex-1 cursor-pointer',
-          )}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleFileUpload(f)
-            }}
-          />
-          Subir foto del QR
-        </label>
+        {state.kind !== 'unsupported' && (
+          <label
+            className={cn(
+              buttonVariants({ variant: 'outlineNavy', size: 'md' }),
+              'flex-1 cursor-pointer',
+            )}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) void handleFileUpload(f)
+              }}
+            />
+            Subir foto del QR
+          </label>
+        )}
         {(state.kind === 'denied' ||
           state.kind === 'unsupported' ||
           state.kind === 'error') && (

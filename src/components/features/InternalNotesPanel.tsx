@@ -328,3 +328,13 @@ export function InternalNotesPanel({
 export function caseEntityKey(caseId: string): string {
   return `case-${caseId}`
 }
+
+/**
+ * Fix V2-TUT-09 (auditoría v2): mismo helper para certs emitidos.
+ * Antes NotesDrawer del cert emitido usaba `useState` local — refresh
+ * borraba todas las notas. Ahora el cert emitido también persiste a
+ * través del mismo store que el caso activo.
+ */
+export function certEntityKey(certId: string): string {
+  return `cert-${certId}`
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -47,12 +47,13 @@ import {
 } from '@/services/mocks/data'
 import type {
   CertExpedienteEvidence,
-  CertExpedienteNote,
   ChecklistCategory,
   IssuedCertStatus,
 } from '@/types'
 import { useEscape } from '@/hooks/useEscape'
 import { cn, downloadBlob } from '@/lib/utils'
+import { useInternalNotesStore } from '@/store/internalNotes'
+import { certEntityKey } from '@/components/features/InternalNotesPanel'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1407,20 +1408,52 @@ function NotesDrawer({
   certId: string
   onClose: () => void
 }) {
-  const [notes, setNotes] = useState<CertExpedienteNote[]>(() =>
-    getInitialNotesByCert(certId),
+  // Fix V2-TUT-09 (auditoría v2): antes el state de las notas era
+  // `useState<CertExpedienteNote[]>` local — refresh las perdía. La
+  // promesa del fix SA5 (persistencia de notas) cubría solo el caso
+  // ACTIVO; el cert emitido quedaba afuera. Inconsistencia conceptual:
+  // las notas son más valiosas justo cuando hay que renovar/auditar
+  // el cert emitido años después.
+  //
+  // Ahora usamos `useInternalNotesStore` (persist a localStorage),
+  // mismo store que el caso activo, con entityKey distinto (cert-XXX).
+  // La primera vez que se abre el drawer hidratamos con los seeds
+  // de getInitialNotesByCert si todavía no hay notas para ese cert.
+  const notes = useInternalNotesStore((s) =>
+    s.notesFor(certEntityKey(certId)),
   )
+  const addNoteToStore = useInternalNotesStore((s) => s.addNote)
+  const updateNoteInStore = useInternalNotesStore((s) => s.updateNote)
+  const removeNoteFromStore = useInternalNotesStore((s) => s.removeNote)
+
+  useEffect(() => {
+    // Seed hidratación una sola vez. Sin esto el cert emitido del demo
+    // aparece sin las notas iniciales del antropólogo y el reviewer no
+    // ve el flujo trabajado.
+    if (notes.length === 0) {
+      for (const seed of getInitialNotesByCert(certId)) {
+        addNoteToStore({
+          entityKey: certEntityKey(certId),
+          body: seed.body,
+          authorName: seed.authorName,
+          authorInitials: seed.authorInitials,
+        })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [certId])
+
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftBody, setDraftBody] = useState('')
   const [composing, setComposing] = useState(false)
   useEscape(true, onClose)
 
   const removeNote = (id: string) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id))
+    removeNoteFromStore(id)
     toast.success('Nota eliminada')
   }
 
-  const startEdit = (n: CertExpedienteNote) => {
+  const startEdit = (n: { id: string; body: string }) => {
     setEditingId(n.id)
     setDraftBody(n.body)
     setComposing(false)
@@ -1428,9 +1461,7 @@ function NotesDrawer({
 
   const saveEdit = () => {
     if (!editingId) return
-    setNotes((prev) =>
-      prev.map((n) => (n.id === editingId ? { ...n, body: draftBody } : n)),
-    )
+    updateNoteInStore(editingId, draftBody)
     setEditingId(null)
     setDraftBody('')
     toast.success('Nota actualizada')
@@ -1438,16 +1469,12 @@ function NotesDrawer({
 
   const addNote = () => {
     if (!draftBody.trim()) return
-    setNotes((prev) => [
-      ...prev,
-      {
-        id: `n-${Date.now()}`,
-        authorName: 'Juan Pérez',
-        authorInitials: 'JP',
-        body: draftBody.trim(),
-        at: new Date().toISOString(),
-      },
-    ])
+    addNoteToStore({
+      entityKey: certEntityKey(certId),
+      body: draftBody,
+      authorName: 'Juan Pérez',
+      authorInitials: 'JP',
+    })
     setDraftBody('')
     setComposing(false)
     toast.success('Nota agregada')

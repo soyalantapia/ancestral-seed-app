@@ -22,6 +22,27 @@ import type {
 
 const PLACEHOLDER = '__placeholder__'
 
+/**
+ * Fix V2-POS-01 (auditoría v2): el mock estático tenía history.at
+ * fijos en febrero–abril 2026, lo que hacía que el bloque
+ * "Lo nuevo desde tu última visita" del DashboardHome se vea VACÍO
+ * en cualquier demo posterior a esas fechas (el feature funcionaba
+ * en código, pero nunca se renderizaba). Estos helpers generan
+ * timestamps relativos a `Date.now()` para que SIEMPRE haya algún
+ * evento "nuevo" cuando se abre el dashboard por primera vez.
+ *
+ * Se llama una sola vez al cargar el módulo. Si el usuario refresca
+ * y vuelve a entrar dentro de la misma sesión de browser, los
+ * timestamps quedan idénticos — y como markVisited corre al
+ * unmount, la próxima entrada verá esos eventos como "nuevos".
+ */
+function hoursAgo(h: number): string {
+  return new Date(Date.now() - h * 60 * 60 * 1000).toISOString()
+}
+function daysAgo(d: number): string {
+  return new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString()
+}
+
 // `community` y `languages` son AUTODECLARADOS por cada autor en
 // coordinación con su comunidad — NO inferimos por keyword (la
 // identidad cultural es soberanía comunitaria). Cuando el dato no está
@@ -394,6 +415,12 @@ export const mockCertificationRequests: CertificationRequest[] = [
       { id: 'h-003', kind: 'document_uploaded', title: 'Aval de la comunidad', description: 'aval-comunidad.pdf', actor: 'Tú', at: '2026-02-03T16:42:00-03:00' },
       { id: 'h-004', kind: 'stage_changed', title: 'Etapa Prediagnóstico iniciada', description: 'Auditoría asignada a Lic. Juan Pérez', actor: 'Sistema', at: '2026-02-05T09:00:00-03:00' },
       { id: 'h-005', kind: 'audit_proposed', title: 'Propuesta de reunión', description: '12/02 a las 10:00 GMT-3', actor: 'Auditor', at: '2026-02-06T11:30:00-03:00' },
+      // Fix V2-POS-01: eventos relativos a "hoy" para que el bloque
+      // "Lo nuevo desde tu última visita" del DashboardHome SIEMPRE
+      // tenga algo que mostrar en demo, sin importar la fecha.
+      { id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: 'Lic. Juan Pérez te respondió sobre los hilos de plata', actor: 'Auditor', at: daysAgo(3) },
+      { id: 'h-007', kind: 'evidence_uploaded', title: 'Foto adicional del proceso', description: 'detalle-soldadura.jpg', actor: 'Tú', at: daysAgo(1) },
+      { id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Auditor', at: hoursAgo(8) },
     ],
     threads: {
       'm-001': [

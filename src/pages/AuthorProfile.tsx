@@ -829,12 +829,20 @@ function TerritorioSection({
                 substring de location. La identidad cultural es soberanía
                 comunitaria, no algoritmo. Ahora SOLO se muestra lo que
                 viene declarado en el modelo Author. Si falta, el copy es
-                explícito: "Por confirmar con la comunidad" en vez de
-                inventar un valor. */}
+                explícito en vez de inventar un valor.
+
+                Fix V2-PUB-03 (auditoría v2): "Por confirmar con la
+                comunidad" sonaba a "dato faltante" (mitad de los autores
+                lo tienen vacío en el demo). Ahora el copy aclara la
+                decisión consciente: este autor trabaja desde Inspiración
+                cultural, no representando una comunidad específica.
+                Eso es legítimo dentro del Reglamento (categoría 2). */}
             <TerritorioDataRow
               icon={Users}
               label="Pueblo originario"
-              value={author.community ?? 'Por confirmar con la comunidad'}
+              value={
+                author.community ?? 'Trabajo desde inspiración cultural'
+              }
               pending={!author.community}
             />
             <TerritorioDataRow
@@ -843,7 +851,7 @@ function TerritorioSection({
               value={
                 author.languages && author.languages.length > 0
                   ? author.languages.join(' · ')
-                  : 'Por confirmar con la comunidad'
+                  : 'No vinculado a una lengua específica'
               }
               pending={!author.languages || author.languages.length === 0}
             />
