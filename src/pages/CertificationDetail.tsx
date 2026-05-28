@@ -1073,7 +1073,11 @@ function VerifiedCertificateModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="verified-title"
-        className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+        // Fix SB15 (#PUB-18, auditoría UX): print isolation. La clase
+        // `printable-cert` la usa el global CSS de print en index.css
+        // para ocultar todo lo demás cuando window.print() se ejecuta
+        // desde el botón "Imprimir" del footer del modal.
+        className="printable-cert w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">

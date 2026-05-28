@@ -585,6 +585,13 @@ export default function TutorCases() {
                           })
                           toast.success('Te asignaste el caso')
                         }}
+                        onMoveTo={(target) => {
+                          // Reuso el mismo handleDrop con draggingId
+                          // simulado para que la lógica de validación
+                          // se aplique igual que con drag (SB6 fix).
+                          setDraggingId(c.id)
+                          setTimeout(() => handleDrop(target), 0)
+                        }}
                       />
                     ))
                   )}
@@ -844,17 +851,26 @@ function CaseCard({
   onDragStart,
   onDragEnd,
   onAssignSelf,
+  onMoveTo,
 }: {
   caseData: TutorCase
   dragging: boolean
   onDragStart: () => void
   onDragEnd: () => void
   onAssignSelf: () => void
+  /**
+   * Fix SB15 (#TUT-12, auditoría UX): el drag-and-drop no era usable
+   * por teclado. Ahora cada CaseCard tiene menú "Mover a → [submenu
+   * con etapas]" que cualquier user (mouse, teclado, screen reader)
+   * puede usar para cambiar etapa sin arrastrar.
+   */
+  onMoveTo: (target: CaseStage) => void
 }) {
   const navigate = useNavigate()
   // Distinguir entre click y drag: si el puntero se movió >5px durante mousedown,
   // es drag (no navegamos). Si no se movió, es click.
   const [dragMoved, setDragMoved] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const riskStyle =
     c.risk === 'alto'
       ? 'border-error-300 text-error-400'
@@ -907,14 +923,52 @@ function CaseCard({
           <p className="line-clamp-2 text-sm font-bold text-navy-500">
             {c.productName}
           </p>
-          <button
-            type="button"
-            aria-label="Más opciones"
-            className="text-navy-300 hover:text-navy-500"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </button>
+          {/* Menú "Mover a" — alternativa accesible al drag (SB15 /
+              #TUT-12). Cualquier user con teclado puede navegar al
+              menú con Tab + Enter, sin necesitar mouse. */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              aria-label="Más opciones del caso"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+              className="text-navy-300 transition-colors hover:text-navy-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <ul
+                  role="menu"
+                  className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg"
+                >
+                  <li className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-navy-300">
+                    Mover a
+                  </li>
+                  {STAGES.filter((s) => s.id !== c.stage).map((s) => (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenuOpen(false)
+                          onMoveTo(s.id)
+                        }}
+                        className="flex w-full items-center px-3 py-2 text-left text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100 focus-visible:bg-neutral-100 focus-visible:outline-none"
+                      >
+                        {s.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
         </div>
         <div className="mt-3 flex flex-col gap-1.5 text-xs text-navy-300">
           <div className="inline-flex items-center gap-2">

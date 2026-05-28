@@ -266,24 +266,21 @@ function ProfileHero({
               {author.bio}
             </p>
 
-            {/* CTAs */}
+            {/* CTAs — Fix SB15 (#PUB-20, auditoría UX): si el autor no
+                tiene email público, antes el botón mostraba toast inocuo.
+                Ahora abrimos un mailto a soporte de Ancestral Seed con
+                preset que media el contacto, en vez de un dead-end. */}
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 href={
                   author.email
                     ? `mailto:${author.email}?subject=${encodeURIComponent(`Hola ${author.name}`)}`
-                    : '#'
+                    : `mailto:contacto@ancestralseed.com?subject=${encodeURIComponent(`Solicitud de contacto con ${author.name}`)}&body=${encodeURIComponent(`Hola, me gustaría contactar a ${author.name} para conversar sobre su trabajo. ¿Me ayudan a mediar el contacto?\n\nGracias.`)}`
                 }
-                onClick={(e) => {
-                  if (!author.email) {
-                    e.preventDefault()
-                    toast.info('El autor no tiene email público')
-                  }
-                }}
                 className={cn(buttonVariants({ variant: 'gold', size: 'lg' }))}
               >
                 <Mail className="h-4 w-4" />
-                Contactar
+                {author.email ? 'Contactar' : 'Solicitar contacto'}
               </a>
               <Button
                 variant="ghost"
@@ -1012,18 +1009,12 @@ function ProfileCTA({ author }: { author: import('@/types').Author }) {
                 href={
                   author.email
                     ? `mailto:${author.email}?subject=${encodeURIComponent(`Hola ${author.name}`)}`
-                    : '#'
+                    : `mailto:contacto@ancestralseed.com?subject=${encodeURIComponent(`Solicitud de contacto con ${author.name}`)}&body=${encodeURIComponent(`Hola, me gustaría contactar a ${author.name} para conversar sobre su trabajo. ¿Me ayudan a mediar el contacto?\n\nGracias.`)}`
                 }
-                onClick={(e) => {
-                  if (!author.email) {
-                    e.preventDefault()
-                    toast.info('El autor no tiene email público')
-                  }
-                }}
                 className={cn(buttonVariants({ variant: 'gold', size: 'lg' }))}
               >
                 <Mail className="h-4 w-4" />
-                Contactar
+                {author.email ? 'Contactar' : 'Solicitar contacto'}
               </a>
               <Link
                 to="/directorio"

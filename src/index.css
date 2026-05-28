@@ -215,3 +215,45 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #99a9b8;
 }
+
+/**
+ * Print isolation — Fix SB15 (#PUB-18, auditoría UX).
+ *
+ * Cuando el user toca "Imprimir" en el modal del certificado, antes
+ * window.print() lanzaba el diálogo de impresión con toda la página
+ * (nav + hero + galería + etc) — el resultado en papel era una versión
+ * rota. Ahora ocultamos todo el body excepto la card del certificado
+ * verificado (clase `.printable-cert`).
+ */
+@media print {
+  /* Ocultar todo el body por default */
+  body * {
+    visibility: hidden;
+  }
+  /* Mostrar solo el modal con la clase + sus hijos */
+  .printable-cert,
+  .printable-cert * {
+    visibility: visible;
+  }
+  /* Posicionar el modal arriba del todo de la página impresa para que
+     ocupe correctamente el A4 sin overlay del backdrop. */
+  .printable-cert {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  /* No imprimir el footer del modal (acciones Cerrar/Imprimir/Descargar)
+     porque no aporta valor en papel. */
+  .printable-cert > div:last-child {
+    display: none !important;
+  }
+  /* Backgrounds renderizan en print para mantener la paleta del cert. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
