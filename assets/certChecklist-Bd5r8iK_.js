@@ -1,0 +1,1 @@
+import{n as e,t}from"./middleware-HU0GtQT3.js";var n=e()(t((e,t)=>({byCert:{},get:e=>t().byCert[e]??null,hydrateIfEmpty:(n,r)=>{t().byCert[n]||e(e=>({byCert:{...e.byCert,[n]:r}}))},set:(t,n)=>e(e=>({byCert:{...e.byCert,[t]:n}}))}),{name:`ancestral-seed-cert-checklist-v1`}));export{n as t};
