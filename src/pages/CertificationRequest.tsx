@@ -45,7 +45,7 @@ import type {
   RequestStageItem,
   TutorMessage,
 } from '@/types'
-import { STAGES } from '@/lib/copy'
+import { REGLAMENTO_DEADLINES, STAGES } from '@/lib/copy'
 import { cn, downloadBlob } from '@/lib/utils'
 
 const tabs = [
@@ -189,6 +189,14 @@ export default function CertificationRequest() {
                   style={{ width: `${stageProgress}%` }}
                 />
               </div>
+              {/* SM6 fix: aviso reglamentario del umbral mínimo. */}
+              <p className="mt-2 text-[11px] text-navy-300">
+                La Licencia se emite con puntaje mínimo del{' '}
+                <strong className="text-navy-500">
+                  {REGLAMENTO_DEADLINES.minimumScoreToIssueLicense}%
+                </strong>{' '}
+                en la auditoría (Reglamento cláusula 1.5).
+              </p>
             </div>
 
             {/* Meta stats */}
@@ -197,6 +205,15 @@ export default function CertificationRequest() {
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
               <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
             </dl>
+            {/* SM6 fix: aviso de cierre por inactividad — Reglamento 1.5 */}
+            <p className="mt-3 text-[11px] text-navy-300">
+              Si pasan{' '}
+              <strong className="text-navy-500">
+                {REGLAMENTO_DEADLINES.inactivityDaysToCloseCase} días corridos
+              </strong>{' '}
+              sin avance de tu parte (respuestas, evidencias, pagos), la
+              solicitud se cierra automáticamente (Reglamento 1.5).
+            </p>
 
             {/* Quick actions */}
             <div className="mt-6 flex flex-wrap gap-2">
@@ -887,6 +904,15 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
               {pendingSlotsCount === 1 ? '' : 's'} de {requestedSlots.length}
             </span>
           </div>
+          {/* SM6 fix: aclaración del plazo del Reglamento 4.6 */}
+          <p className="mt-2 text-[11px] text-navy-300">
+            Por Reglamento (cláusula 4.6) tenés{' '}
+            <strong className="text-navy-500">
+              {REGLAMENTO_DEADLINES.daysToFixNonConformity} días corridos
+            </strong>{' '}
+            para subsanar cada no conformidad. Pasado ese plazo se aplica
+            suspensión.
+          </p>
           <ul className="mt-4 space-y-3">
             {requestedSlots.map((slot) => {
               const fulfilled = slotFulfillments[slot.id]

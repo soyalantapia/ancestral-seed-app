@@ -191,6 +191,98 @@ export const OFFICIAL_DOCS = {
   },
 } as const
 
+/**
+ * Glosario del Reglamento de Marca, cláusula 1.3 — vocabulario formal
+ * que el postulante puede ver en /ayuda o /nosotros.
+ *
+ * Mantiene los términos textuales del PDF para que cualquier consulta
+ * formal del titular contra el reglamento coincida con lo que ve en
+ * la app.
+ */
+export const REGLAMENTO_GLOSSARY = [
+  {
+    term: 'AS · Ancestral Seed',
+    body:
+      'Organismo de Certificación. Es la entidad que evalúa, otorga y gestiona la Licencia para usar el Sello. Cláusula 1.3 del Reglamento.',
+  },
+  {
+    term: 'Sello AS de conformidad con Norma',
+    body:
+      'Marca registrada por Ancestral Seed que se otorga según las cláusulas del Reglamento de Certificación de Procesos, asegurando que el proceso cumple con todas las exigencias de una Norma.',
+  },
+  {
+    term: 'Licencia',
+    body:
+      'Documento que establece las condiciones para el uso del Sello, con la responsabilidad que implica disponer del aval de Certificación de AS.',
+  },
+  {
+    term: 'Licenciatario',
+    body:
+      'Persona física o jurídica a la cual AS otorga la Licencia para uso del Sello AS de conformidad con Norma. En la app aparece como "Autor" o "Titular".',
+  },
+  {
+    term: 'Esquema de certificación',
+    body:
+      'Sistema de certificación aplicado a un proceso determinado, donde se aplican requisitos, reglas y procedimientos específicos.',
+  },
+  {
+    term: 'Comité de Certificación',
+    body:
+      'Comité integrado por miembros de nivel gerencial de AS y responsable por la emisión, suspensión y cancelación de la certificación.',
+  },
+  {
+    term: 'No Conformidad',
+    body:
+      'Incumplimiento de un requisito. Cuando el tutor detecta una no conformidad durante la auditoría, el titular tiene 30 días corridos para subsanarla (cláusula 4.6).',
+  },
+  {
+    term: 'Apelación',
+    body:
+      'Recurso presentado por el titular para reconsiderar una decisión de AS. Se presenta en 5 días hábiles desde la notificación; el Comité de Certificación resuelve en máximo 15 días (cláusulas 5.6 y 8).',
+  },
+] as const
+
+/**
+ * Plazos clave del Reglamento — usados en UI para informar al titular
+ * en el contexto correcto (vencimiento, banner, copy informativo).
+ *
+ * Fuente única para evitar inconsistencias si cambian.
+ */
+export const REGLAMENTO_DEADLINES = {
+  /** Cláusula 1.5 — sin avance del titular durante 90 días, AS cierra el caso. */
+  inactivityDaysToCloseCase: 90,
+  /** Cláusula 1.5 — porcentaje mínimo para emitir la Licencia. */
+  minimumScoreToIssueLicense: 80,
+  /** Cláusula 4.6 — plazo del titular para subsanar no conformidades. */
+  daysToFixNonConformity: 30,
+  /** Cláusula 5.6 — plazo para apelar una sanción. */
+  daysToAppealSanction: 5,
+  /** Cláusula 5.6 — plazo del Comité para resolver una apelación. */
+  daysToResolveAppeal: 15,
+} as const
+
+/**
+ * Guía de uso del Sello — Reglamento 3.3.
+ *
+ * Importante mostrarlo al titular junto al `<OfficialSeal />` o en una
+ * página dedicada, para que no use el Sello donde no corresponde.
+ */
+export const SEAL_USAGE_RULES = {
+  allowed: [
+    'Páginas web propias del titular',
+    'Presentaciones y propuestas comerciales',
+    'Material publicitario (folletos, banners, carteles)',
+    'Vehículos corporativos',
+    'Documentos contractuales',
+    'Papelería de la organización (papel membretado, sobres, facturas, tarjetas)',
+  ],
+  forbidden: [
+    'Informes técnicos al cliente',
+    'Sobre el producto físico',
+    'Sobre el embalaje del producto',
+  ],
+} as const
+
 /** Mensajes de error de API tipados — usados por services/api.ts cuando
  *  diferenciamos 404 vs 500 vs NetworkError. */
 export const ERRORS = {

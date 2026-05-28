@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { SEAL_USAGE_RULES } from '@/lib/copy'
 
 /**
  * Sello oficial de Ancestral Seed según Reglamento de Marca cláusula 3.2.
@@ -39,6 +40,13 @@ export interface OfficialSealProps {
   size?: 'sm' | 'md' | 'lg'
   /** Color del texto de la leyenda. Default: navy. */
   tone?: 'navy' | 'light'
+  /**
+   * Si true, muestra debajo del sello un mini-disclosure con la guía
+   * de uso del Reglamento 3.3 (dónde sí / dónde NO usar el Sello).
+   * Default: false para no contaminar usos decorativos. Encender en
+   * vistas dedicadas al titular (perfil, descarga, dashboard).
+   */
+  withUsageGuide?: boolean
   className?: string
 }
 
@@ -53,6 +61,7 @@ export function OfficialSeal({
   licenseNumber,
   size = 'md',
   tone = 'navy',
+  withUsageGuide = false,
   className,
 }: OfficialSealProps) {
   const s = SIZE_MAP[size]
@@ -113,6 +122,40 @@ export function OfficialSeal({
           </span>
         )}
       </div>
+
+      {/* Guía de uso del Sello — SM6 fix. Reglamento 3.3 enumera dónde
+          se puede usar y dónde NO. El titular necesita verlo cerca del
+          sello para no aplicarlo sobre el producto o embalaje (lo más
+          tentador y prohibido). */}
+      {withUsageGuide && (
+        <details className="mt-3 w-full max-w-xs rounded-xl border border-neutral-200 bg-white/90 px-3 py-2 text-left text-[11px] text-navy-500 backdrop-blur-sm">
+          <summary className="cursor-pointer font-bold text-navy-500">
+            Cómo usar este sello (Reglamento 3.3)
+          </summary>
+          <div className="mt-2 space-y-1.5">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-success-300">
+                ✓ Permitido
+              </p>
+              <ul className="ml-3 mt-0.5 list-disc space-y-0.5 text-navy-300">
+                {SEAL_USAGE_RULES.allowed.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-error-400">
+                ✗ No permitido
+              </p>
+              <ul className="ml-3 mt-0.5 list-disc space-y-0.5 text-navy-300">
+                {SEAL_USAGE_RULES.forbidden.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </details>
+      )}
     </div>
   )
 }

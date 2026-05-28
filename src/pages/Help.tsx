@@ -11,6 +11,7 @@ import {
 import { toast } from 'sonner'
 import { useOnboardingStore } from '@/store/onboarding'
 import { useAuthStore } from '@/store/auth'
+import { REGLAMENTO_GLOSSARY, REGLAMENTO_DEADLINES } from '@/lib/copy'
 
 interface Topic {
   id: string
@@ -320,6 +321,100 @@ export default function Help() {
           ))}
         </ul>
       )}
+
+      {/* Glosario del Reglamento — SM6 fix.
+          Términos formales del Reglamento de Marca (cláusula 1.3) que
+          el postulante puede necesitar al leer comunicaciones formales
+          de AS. Va antes del Footer support para que esté en la
+          jerarquía visual correcta. */}
+      <section className="mt-12">
+        <header className="mb-5 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
+              Vocabulario formal
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-navy-500 md:text-2xl">
+              Glosario del Reglamento
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-navy-300">
+              Términos que usamos en comunicaciones formales y en el
+              Reglamento de Marca. Coinciden con el documento oficial
+              descargable desde el footer.
+            </p>
+          </div>
+        </header>
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {REGLAMENTO_GLOSSARY.map((g) => (
+            <li
+              key={g.term}
+              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
+            >
+              <p className="text-sm font-bold text-navy-500">{g.term}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-navy-300">
+                {g.body}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Plazos clave del Reglamento — SM6 fix */}
+      <section className="mt-10 rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-6 shadow-sm md:p-8">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
+          Plazos importantes
+        </p>
+        <h2 className="mt-1 text-xl font-bold text-navy-500 md:text-2xl">
+          Tiempos que debés tener presentes
+        </h2>
+        <p className="mt-1 max-w-2xl text-sm text-navy-300">
+          Estos plazos están definidos por el Reglamento y se aplican
+          automáticamente. Te avisamos antes de cada vencimiento.
+        </p>
+        <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+          {[
+            {
+              k: REGLAMENTO_DEADLINES.minimumScoreToIssueLicense,
+              suffix: '%',
+              label: 'Puntaje mínimo para emitir la Licencia',
+              source: 'Cláusula 1.5',
+            },
+            {
+              k: REGLAMENTO_DEADLINES.inactivityDaysToCloseCase,
+              suffix: 'd',
+              label: 'Sin actividad antes de cierre por inactividad',
+              source: 'Cláusula 1.5',
+            },
+            {
+              k: REGLAMENTO_DEADLINES.daysToFixNonConformity,
+              suffix: 'd',
+              label: 'Para subsanar una no conformidad',
+              source: 'Cláusula 4.6',
+            },
+            {
+              k: REGLAMENTO_DEADLINES.daysToAppealSanction,
+              suffix: 'd',
+              label: 'Para apelar una sanción (hábiles)',
+              source: 'Cláusulas 5.6 y 8',
+            },
+          ].map((p) => (
+            <div
+              key={p.label}
+              className="rounded-2xl border border-neutral-200 bg-white p-4"
+            >
+              <p className="text-3xl font-bold text-navy-500">
+                {p.k}
+                <span className="text-base text-navy-300">{p.suffix}</span>
+              </p>
+              <p className="mt-1 text-xs leading-snug text-navy-500">
+                {p.label}
+              </p>
+              <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-navy-300">
+                {p.source}
+              </p>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {/* Footer support */}
       <div className="mt-10 text-center">
