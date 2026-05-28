@@ -8,7 +8,6 @@ import {
   Languages,
   Leaf,
   MapPin,
-  Play,
   Shield,
   Sparkles,
   Users,
@@ -193,41 +192,41 @@ function Hero() {
 }
 
 /**
- * Hero del Home: card con logo chico arriba como anchor de marca + área grande
- * para el video institucional de 1 minuto. Mientras no haya video subido,
- * muestra un placeholder con poster del logo + botón Play centrado.
- *
- * Cuando se suba el video real, reemplazar el bloque <button> placeholder por
- * un <video> con poster y controls, o un wrapper con onClick que dispare un
- * modal/lightbox con el mp4.
+ * Hero video: YouTube Short institucional de Ancestral Seed embebido
+ * en formato vertical 9:16. Autoplay con mute (browsers modernos exigen
+ * mute para permitir autoplay), loop infinito y sin controles para
+ * mantener look limpio. El pattern aztec va como marco decorativo
+ * detrás del iframe.
  */
+const YT_SHORT_ID = '4gdnaNrQxwY'
+const YT_EMBED_URL =
+  `https://www.youtube.com/embed/${YT_SHORT_ID}` +
+  `?autoplay=1&mute=1&loop=1&playlist=${YT_SHORT_ID}` +
+  `&controls=0&modestbranding=1&rel=0&playsinline=1`
+
 function HeroVideoPlaceholder() {
   return (
     <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
-      <button
-        type="button"
-        aria-label="Reproducir video institucional de 1 minuto"
-        className="group relative aspect-video w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-navy-500 to-navy-400 shadow-lg transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
-        onClick={() => {
-          // Placeholder: cuando esté el video, abrir modal con <video controls autoplay>
-          // o reemplazar este botón por <video src="..." controls poster="..." />
-        }}
-      >
-        {/* Pattern decorativo de fondo (aztec style) */}
-        <div className="absolute inset-0 bg-pattern-aztec opacity-30" aria-hidden />
-        {/* Overlay degradado para legibilidad del play button */}
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-500/60 to-transparent" aria-hidden />
-
-        {/* Play button centrado */}
-        <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-500 text-navy-500 shadow-xl transition-transform group-hover:scale-110 md:h-20 md:w-20">
-            <Play className="h-7 w-7 translate-x-0.5 fill-current md:h-9 md:w-9" />
-          </span>
-          <span className="text-xs font-bold uppercase tracking-widest opacity-90 md:text-sm">
-            Mirá el video · 1 min
-          </span>
-        </span>
-      </button>
+      <div className="relative w-full max-w-[280px] md:max-w-[320px]">
+        {/* Marco decorativo aztec — glow detrás del video para integrarlo
+            visualmente con el resto del Hero. */}
+        <div
+          aria-hidden
+          className="absolute -inset-2 rounded-[1.75rem] bg-pattern-aztec opacity-30 blur-sm"
+        />
+        {/* Container del video vertical 9:16 (formato Short de YouTube) */}
+        <div className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl bg-navy-500 shadow-2xl">
+          <iframe
+            src={YT_EMBED_URL}
+            title="Video institucional Ancestral Seed"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            className="absolute inset-0 h-full w-full border-0"
+            loading="lazy"
+          />
+        </div>
+      </div>
     </div>
   )
 }
