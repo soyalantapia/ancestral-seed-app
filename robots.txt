@@ -1,9 +1,24 @@
-# Fix V3-PUB-18 (auditoría v3): no había robots.txt — los crawlers
-# tenían que adivinar políticas. Ahora declaramos explícitamente:
-# - permitido: rutas públicas (home, directorio, autores, verificar,
-#   ayuda, legal, nosotros)
-# - bloqueado: panel del solicitante y del tutor (también marcados
-#   con meta robots noindex desde los Layouts)
+# ⚠️ LIMITACIÓN CONOCIDA (fix V4-PUB-01 documenta):
+#
+# Este sitio se sirve en https://soyalantapia.github.io/ancestral-seed-app/.
+# GitHub Pages con organizational account NO sirve robots.txt en el
+# root del host — los crawlers buscan /robots.txt en la RAÍZ del
+# dominio (https://soyalantapia.github.io/robots.txt), no en este
+# subdirectorio. Por RFC, este archivo es IGNORADO por Googlebot,
+# Bingbot, etc.
+#
+# La protección efectiva contra indexación de rutas privadas
+# (/inicio, /pagos, /tutor, etc.) viene del meta `<meta name="robots"
+# content="noindex, nofollow">` que el componente PageMeta emite
+# desde los Layouts del dashboard y del tutor (ver
+# src/components/features/PageMeta.tsx, DashboardLayout.tsx,
+# TutorLayout.tsx). Esa protección SÍ funciona porque viene de cada
+# página individual.
+#
+# Cuando migremos a custom domain (ancestralseed.io), este robots.txt
+# pasa a servirse en root y SÍ tiene efecto. Hasta entonces queda como
+# documentación de intent + crawl-budget hint para bots que respetan
+# subdirectory robots (Yandex, algunos academic crawlers).
 
 User-agent: *
 Allow: /
@@ -15,5 +30,16 @@ Disallow: /perfil
 Disallow: /settings
 Disallow: /notificaciones
 Disallow: /tutor
+
+# Estos paths también — para cuando migremos a custom domain donde
+# este robots SÍ se aplica desde root del host.
+Disallow: /ancestral-seed-app/inicio
+Disallow: /ancestral-seed-app/mis-certificaciones
+Disallow: /ancestral-seed-app/calendario
+Disallow: /ancestral-seed-app/pagos
+Disallow: /ancestral-seed-app/perfil
+Disallow: /ancestral-seed-app/settings
+Disallow: /ancestral-seed-app/notificaciones
+Disallow: /ancestral-seed-app/tutor
 
 Sitemap: https://soyalantapia.github.io/ancestral-seed-app/sitemap.xml
