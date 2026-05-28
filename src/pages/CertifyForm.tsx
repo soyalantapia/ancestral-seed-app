@@ -502,11 +502,14 @@ function Stepper({
         {/* Fix V2-POS-18 (auditoría v2): los 7 dots eran barras
             indistinguibles — el header "Paso N de 7" daba contexto del
             actual, pero al ver los dots no quedaba claro qué era cada
-            uno. Ahora cada dot:
-              - tiene title= con el label del paso (tooltip nativo)
-              - aria-label descriptivo en TODOS (no solo en los done)
-              - los próximos pasos muestran un punto navy más claro
-                para crear jerarquía visual progresiva. */}
+            uno. Ahora cada dot tiene aria-label descriptivo para SR.
+
+            Fix V3-POS-10 (auditoría v3): el `title=` attribute solo se
+            renderiza como tooltip con MOUSEOVER — en mobile/touch no
+            hay hover, así que el title es código muerto. Lo dejamos
+            SOLO en los dots clickeables (done && onJumpTo), donde el
+            usuario desktop puede al menos verlo. Para los no-clickeables
+            solo aria-label (útil al SR, sin promesa visual rota). */}
         <ol
           className="mt-3 flex items-center gap-1.5"
           aria-label={`Progreso del formulario: paso ${current + 1} de ${steps.length}`}
@@ -536,12 +539,13 @@ function Stepper({
                 </li>
               )
             }
+            // No-clickeables (futuros) sin `title` — el SR sí tiene
+            // aria-label y el visual queda más limpio en mobile.
             return (
               <li
                 key={s.id}
                 className={className}
                 aria-label={label}
-                title={s.title}
               />
             )
           })}

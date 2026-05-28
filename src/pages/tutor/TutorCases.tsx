@@ -1191,6 +1191,13 @@ function CaseCard({
       onPointerDown={(e) => {
         pointerStart.current = { x: e.clientX, y: e.clientY }
       }}
+      onPointerCancel={() => {
+        // Fix V3-TUT-07 (auditoría v3): si el pointer se cancela (ej.
+        // el browser hace gesture takeover, o el user libera fuera de
+        // un viewport touch), limpiamos para que el siguiente click
+        // no use coordenadas viejas.
+        pointerStart.current = null
+      }}
       onDragStart={(e) => {
         e.dataTransfer.effectAllowed = 'move'
         onDragStart()

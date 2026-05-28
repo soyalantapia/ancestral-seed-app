@@ -608,6 +608,28 @@ export const mockTutor = {
   avatarUrl: 'https://i.pravatar.cc/200?img=15',
 }
 
+/**
+ * Fix V3-TUT-10 (auditoría v3): "Lic. Juan Pérez" estaba hardcoded
+ * en al menos 3 lugares (TutorCaseDetail signAction, NotesDrawer
+ * authorName, CertificationRequest TUTOR_PROFILES). Si mañana cambia
+ * la persona o la titulación, hay que tocar todos. Helpers shared
+ * para que la identidad del tutor logueado venga de UN SOLO lugar.
+ *
+ * En prod esto vendría del JWT del backend; acá derivamos del mockTutor.
+ */
+export const tutorIdentity = {
+  id: mockTutor.id,
+  name: mockTutor.name,
+  // El nombre "corto" sin la titulación (para iniciales y firmas).
+  shortName: mockTutor.name.replace(/^Lic\.\s+/, ''),
+  initials: mockTutor.name
+    .replace(/^Lic\.\s+/, '')
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join(''),
+} as const
+
 export const mockTutorCases: TutorCase[] = [
   // Postulados (sin tutor asignado)
   {

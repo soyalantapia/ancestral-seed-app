@@ -44,6 +44,7 @@ import {
   getInitialNotesByCert,
   mockIssuedCertifications,
   mockScoringByCase,
+  tutorIdentity,
 } from '@/services/mocks/data'
 import type {
   CertExpedienteEvidence,
@@ -1545,11 +1546,13 @@ function NotesDrawer({
 
   const addNote = () => {
     if (!draftBody.trim()) return
+    // Fix V3-TUT-10 (auditoría v3): authorName/authorInitials desde
+    // la identidad centralizada en vez de hardcoded acá.
     addNoteToStore({
       entityKey: certEntityKey(certId),
       body: draftBody,
-      authorName: 'Juan Pérez',
-      authorInitials: 'JP',
+      authorName: tutorIdentity.shortName,
+      authorInitials: tutorIdentity.initials,
     })
     setDraftBody('')
     setComposing(false)

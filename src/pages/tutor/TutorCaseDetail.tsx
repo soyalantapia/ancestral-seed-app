@@ -45,6 +45,7 @@ import {
   STAGE_SLA_DAYS,
   mockEvidenceEvaluations,
   mockScoringByCase,
+  tutorIdentity,
 } from '@/services/mocks/data'
 import { useTutorCasesStore } from '@/store/tutorCases'
 import { useInternalNotesStore } from '@/store/internalNotes'
@@ -1204,9 +1205,11 @@ function EvaluacionTab({
           onClose={() => setSignOpen(false)}
           onConfirm={() => {
             // Fix V3-TUT-11: firma persistida en el store, no local.
+            // Fix V3-TUT-10: tutorId desde la identidad centralizada,
+            // no hardcoded como 'mock-juan-perez'.
             signAction({
               caseId: caseData.id,
-              tutorId: 'mock-juan-perez',
+              tutorId: tutorIdentity.id,
               finalScore,
               category: category.label,
             })

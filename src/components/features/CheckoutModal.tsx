@@ -89,9 +89,23 @@ export function CheckoutModal({
   // Fix V2-POS-14 (auditoría v2): antes el formulario solo deshabilitaba
   // el submit cuando los campos eran inválidos — no había feedback en
   // los campos en sí. El user no entendía POR QUÉ no podía pagar.
-  // Ahora trackeamos `touched` por campo (se activa al blur) y, si
-  // el campo está touched + inválido, mostramos border-error + mensaje.
+  // Ahora trackeamos `touched` por campo y, si el campo está touched +
+  // inválido, mostramos border-error + mensaje.
+  //
+  // Fix V3-POS-06 (auditoría v3): el `touched` se seteaba SOLO al blur.
+  // Si el user TAB-tababa sin escribir nada para explorar el form,
+  // cada blur en cascada activaba el error rojo en TODOS los campos
+  // vacíos — "el form me grita antes de empezar". Ahora rastreamos
+  // ADEMÁS `dirty` por campo (el user TIPEÓ algo) y mostramos el
+  // error solo si tocó Y dejó vacío con intención (touched && dirty),
+  // o si intentó submit (touched={all:true} desde handleSubmitCard).
   const [touched, setTouched] = useState<{
+    holder: boolean
+    number: boolean
+    expiry: boolean
+    cvv: boolean
+  }>({ holder: false, number: false, expiry: false, cvv: false })
+  const [dirty, setDirty] = useState<{
     holder: boolean
     number: boolean
     expiry: boolean
@@ -122,6 +136,12 @@ export function CheckoutModal({
       setCvv('')
       setEvidenceFile(null)
       setTouched({
+        holder: false,
+        number: false,
+        expiry: false,
+        cvv: false,
+      })
+      setDirty({
         holder: false,
         number: false,
         expiry: false,
@@ -198,16 +218,13 @@ export function CheckoutModal({
 
   async function handleSubmitCard() {
     if (!cardValid) {
-      // Fix V2-POS-14: si el user clickea "Pagar" sin haber blurreado
-      // los campos vacíos, marcar todos como touched para que se vean
-      // los errores en vez de quedarse con el botón disabled sin
-      // explicación.
-      setTouched({
-        holder: true,
-        number: true,
-        expiry: true,
-        cvv: true,
-      })
+      // Fix V2-POS-14 + V3-POS-06: si el user clickea "Pagar" sin
+      // datos válidos, forzamos touched Y dirty en TODOS para revelar
+      // los errores (el touched solo no alcanza ahora porque pedimos
+      // touched && dirty para mostrar error in-line — pero el intento
+      // de submit es señal explícita de "ya quiero ver qué falta").
+      setTouched({ holder: true, number: true, expiry: true, cvv: true })
+      setDirty({ holder: true, number: true, expiry: true, cvv: true })
       return
     }
     setStatus('processing')
@@ -379,25 +396,31 @@ export function CheckoutModal({
                       aparece un mensaje específico debajo. */}
                   <FieldRow
                     label="Nombre del titular"
-                    error={touched.holder ? fieldErrors.holder : null}
+                    error={
+                      touched.holder && dirty.holder ? fieldErrors.holder : null
+                    }
                   >
                     {(errorId) => (
                       <input
                         type="text"
                         value={holder}
-                        onChange={(e) => setHolder(e.target.value)}
+                        onChange={(e) => {
+                          setHolder(e.target.value)
+                          if (!dirty.holder)
+                            setDirty((d) => ({ ...d, holder: true }))
+                        }}
                         onBlur={() =>
                           setTouched((t) => ({ ...t, holder: true }))
                         }
                         placeholder="Como figura en la tarjeta"
                         autoComplete="cc-name"
                         aria-invalid={
-                          touched.holder && fieldErrors.holder !== null
+                          touched.holder && dirty.holder && fieldErrors.holder !== null
                         }
                         aria-describedby={errorId}
                         className={cn(
                           'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm text-navy-500 focus:outline-none focus:ring-2',
-                          touched.holder && fieldErrors.holder
+                          touched.holder && dirty.holder && fieldErrors.holder
                             ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                             : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                         )}
@@ -406,15 +429,19 @@ export function CheckoutModal({
                   </FieldRow>
                   <FieldRow
                     label="Número de tarjeta"
-                    error={touched.number ? fieldErrors.number : null}
+                    error={
+                      touched.number && dirty.number ? fieldErrors.number : null
+                    }
                   >
                     {(errorId) => (
                       <input
                         type="text"
                         value={number}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setNumber(formatCardNumber(e.target.value))
-                        }
+                          if (!dirty.number)
+                            setDirty((d) => ({ ...d, number: true }))
+                        }}
                         onBlur={() =>
                           setTouched((t) => ({ ...t, number: true }))
                         }
@@ -422,12 +449,12 @@ export function CheckoutModal({
                         autoComplete="cc-number"
                         inputMode="numeric"
                         aria-invalid={
-                          touched.number && fieldErrors.number !== null
+                          touched.number && dirty.number && fieldErrors.number !== null
                         }
                         aria-describedby={errorId}
                         className={cn(
                           'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                          touched.number && fieldErrors.number
+                          touched.number && dirty.number && fieldErrors.number
                             ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                             : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                         )}
@@ -437,15 +464,21 @@ export function CheckoutModal({
                   <div className="grid grid-cols-2 gap-3">
                     <FieldRow
                       label="Vencimiento"
-                      error={touched.expiry ? fieldErrors.expiry : null}
+                      error={
+                        touched.expiry && dirty.expiry
+                          ? fieldErrors.expiry
+                          : null
+                      }
                     >
                       {(errorId) => (
                         <input
                           type="text"
                           value={expiry}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setExpiry(formatExpiry(e.target.value))
-                          }
+                            if (!dirty.expiry)
+                              setDirty((d) => ({ ...d, expiry: true }))
+                          }}
                           onBlur={() =>
                             setTouched((t) => ({ ...t, expiry: true }))
                           }
@@ -453,12 +486,12 @@ export function CheckoutModal({
                           autoComplete="cc-exp"
                           inputMode="numeric"
                           aria-invalid={
-                            touched.expiry && fieldErrors.expiry !== null
+                            touched.expiry && dirty.expiry && fieldErrors.expiry !== null
                           }
                           aria-describedby={errorId}
                           className={cn(
                             'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                            touched.expiry && fieldErrors.expiry
+                            touched.expiry && dirty.expiry && fieldErrors.expiry
                               ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                               : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                           )}
@@ -467,15 +500,19 @@ export function CheckoutModal({
                     </FieldRow>
                     <FieldRow
                       label="CVV"
-                      error={touched.cvv ? fieldErrors.cvv : null}
+                      error={
+                        touched.cvv && dirty.cvv ? fieldErrors.cvv : null
+                      }
                     >
                       {(errorId) => (
                         <input
                           type="text"
                           value={cvv}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
-                          }
+                            if (!dirty.cvv)
+                              setDirty((d) => ({ ...d, cvv: true }))
+                          }}
                           onBlur={() =>
                             setTouched((t) => ({ ...t, cvv: true }))
                           }
@@ -483,12 +520,12 @@ export function CheckoutModal({
                           autoComplete="cc-csc"
                           inputMode="numeric"
                           aria-invalid={
-                            touched.cvv && fieldErrors.cvv !== null
+                            touched.cvv && dirty.cvv && fieldErrors.cvv !== null
                           }
                           aria-describedby={errorId}
                           className={cn(
                             'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                            touched.cvv && fieldErrors.cvv
+                            touched.cvv && dirty.cvv && fieldErrors.cvv
                               ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                               : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                           )}
