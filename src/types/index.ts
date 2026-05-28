@@ -35,6 +35,19 @@ export interface Author {
   email?: string
   certificationsCount: number
   joinedAt: string
+  /**
+   * Pueblo / comunidad de origen — autodeclarado por el autor o por
+   * la comunidad. NO se infiere por keyword (la identidad cultural es
+   * soberanía comunitaria, no algoritmo). Cuando falta, la UI dice
+   * "Por confirmar con la comunidad".
+   */
+  community?: string
+  /**
+   * Lenguas vinculadas al saber/práctica del autor. Mismo principio
+   * que `community` — solo se muestran si vienen del modelo. Lista
+   * abierta porque un solo autor puede trabajar con varias lenguas.
+   */
+  languages?: string[]
 }
 
 export interface Certification {

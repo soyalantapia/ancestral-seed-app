@@ -22,6 +22,11 @@ import type {
 
 const PLACEHOLDER = '__placeholder__'
 
+// `community` y `languages` son AUTODECLARADOS por cada autor en
+// coordinación con su comunidad — NO inferimos por keyword (la
+// identidad cultural es soberanía comunitaria). Cuando el dato no está
+// confirmado por la persona, lo dejamos vacío y la UI lo señala como
+// "Por confirmar con la comunidad".
 export const mockAuthors: Author[] = [
   {
     id: 'a-camila',
@@ -34,6 +39,11 @@ export const mockAuthors: Author[] = [
     email: 'camila.montes@ancestralseed.io',
     certificationsCount: 12,
     joinedAt: '2024-03-12',
+    // Trabaja "en diálogo con" — referencia ancestral, no constituida.
+    // En el formulario marcaría categoría "tradicional", pero no se
+    // autoidentifica como miembro de los pueblos de la Sierra Nevada.
+    community: 'En diálogo con pueblos Kogi · Arhuaco · Wiwa',
+    languages: ['Español'],
   },
   {
     id: 'a-belen',
@@ -46,6 +56,10 @@ export const mockAuthors: Author[] = [
     email: 'maria.baulo@ancestralseed.io',
     certificationsCount: 1,
     joinedAt: '2025-08-01',
+    // Investigadora sin afiliación comunitaria declarada — categoría
+    // "Inspiración cultural" del Reglamento 2.1.1.
+    community: undefined,
+    languages: ['Español'],
   },
   {
     id: 'a-flor',
@@ -58,6 +72,9 @@ export const mockAuthors: Author[] = [
     email: 'flor.imbacuan@ancestralseed.io',
     certificationsCount: 1,
     joinedAt: '2024-11-15',
+    // Pueblo Pasto — comunidad constituida y autoidentificada.
+    community: 'Pueblo Pasto',
+    languages: ['Español', 'Awapít'],
   },
   {
     id: 'a-eco',
@@ -70,6 +87,11 @@ export const mockAuthors: Author[] = [
     email: 'contacto@ecodestinos.co',
     certificationsCount: 1,
     joinedAt: '2024-05-02',
+    // Operador de turismo — trabaja con varias comunidades sin
+    // pertenecer a una específica. Por confirmar a futuro qué alianzas
+    // declaran cada una.
+    community: undefined,
+    languages: undefined,
   },
 ]
 

@@ -824,15 +824,28 @@ function TerritorioSection({
               label="Comunidad"
               value={region || country || 'Sin especificar'}
             />
+            {/* Fix SA2 (#PUB-19, auditoría UX): antes estos dos campos
+                venían de inferPueblo / inferLenguas que adivinaban por
+                substring de location. La identidad cultural es soberanía
+                comunitaria, no algoritmo. Ahora SOLO se muestra lo que
+                viene declarado en el modelo Author. Si falta, el copy es
+                explícito: "Por confirmar con la comunidad" en vez de
+                inventar un valor. */}
             <TerritorioDataRow
               icon={Users}
               label="Pueblo originario"
-              value={inferPueblo(country, region)}
+              value={author.community ?? 'Por confirmar con la comunidad'}
+              pending={!author.community}
             />
             <TerritorioDataRow
               icon={Languages}
               label="Lenguas vinculadas"
-              value={inferLenguas(country, region)}
+              value={
+                author.languages && author.languages.length > 0
+                  ? author.languages.join(' · ')
+                  : 'Por confirmar con la comunidad'
+              }
+              pending={!author.languages || author.languages.length === 0}
             />
             <TerritorioDataRow
               icon={Globe2}
@@ -860,50 +873,47 @@ function TerritorioDataRow({
   icon: Icon,
   label,
   value,
+  pending = false,
 }: {
   icon: typeof MapPin
   label: string
   value: string
+  /**
+   * Si el dato falta en el modelo Author, marcamos visualmente la
+   * fila como "pendiente" (italic + color suave) para que el visitante
+   * entienda que es info por confirmar, no un valor real.
+   */
+  pending?: boolean
 }) {
   return (
     <div className="flex items-start gap-3 border-b border-neutral-200 pb-4 last:border-0 last:pb-0">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
+      <span
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+          pending
+            ? 'bg-neutral-200 text-navy-300'
+            : 'bg-gold-100 text-gold-700',
+        )}
+      >
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </span>
       <div>
         <p className="text-[11px] font-medium uppercase tracking-widest text-navy-300">
           {label}
         </p>
-        <p className="mt-0.5 text-base font-bold text-navy-500">{value}</p>
+        <p
+          className={cn(
+            'mt-0.5 text-base',
+            pending
+              ? 'font-medium italic text-navy-300'
+              : 'font-bold text-navy-500',
+          )}
+        >
+          {value}
+        </p>
       </div>
     </div>
   )
-}
-
-function inferPueblo(country?: string, region?: string): string {
-  // Heurística simple por región conocida; en futuro vendrá del backend
-  if (region?.includes('Sierra Nevada')) return 'Kogi · Arhuaco · Wiwa'
-  if (region?.includes('Nariño')) return 'Pueblo Pasto'
-  if (region?.includes('Caribe')) return 'Wayuu · Zenú'
-  if (region?.includes('Salta') || region?.includes('Jujuy'))
-    return 'Kolla · Diaguita'
-  if (region?.includes('Cusco')) return 'Quechua'
-  if (region?.includes('Oaxaca')) return 'Zapoteco · Mixteco'
-  if (country === 'Colombia') return 'Diverso (Andino · Caribe)'
-  if (country === 'Argentina') return 'Diverso (Kolla · Mapuche · Guaraní)'
-  if (country === 'México' || country === 'Mexico') return 'Diverso (Maya · Náhuatl)'
-  if (country === 'Perú' || country === 'Peru') return 'Quechua · Aymara'
-  return 'En documentación'
-}
-
-function inferLenguas(country?: string, region?: string): string {
-  if (region?.includes('Sierra Nevada')) return 'Kogui · Iku · Damana'
-  if (region?.includes('Nariño')) return 'Awapít · Quechua sureño'
-  if (country === 'Perú' || country === 'Peru') return 'Español · Quechua · Aymara'
-  if (country === 'Bolivia') return 'Español · Quechua · Aymara · Guaraní'
-  if (country === 'México' || country === 'Mexico')
-    return 'Español · Náhuatl · Maya'
-  return 'Español · Lenguas originarias locales'
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
