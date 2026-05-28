@@ -32,17 +32,19 @@ import { cn } from '@/lib/utils'
 export default function Home() {
   return (
     <>
-      <PageMeta
-        description="Validamos la autenticidad de productos y saberes originarios mediante certificación cultural, auditoría y tecnología blockchain. Encontrá artesanos y comunidades certificados en Latinoamérica."
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Organization',
-          name: 'Ancestral Seed',
-          description:
-            'Plataforma de certificación digital de productos y saberes ancestrales.',
-          url: 'https://soyalantapia.github.io/ancestral-seed-app/',
-        }}
-      />
+      {/*
+        Fix V3-PUB-03 (auditoría v3): antes Home emitía un JSON-LD
+        Organization slim (solo name/description/url) además del
+        completo en index.html (con address, sameAs, email, phone).
+        React-helmet inyectaba ambos → Google veía dos schemas
+        conflictivos de la misma entidad y podía priorizar el slim
+        que NO tenía `sameAs` → degradaba la señal de autenticidad
+        que V2-PUB-08 quería agregar.
+
+        Ahora dejamos SOLO el `index.html` como fuente de Organization
+        (más completo) y desde Home no inyectamos JSON-LD extra.
+      */}
+      <PageMeta description="Validamos la autenticidad de productos y saberes originarios mediante certificación cultural, auditoría y tecnología blockchain. Encontrá artesanos y comunidades certificados en Latinoamérica." />
       <Hero />
       <LandingNav />
       <Pillars />

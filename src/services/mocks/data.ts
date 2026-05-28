@@ -26,21 +26,49 @@ const PLACEHOLDER = '__placeholder__'
  * Fix V2-POS-01 (auditoría v2): el mock estático tenía history.at
  * fijos en febrero–abril 2026, lo que hacía que el bloque
  * "Lo nuevo desde tu última visita" del DashboardHome se vea VACÍO
- * en cualquier demo posterior a esas fechas (el feature funcionaba
- * en código, pero nunca se renderizaba). Estos helpers generan
- * timestamps relativos a `Date.now()` para que SIEMPRE haya algún
- * evento "nuevo" cuando se abre el dashboard por primera vez.
+ * en cualquier demo posterior a esas fechas. Estos helpers generan
+ * timestamps relativos a `Date.now()`.
  *
- * Se llama una sola vez al cargar el módulo. Si el usuario refresca
- * y vuelve a entrar dentro de la misma sesión de browser, los
- * timestamps quedan idénticos — y como markVisited corre al
- * unmount, la próxima entrada verá esos eventos como "nuevos".
+ * Fix V3-POS-15 (auditoría v3): antes los helpers se llamaban
+ * INLINE en el array de history → se evaluaban UNA SOLA VEZ al
+ * cargar el módulo. Si el reviewer abría el demo lunes y volvía
+ * miércoles sin recargar la pestaña, h-008 seguía diciendo "hace 8h"
+ * cuando eran 56h. Ahora los exponemos como `daysAgo`/`hoursAgo` PERO
+ * el array de history usa el patrón `get at()` (getter) — cada
+ * lectura recalcula el timestamp contra el `Date.now()` actual.
  */
-function hoursAgo(h: number): string {
+// Helpers internos para el `relativeEvent` de abajo. Se mantienen
+// como funciones nombradas (no inline) porque el módulo los puede
+// reusar si futuro mock necesita un timestamp ISO una sola vez al
+// cargar (en vez de evaluarse en cada lectura como el `relativeEvent`).
+function _hoursAgo(h: number): string {
   return new Date(Date.now() - h * 60 * 60 * 1000).toISOString()
 }
-function daysAgo(d: number): string {
+function _daysAgo(d: number): string {
   return new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString()
+}
+void _hoursAgo
+void _daysAgo
+
+/**
+ * Helper para definir un history event "relativo" cuya propiedad `at`
+ * se recalcula en cada lectura. Pensado para los 3 events más recientes
+ * del mock — el resto sigue con strings ISO fijos porque representan
+ * eventos históricos reales del demo (creación, prediagnóstico, etc).
+ */
+function relativeEvent<T extends { id: string; kind: string }>(
+  base: T & { title: string; description?: string; actor: string },
+  offset: { days?: number; hours?: number },
+): T & { title: string; description?: string; actor: string; readonly at: string } {
+  return {
+    ...base,
+    get at(): string {
+      const ms =
+        (offset.days ?? 0) * 24 * 60 * 60 * 1000 +
+        (offset.hours ?? 0) * 60 * 60 * 1000
+      return new Date(Date.now() - ms).toISOString()
+    },
+  }
 }
 
 // `community` y `languages` son AUTODECLARADOS por cada autor en
@@ -418,9 +446,14 @@ export const mockCertificationRequests: CertificationRequest[] = [
       // Fix V2-POS-01: eventos relativos a "hoy" para que el bloque
       // "Lo nuevo desde tu última visita" del DashboardHome SIEMPRE
       // tenga algo que mostrar en demo, sin importar la fecha.
-      { id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: 'Lic. Juan Pérez te respondió sobre los hilos de plata', actor: 'Auditor', at: daysAgo(3) },
-      { id: 'h-007', kind: 'evidence_uploaded', title: 'Foto adicional del proceso', description: 'detalle-soldadura.jpg', actor: 'Tú', at: daysAgo(1) },
-      { id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Auditor', at: hoursAgo(8) },
+      //
+      // Fix V3-POS-15 (auditoría v3): usamos `relativeEvent` con
+      // getter — el `at` se recalcula en cada lectura contra el
+      // `Date.now()` actual, no contra el momento de carga del módulo.
+      // Soporta sesiones largas del demo sin reload.
+      relativeEvent({ id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: 'Lic. Juan Pérez te respondió sobre los hilos de plata', actor: 'Auditor' }, { days: 3 }),
+      relativeEvent({ id: 'h-007', kind: 'evidence_uploaded', title: 'Foto adicional del proceso', description: 'detalle-soldadura.jpg', actor: 'Tú' }, { days: 1 }),
+      relativeEvent({ id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Auditor' }, { hours: 8 }),
     ],
     threads: {
       'm-001': [

@@ -836,6 +836,7 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
    */
   const coverOverride = useCoverByRequestStore((s) => s.overrides[request.id])
   const setCover = useCoverByRequestStore((s) => s.setCover)
+  const clearIfCover = useCoverByRequestStore((s) => s.clearIfCover)
   const firstImageId = items.find((it) => it.kind === 'image')?.id
   const currentCoverId = coverOverride ?? firstImageId ?? null
   /**
@@ -1118,6 +1119,18 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                         const removedIndex = groupItems.findIndex(
                           (x) => x.id === it.id,
                         )
+                        // Fix V3-POS-04 (auditoría v3): si la imagen
+                        // borrada era la portada, limpiar el override
+                        // del store ANTES del filter — sino queda un
+                        // id huérfano y el badge desaparece de TODAS
+                        // las imágenes. Si el user Deshace, el cover
+                        // queda en el "firstImageId" default (decisión
+                        // razonable: era la portada por inferencia
+                        // antes de marcar override).
+                        const wasCover = it.id === coverOverride
+                        if (wasCover) {
+                          clearIfCover(request.id, it.id)
+                        }
                         setItems((prev) =>
                           prev.filter((x) => x.id !== it.id),
                         )
@@ -1138,6 +1151,11 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                                 next.splice(targetIndex, 0, removed)
                                 return next
                               })
+                              // Si el item deshecho era cover, re-setear
+                              // el override para que el badge vuelva.
+                              if (wasCover) {
+                                setCover(request.id, removed.id)
+                              }
                             },
                           },
                         })

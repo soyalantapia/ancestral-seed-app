@@ -147,13 +147,38 @@ export default function TutorCertificationDetail() {
   const cover = COVER_BY_CERT[cert.id] ?? '/cards/card-filigrana.webp'
   const score = parseScoreNum(cert.scoreLabel)
   const daysToExpiry = daysUntil(cert.expiresAt)
-  const checklistData = getChecklistByCert(cert.id)
+  /**
+   * Fix V3-TUT-06 (auditoría v3): antes la barra de progreso del
+   * checklist en la sidebar leía SIEMPRE del mock estático — el
+   * tutor abría el drawer, marcaba todos los ítems, cerraba el
+   * drawer → la sidebar seguía mostrando "3/12". El fix V2-TUT-20
+   * persistió las mutaciones en `useCertChecklistStore` pero la
+   * sidebar quedó leyendo del mock. Ahora preferimos el store si
+   * tiene datos para ese cert; fallback al mock para la primera
+   * carga (cuando todavía no se hidrató).
+   */
+  const checklistFromStore = useCertChecklistStore(
+    (s) => s.byCert[cert.id],
+  )
+  const checklistData = checklistFromStore ?? getChecklistByCert(cert.id)
   const checklistTotal = checklistData.reduce((a, c) => a + c.items.length, 0)
   const checklistDone = checklistData.reduce(
     (a, c) => a + c.items.filter((i) => i.checked).length,
     0,
   )
-  const notesCount = getInitialNotesByCert(cert.id).length
+  /**
+   * Fix V3-TUT-06 (auditoría v3): mismo principio para el badge de
+   * notas. Antes mostraba el length del mock; ahora del store si está
+   * hidratado (el sentinel `seeded` garantiza que después de la
+   * primera apertura del drawer el store tiene la verdad).
+   */
+  const notesFromStore = useInternalNotesStore((s) =>
+    s.notesFor(certEntityKey(cert.id)),
+  )
+  const notesCount =
+    notesFromStore.length > 0
+      ? notesFromStore.length
+      : getInitialNotesByCert(cert.id).length
 
   return (
     <div className={cn('relative', drawer && 'lg:pr-[640px]')}>
@@ -1032,8 +1057,28 @@ function EvidenciasSection({
                   </p>
                   <button
                     type="button"
-                    onClick={() => { downloadBlob(`${e.name}.txt`, `Archivo: ${e.name}\nTipo: ${e.kind}\nTamaño: ${e.sizeKb ?? '—'} KB\n\n(Placeholder mock — en prod descarga el binario real)`); toast.success(`${e.name} descargado`) }}
-                    aria-label="Descargar"
+                    onClick={() => {
+                      // Fix V3-TUT-08 (auditoría v3): antes la
+                      // descarga producía un `.txt` placeholder
+                      // mientras el resto del producto (acta del
+                      // cert, factura del checkout) ya bajaban PDF
+                      // real. Inconsistencia. Como el binario real
+                      // no existe en mock, ahora ofrecemos preview
+                      // visual: abrimos el thumbUrl en pestaña nueva
+                      // si es imagen, o un toast claro si no hay
+                      // binario disponible. Cuando entre backend,
+                      // este botón pasa a hacer fetch del archivo.
+                      if (e.kind === 'image' && e.thumbUrl) {
+                        const url = `${import.meta.env.BASE_URL}${e.thumbUrl.replace(/^\//, '')}`
+                        window.open(url, '_blank', 'noopener,noreferrer')
+                        toast.success(`${e.name} abierto en pestaña nueva`)
+                      } else {
+                        toast.info(
+                          'Vista previa no disponible en demo · el binario real se sirve desde el backend',
+                        )
+                      }
+                    }}
+                    aria-label="Ver"
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-navy-500 transition-colors hover:bg-white"
                   >
                     <Download className="h-3.5 w-3.5" />
@@ -1066,12 +1111,32 @@ function EvidenciasSection({
                   </div>
                   <button
                     type="button"
-                    onClick={() => { downloadBlob(`${e.name}.txt`, `Archivo: ${e.name}\nTipo: ${e.kind}\nTamaño: ${e.sizeKb ?? '—'} KB\n\n(Placeholder mock — en prod descarga el binario real)`); toast.success(`${e.name} descargado`) }}
-                    aria-label="Descargar"
+                    onClick={() => {
+                      // Fix V3-TUT-08 (auditoría v3): antes la
+                      // descarga producía un `.txt` placeholder
+                      // mientras el resto del producto (acta del
+                      // cert, factura del checkout) ya bajaban PDF
+                      // real. Inconsistencia. Como el binario real
+                      // no existe en mock, ahora ofrecemos preview
+                      // visual: abrimos el thumbUrl en pestaña nueva
+                      // si es imagen, o un toast claro si no hay
+                      // binario disponible. Cuando entre backend,
+                      // este botón pasa a hacer fetch del archivo.
+                      if (e.kind === 'image' && e.thumbUrl) {
+                        const url = `${import.meta.env.BASE_URL}${e.thumbUrl.replace(/^\//, '')}`
+                        window.open(url, '_blank', 'noopener,noreferrer')
+                        toast.success(`${e.name} abierto en pestaña nueva`)
+                      } else {
+                        toast.info(
+                          'Vista previa no disponible en demo · el binario real se sirve desde el backend',
+                        )
+                      }
+                    }}
+                    aria-label="Ver"
                     className="inline-flex h-8 items-center gap-1 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                   >
                     <Download className="h-3 w-3" />
-                    PDF
+                    Ver
                   </button>
                 </li>
               )
@@ -1427,20 +1492,29 @@ function NotesDrawer({
   const addNoteToStore = useInternalNotesStore((s) => s.addNote)
   const updateNoteInStore = useInternalNotesStore((s) => s.updateNote)
   const removeNoteFromStore = useInternalNotesStore((s) => s.removeNote)
+  const markSeeded = useInternalNotesStore((s) => s.markSeeded)
+  const isSeeded = useInternalNotesStore((s) => s.isSeeded)
 
   useEffect(() => {
-    // Seed hidratación una sola vez. Sin esto el cert emitido del demo
-    // aparece sin las notas iniciales del antropólogo y el reviewer no
-    // ve el flujo trabajado.
-    if (notes.length === 0) {
+    // Fix V3-TUT-02 (auditoría v3): antes la condición era
+    // `if (notes.length === 0)` — pero si el tutor borraba todas las
+    // notas y reabría el drawer, ese check era true otra vez y los
+    // seeds volvían a aparecer como zombies (con timestamps "ahora",
+    // no los del seed original). Ahora usamos un sentinel persistido
+    // por entityKey en el store que marca "ya hidraté esto, no más".
+    const key = certEntityKey(certId)
+    if (!isSeeded(key)) {
       for (const seed of getInitialNotesByCert(certId)) {
         addNoteToStore({
-          entityKey: certEntityKey(certId),
+          entityKey: key,
           body: seed.body,
           authorName: seed.authorName,
           authorInitials: seed.authorInitials,
+          // Preservar el timestamp original del seed (antes se pisaba)
+          at: seed.at,
         })
       }
+      markSeeded(key)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [certId])

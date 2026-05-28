@@ -25,12 +25,12 @@ import {
   mockPendingSignatures,
   mockTutor,
   mockTutorAgenda,
-  mockTutorCases,
   mockTutorMetrics,
 } from '@/services/mocks/data'
 import type { ApprovalSignature, TutorTask, TutorTaskKind } from '@/types'
 import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/Charts'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
+import { useTutorCasesStore } from '@/store/tutorCases'
 import { useTutorTasksStore } from '@/store/tutorTasks'
 import { cn } from '@/lib/utils'
 
@@ -67,7 +67,18 @@ export default function TutorDashboard() {
   const taskFilter = useTutorTasksStore((s) => s.filter)
   const setTaskFilter = useTutorTasksStore((s) => s.setFilter)
 
-  const cases = mockTutorCases.filter((c) => c.tutorId === mockTutor.id)
+  /**
+   * Fix V3-TUT-01 (auditoría v3): antes leíamos de `mockTutorCases`
+   * estático. El kanban y TutorCaseDetail ya leían del store
+   * `useTutorCasesStore` (fix V2-TUT-03), pero el Dashboard se quedó
+   * en el mock — quedaban TRES fuentes de verdad: mock + store + state
+   * efímero. Resultado: el tutor draguea un caso en el kanban y los
+   * contadores del dashboard ("Tenés N casos en curso") seguían
+   * mostrando los del mock. Ahora también leemos del store y
+   * filtramos por el tutor logueado.
+   */
+  const allCases = useTutorCasesStore((s) => s.cases)
+  const cases = allCases.filter((c) => c.tutorId === mockTutor.id)
   const agenda = mockTutorAgenda
 
   // KPIs derivados

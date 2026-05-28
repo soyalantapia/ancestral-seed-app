@@ -394,9 +394,15 @@ export default function Help() {
                   texto plano — el postulante que quería leer el contexto
                   formal tenía que ir al footer, descargar el PDF y
                   buscar manualmente. Ahora cada cláusula abre el PDF
-                  directo en pestaña nueva. */}
+                  directo en pestaña nueva.
+
+                  Fix V3-PUB-01 (auditoría v3): el href era `/${path}`
+                  que en gh-pages resolvía a /docs/... → 404. El sitio
+                  vive bajo /ancestral-seed-app/ así que necesita
+                  BASE_URL. Footer.tsx y CertificationDetail.tsx ya lo
+                  hacían bien — solo este lugar se olvidó. */}
               <a
-                href={`/${OFFICIAL_DOCS.reglamentoMarca.path}`}
+                href={`${import.meta.env.BASE_URL}${OFFICIAL_DOCS.reglamentoMarca.path}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 inline-block text-[10px] font-medium uppercase tracking-widest text-navy-300 underline-offset-2 hover:text-gold-700 hover:underline"
@@ -616,12 +622,25 @@ function ContactSupportModal({ onClose }: { onClose: () => void }) {
  */
 function GlossarySection() {
   const [query, setQuery] = useState('')
-  const normalized = query.trim().toLowerCase()
+  /**
+   * Fix V3-PUB-06 (auditoría v3): antes el filter no normalizaba
+   * acentos — buscar "auditoria" (sin tilde) NO matcheaba "auditoría"
+   * (con tilde) que aparece en varios términos. Fatal en un glosario
+   * en español, donde tipear sin acentos es lo más común en mobile.
+   * Ahora normalizamos ambos lados con NFD + strip de diacríticos
+   * antes de comparar.
+   */
+  const stripAccents = (s: string): string =>
+    s
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+  const normalized = stripAccents(query.trim())
   const filtered = normalized
     ? REGLAMENTO_GLOSSARY.filter(
         (g) =>
-          g.term.toLowerCase().includes(normalized) ||
-          g.body.toLowerCase().includes(normalized),
+          stripAccents(g.term).includes(normalized) ||
+          stripAccents(g.body).includes(normalized),
       )
     : REGLAMENTO_GLOSSARY
   return (

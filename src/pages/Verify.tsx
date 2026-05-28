@@ -578,16 +578,49 @@ function QrModal({
                     frustración. Ahora damos la única salida que SÍ
                     funciona (hash a mano) + tip específico para iOS. */}
                 <p className="mt-1 text-xs leading-relaxed text-navy-300">
-                  La lectura de QR requiere Chrome, Edge u Opera 83+.
-                  Como tampoco vas a poder subir foto, ingresá el hash
-                  del certificado a mano (lo encontrás bajo el QR).
+                  {/* Fix V3-PUB-14 (auditoría v3): el copy decía
+                      "tampoco vas a poder subir foto" — pero el user
+                      NUNCA vio el botón "Subir foto" (lo ocultamos
+                      antes de que llegue acá). El "tampoco" suponía
+                      una acción frustrada que no existió. Reformulado. */}
+                  La lectura de QR (cámara y foto) requiere la API
+                  BarcodeDetector. Ingresá el hash del certificado a
+                  mano (lo encontrás bajo el QR).
                 </p>
-                {/^iPhone|iPad|iPod/.test(
-                  typeof navigator !== 'undefined' ? navigator.platform : '',
-                ) && (
-                  <p className="mt-2 inline-flex max-w-[20rem] items-start gap-1.5 rounded-lg bg-info-100 px-2.5 py-1.5 text-[11px] leading-relaxed text-info-400">
-                    Tip iOS: instalá Chrome desde la App Store y reabrí
-                    este link — el escaneo funciona ahí.
+                {/*
+                  Fix V3-PUB-04 (auditoría v3): la regex anterior
+                  chequeaba `navigator.platform === 'iPad'` — pero
+                  iPadOS 13+ reporta "MacIntel" (Apple lo cambió en
+                  2019). Resultado: el tip nunca aparecía en iPads
+                  modernos. Ahora combinamos userAgent (cubre iPhone
+                  / iPod) con la heurística MacIntel+touch (cubre
+                  iPads modernos).
+
+                  Fix V3-PUB-05 (auditoría v3): el tip decía "instalá
+                  Chrome para iOS" — pero Chrome iOS también usa
+                  WebKit por policy de App Store, así que TAMPOCO
+                  tiene BarcodeDetector. El tip era información falsa
+                  que llevaba al user a un dead-end. Ahora ofrecemos
+                  la única salida real (hash a mano) sin recomendar
+                  acciones que no funcionan.
+                */}
+                {(() => {
+                  if (typeof navigator === 'undefined') return false
+                  const ua = navigator.userAgent || ''
+                  const platform = navigator.platform || ''
+                  const isIosLike =
+                    /iPhone|iPad|iPod/.test(ua) ||
+                    (platform === 'MacIntel' &&
+                      typeof navigator.maxTouchPoints === 'number' &&
+                      navigator.maxTouchPoints > 1)
+                  return isIosLike
+                })() && (
+                  <p className="mt-2 inline-flex max-w-[22rem] items-start gap-1.5 rounded-lg bg-info-100 px-2.5 py-1.5 text-[11px] leading-relaxed text-info-400">
+                    Estás en iOS — el escaneo de QR no está disponible
+                    en ningún navegador (Safari, Chrome y Firefox para
+                    iOS comparten WebKit y no soportan la API). Pegá
+                    el hash a mano o abrí este link desde Android o
+                    desktop.
                   </p>
                 )}
               </>

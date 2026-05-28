@@ -255,24 +255,50 @@ export default function DashboardHome() {
   }, [lastVisitSnapshot, requests])
 
   /**
-   * Fix V2-POS-01 (auditoría v2): antes markVisited() corría al MONTAR.
-   * El snapshot ya quedaba capturado en el useState lazy initializer,
-   * pero esto creaba dos problemas en demo:
+   * Fix V2-POS-01 + V3-POS-02 + V3-POS-03 (auditoría v2 + v3):
    *
-   * 1. En Strict Mode (React 19 dev) el effect corre dos veces y
-   *    pisaba el lastVisit ANTES de leerlo en el effect que computa
-   *    los eventos nuevos.
-   * 2. Si el usuario abría y cerraba el dashboard sin recargar la
-   *    página entera, el snapshot también se actualizaba al instante,
-   *    haciendo que la próxima entrada nunca tuviera "nuevo".
-   *
-   * Ahora corre al DESMONTAR (cleanup function). El snapshot inicial
-   * sirve para esta sesión; el next-visit pointer queda anclado al
-   * timestamp EN QUE EL USUARIO ABANDONÓ — no al que entró.
+   * Historia del bug:
+   * - v1: markVisited corría al mount → pisaba el snapshot antes de
+   *   leer los eventos.
+   * - v2: lo movimos al cleanup del unmount. Funcionaba SOLO en la
+   *   primera entrada después de un refresh full-page. Cualquier
+   *   navegación intra-dashboard (Camila va a /pagos y vuelve) pisaba
+   *   el snapshot inmediatamente → el bloque "Lo nuevo" quedaba vacío
+   *   el resto de la sesión. Además, en StrictMode (React 19 dev), el
+   *   cleanup doble pisaba el snapshot ya en el primer ciclo.
+   * - v3 (acá): markVisited solo se dispara cuando el usuario
+   *   realmente "deja" la app — tab oculta por >5min, o cierre de
+   *   pestaña. El snapshot del lazy initializer se mantiene durante
+   *   toda la sesión activa.
    */
   useEffect(() => {
-    return () => {
+    if (typeof document === 'undefined') return
+
+    let hiddenSince: number | null = null
+    const IDLE_MS = 5 * 60 * 1000 // 5 min de pestaña oculta = "sesión cerrada"
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        hiddenSince = Date.now()
+      } else if (hiddenSince !== null) {
+        // Volvió a la pestaña — si pasaron >5min, marcamos como
+        // "nueva visita" anclada al momento de salir.
+        if (Date.now() - hiddenSince >= IDLE_MS) {
+          markVisited()
+        }
+        hiddenSince = null
+      }
+    }
+    const onPageHide = () => {
+      // Cierre real de la pestaña — marcamos definitivo.
       markVisited()
+    }
+
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pagehide', onPageHide)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', onPageHide)
     }
   }, [markVisited])
   const firstName = name

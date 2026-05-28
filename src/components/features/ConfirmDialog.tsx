@@ -52,19 +52,39 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null)
 
-  // ESC cancela; Enter confirma. Focus al botón primario al abrir.
+  /**
+   * ESC cancela siempre. Enter confirma SOLO si el foco está en el
+   * botón confirm (no en Cancel o el backdrop).
+   *
+   * Fix V3-TUT-05 + V3-PUB-10 (auditoría v3): antes el listener
+   * global escuchaba Enter sin importar el foco. Si el user tabeaba
+   * al botón "Volver al kanban" (Cancel) y pulsaba Enter pensando
+   * cancelar, el handler global confirmaba — peor aún con
+   * variant="danger" que ejecutaba acciones destructivas (saltar
+   * etapas, restaurar demo) por error. Ahora respetamos el foco.
+   *
+   * Fix V3-PUB-13: capturamos el overflow original del body antes de
+   * setearlo a 'hidden' — al cerrar restauramos el valor previo, no
+   * a '' (que rompía locks anidados de otros modales/drawers).
+   */
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel()
-      if (e.key === 'Enter') onConfirm()
+      if (e.key === 'Enter') {
+        // Solo confirmar si el foco está EN el botón confirm.
+        if (document.activeElement === confirmRef.current) {
+          onConfirm()
+        }
+      }
     }
     document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const t = setTimeout(() => confirmRef.current?.focus(), 50)
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
+      document.body.style.overflow = prevOverflow
       clearTimeout(t)
     }
   }, [open, onConfirm, onCancel])

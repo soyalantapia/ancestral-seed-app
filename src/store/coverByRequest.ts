@@ -19,6 +19,14 @@ interface CoverState {
   setCover: (requestId: string, evidenceId: string) => void
   clearCover: (requestId: string) => void
   getCover: (requestId: string) => string | null
+  /**
+   * Fix V3-POS-04 (auditoría v3): si una imagen marcada como portada
+   * se elimina, hay que limpiar el override del store — sino queda
+   * apuntando a un id huérfano y el badge "★ Portada" desaparece de
+   * todas las imágenes. Esta función centraliza ese caso: si el
+   * evidenceId que se elimina era el override actual, lo limpia.
+   */
+  clearIfCover: (requestId: string, evidenceId: string) => void
 }
 
 export const useCoverByRequestStore = create<CoverState>()(
@@ -36,6 +44,13 @@ export const useCoverByRequestStore = create<CoverState>()(
           return { overrides: next }
         }),
       getCover: (requestId) => get().overrides[requestId] ?? null,
+      clearIfCover: (requestId, evidenceId) =>
+        set((s) => {
+          if (s.overrides[requestId] !== evidenceId) return s
+          const next = { ...s.overrides }
+          delete next[requestId]
+          return { overrides: next }
+        }),
     }),
     { name: 'ancestral-seed-cover-by-request-v1' },
   ),

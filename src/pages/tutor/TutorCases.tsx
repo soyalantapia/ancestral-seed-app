@@ -23,6 +23,7 @@ import {
 } from '@/services/mocks/data'
 import type { CaseRisk, CaseStage, TutorCase } from '@/types'
 import { useTutorCasesStore } from '@/store/tutorCases'
+import { resetDemoStores } from '@/store/resetDemo'
 import { validateCaseAdvance } from '@/lib/caseValidation'
 import { ConfirmDialog } from '@/components/features/ConfirmDialog'
 import { cn } from '@/lib/utils'
@@ -58,7 +59,10 @@ export default function TutorCases() {
   const moveCase = useTutorCasesStore((s) => s.moveCase)
   const addCase = useTutorCasesStore((s) => s.addCase)
   const assignTutor = useTutorCasesStore((s) => s.assignTutor)
-  const resetCases = useTutorCasesStore((s) => s.reset)
+  // Fix V3-TUT-09 (auditoría v3): el reset del demo ahora limpia
+  // TODOS los stores del v2 (notas internas, checklist del cert,
+  // filtro de tareas, covers, lastVisit) — antes solo `tutorCases`.
+  // Ver `resetDemoStores()` para el scope completo.
   /**
    * Fix V2-TUT-14 (auditoría v2): el store ya tenía `reset()` para
    * volver al estado mock, pero no estaba expuesto en la UI. Si un
@@ -713,20 +717,31 @@ export default function TutorCases() {
         />
       )}
 
-      {/* Fix V2-TUT-14: confirm dialog para resetear el kanban */}
+      {/* Fix V2-TUT-14 + V3-TUT-09: confirm dialog para resetear el
+          demo completo (no solo el kanban). El copy ahora aclara el
+          scope ampliado. */}
       <ConfirmDialog
         open={confirmReset}
-        title="Restaurar el kanban"
+        title="Restaurar el demo"
         description={
-          'Vas a descartar todos los movimientos que hiciste en el kanban (drag-and-drop, asignaciones, casos nuevos) y volver al estado original del demo.\n\n¿Confirmás el reset?'
+          'Vas a descartar:\n' +
+          ' · Movimientos del kanban (drag-and-drop, asignaciones, casos nuevos)\n' +
+          ' · Notas internas que agregaste\n' +
+          ' · Checklist y comentarios del cert emitido\n' +
+          ' · Tareas marcadas como hechas y filtros\n' +
+          ' · Portada cambiada en evidencias\n' +
+          ' · Snapshot de "Lo nuevo desde tu última visita"\n\n' +
+          'Tus tours completados, sesión y preferencias se mantienen. ¿Confirmás?'
         }
-        confirmLabel="Sí, restaurar"
+        confirmLabel="Sí, restaurar todo"
         cancelLabel="Cancelar"
         danger
         onConfirm={() => {
-          resetCases()
+          resetDemoStores()
           setConfirmReset(false)
-          toast.success('Kanban restaurado al estado original del demo')
+          toast.success(
+            'Demo restaurado · kanban, notas, checklist, tareas y portadas vuelven al estado original',
+          )
         }}
         onCancel={() => setConfirmReset(false)}
       />
