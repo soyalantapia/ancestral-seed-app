@@ -45,14 +45,22 @@ const iconMap: Record<NotificationKind, typeof Bell> = {
   cert_published: Award,
 }
 
+/**
+ * Fix V2-POS-20 (auditoría v2): el filtro "Avances" agrupaba
+ * `stage_changed` + `cert_published`, pero los badges decían
+ * respectivamente "Estado" y "Certificación" — taxonomía
+ * inconsistente que confundía al user (filtré por "Avances" y veo
+ * dos categorías distintas). Ahora los badges también dicen "Avance"
+ * — diferenciados solo por color (gold = etapa, success = publicado).
+ */
 const labelMap: Record<NotificationKind, { color: string; tag: string }> = {
   audit_proposed: { color: 'bg-info-100 text-info-400', tag: 'Auditoría' },
   audit_accepted: { color: 'bg-success-100 text-success-300', tag: 'Auditoría' },
   evidence_request: { color: 'bg-warning-100 text-warning-400', tag: 'Evidencias' },
-  stage_changed: { color: 'bg-gold-100 text-gold-700', tag: 'Estado' },
+  stage_changed: { color: 'bg-gold-100 text-gold-700', tag: 'Avance' },
   message_received: { color: 'bg-info-100 text-info-400', tag: 'Mensaje' },
   document_uploaded: { color: 'bg-neutral-200 text-navy-500', tag: 'Documento' },
-  cert_published: { color: 'bg-success-100 text-success-300', tag: 'Certificación' },
+  cert_published: { color: 'bg-success-100 text-success-300', tag: 'Avance' },
 }
 
 export default function Notifications() {

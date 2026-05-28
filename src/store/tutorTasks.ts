@@ -68,6 +68,30 @@ export const useTutorTasksStore = create<TutorTasksState>()(
         set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
       reset: () => set({ tasks: mockTutorTasks, filter: 'all' }),
     }),
-    { name: 'ancestral-seed-tutor-tasks-v1' },
+    {
+      name: 'ancestral-seed-tutor-tasks-v2',
+      version: 2,
+      /**
+       * Fix V2-TUT-16 (auditoría v2): antes el initial state se
+       * hidrataba con `mockTutorTasks` solo la primera vez que el
+       * store se creaba en un browser. Si después actualizábamos el
+       * mock (nuevas tareas, deadlines, etc.) los browsers existentes
+       * no veían los cambios — quedaban cacheados con la versión vieja
+       * indefinidamente. Cambiamos el `name` (v2) para invalidar
+       * versiones previas y agregamos `migrate` para futuras
+       * actualizaciones del schema.
+       */
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          // Reset duro a mock cuando subimos versión — pierde el
+          // estado del demo viejo pero gana coherencia con el nuevo mock.
+          return {
+            tasks: mockTutorTasks,
+            filter: 'all',
+          } as TutorTasksState
+        }
+        return persisted as TutorTasksState
+      },
+    },
   ),
 )

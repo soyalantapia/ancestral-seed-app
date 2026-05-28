@@ -22,6 +22,7 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/auth'
 import { mockCertifications } from '@/services/mocks/data'
+import { ConfirmDialog } from '@/components/features/ConfirmDialog'
 import { cn } from '@/lib/utils'
 
 const tabs = ['Mi perfil', 'Mis destacados', 'Mis certificados'] as const
@@ -67,6 +68,9 @@ function slugify(input: string): string {
 
 export default function MyProfile() {
   const [tab, setTab] = useState<Tab>('Mi perfil')
+  // Fix V2-POS-12: parking del destino de tab mientras esperamos la
+  // confirmación del ConfirmDialog (reemplazo del window.confirm).
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null)
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [data, setData] = useState<ProfileData>({
@@ -186,12 +190,14 @@ export default function MyProfile() {
                 // guardar en "Mi perfil", confirmar antes de cambiar
                 // de tab. Antes silenciosamente el state se mantenía
                 // pero el user no sabía si los datos seguían ahí.
+                //
+                // Fix V2-POS-12/V2-TUT-18 (auditoría v2): migrado
+                // de window.confirm() a ConfirmDialog. El state
+                // `pendingTab` parquea el destino mientras esperamos
+                // la confirmación.
                 if (dirty && tab === 'Mi perfil' && t !== 'Mi perfil') {
-                  const ok = window.confirm(
-                    'Tenés cambios sin guardar en tu perfil. ¿Cambiar de tab igual?\n\n' +
-                      'Los cambios siguen disponibles cuando vuelvas a esta tab.',
-                  )
-                  if (!ok) return
+                  setPendingTab(t)
+                  return
                 }
                 setTab(t)
               }}
@@ -425,6 +431,23 @@ export default function MyProfile() {
           </div>
         </motion.div>
       )}
+
+      {/* Fix V2-POS-12: confirm de "tab con cambios sin guardar" */}
+      <ConfirmDialog
+        open={pendingTab !== null}
+        title="Cambios sin guardar"
+        description={
+          'Tenés cambios sin guardar en tu perfil.\n\n' +
+          'Los cambios siguen disponibles cuando vuelvas a esta tab. ¿Cambiar igual?'
+        }
+        confirmLabel="Cambiar de tab"
+        cancelLabel="Seguir editando"
+        onConfirm={() => {
+          if (pendingTab) setTab(pendingTab)
+          setPendingTab(null)
+        }}
+        onCancel={() => setPendingTab(null)}
+      />
     </div>
   )
 }

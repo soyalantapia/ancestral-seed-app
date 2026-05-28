@@ -24,6 +24,7 @@ import {
 import type { CaseRisk, CaseStage, TutorCase } from '@/types'
 import { useTutorCasesStore } from '@/store/tutorCases'
 import { validateCaseAdvance } from '@/lib/caseValidation'
+import { ConfirmDialog } from '@/components/features/ConfirmDialog'
 import { cn } from '@/lib/utils'
 
 function daysInStageFromCase(c: TutorCase): number {
@@ -57,6 +58,16 @@ export default function TutorCases() {
   const moveCase = useTutorCasesStore((s) => s.moveCase)
   const addCase = useTutorCasesStore((s) => s.addCase)
   const assignTutor = useTutorCasesStore((s) => s.assignTutor)
+  const resetCases = useTutorCasesStore((s) => s.reset)
+  /**
+   * Fix V2-TUT-14 (auditoría v2): el store ya tenía `reset()` para
+   * volver al estado mock, pero no estaba expuesto en la UI. Si un
+   * drag dejaba el kanban en estado inconsistente (o el reviewer
+   * quería volver al demo limpio) había que borrar localStorage a mano
+   * desde devtools. Ahora un botón discreto en la barra de filtros lo
+   * resetea, con ConfirmDialog para evitar resets accidentales.
+   */
+  const [confirmReset, setConfirmReset] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [hoverColumn, setHoverColumn] = useState<CaseStage | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -165,6 +176,43 @@ export default function TutorCases() {
     }, 60)
   }
 
+  /**
+   * Fix V2-TUT-06 + V2-TUT-18 (auditoría v2): antes el salto >1
+   * etapa usaba window.confirm() nativo — UI fea, sin a11y, screen
+   * readers no podían anunciar el contexto del prompt. Ahora va por
+   * ConfirmDialog con role=alertdialog y aria-labelledby. El state
+   * `pendingJump` cachea el move solicitado mientras esperamos la
+   * confirmación.
+   */
+  const [pendingJump, setPendingJump] = useState<{
+    target: CaseStage
+    caseId: string
+    productName: string
+    fromLabel: string
+    toLabel: string
+    fromIdx: number
+    toIdx: number
+    jump: number
+  } | null>(null)
+
+  const applyMove = (
+    caseId: string,
+    target: CaseStage,
+    productName: string,
+    fromIdx: number,
+    toIdx: number,
+  ) => {
+    moveCase(caseId, target)
+    toast.success(
+      `${productName} movido a ${STAGES.find((s) => s.id === target)?.label}`,
+    )
+    setLiveAnnouncement(
+      `Caso ${caseId} ${productName} movido de ${STAGES[fromIdx].label} a ${STAGES[toIdx].label}`,
+    )
+    setDraggingId(null)
+    setHoverColumn(null)
+  }
+
   const handleDrop = (target: CaseStage) => {
     if (!draggingId) return
     const moving = cases.find((c) => c.id === draggingId)
@@ -212,31 +260,22 @@ export default function TutorCases() {
     }
 
     // QT5: si pasa la validación pero salta >1 etapa, pedir confirmación
-    // extra (puede ser intencional pero requiere segundo OK).
+    // extra. Ahora vía ConfirmDialog (V2-TUT-06).
     if (jump > 1) {
-      const ok = window.confirm(
-        `Estás saltando ${jump} etapas (de "${STAGES[fromIdx].label}" a "${STAGES[toIdx].label}"). ` +
-          `Esto puede dejar el caso sin auditoría completa. ¿Continuar?`,
-      )
-      if (!ok) {
-        setDraggingId(null)
-        setHoverColumn(null)
-        return
-      }
+      setPendingJump({
+        target,
+        caseId: draggingId,
+        productName: moving.productName,
+        fromLabel: STAGES[fromIdx].label,
+        toLabel: STAGES[toIdx].label,
+        fromIdx,
+        toIdx,
+        jump,
+      })
+      return
     }
 
-    moveCase(draggingId, target)
-    toast.success(
-      `${moving.productName} movido a ${STAGES.find((s) => s.id === target)?.label}`,
-    )
-
-    // QT6: anunciar el movimiento para screen readers
-    setLiveAnnouncement(
-      `Caso ${moving.id} ${moving.productName} movido de ${STAGES[fromIdx].label} a ${STAGES[toIdx].label}`,
-    )
-
-    setDraggingId(null)
-    setHoverColumn(null)
+    applyMove(draggingId, target, moving.productName, fromIdx, toIdx)
   }
 
   return (
@@ -395,6 +434,16 @@ export default function TutorCases() {
         >
           <ArrowUpDown className="h-3.5 w-3.5" />
           Ordenar por
+        </button>
+        {/* Fix V2-TUT-14: reset del kanban accesible desde la UI */}
+        <button
+          type="button"
+          onClick={() => setConfirmReset(true)}
+          title="Restaurar el kanban al estado original del demo"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500"
+        >
+          <X className="h-3.5 w-3.5" />
+          Restaurar demo
         </button>
       </div>
 
@@ -663,6 +712,54 @@ export default function TutorCases() {
           onCreate={handleCreateCase}
         />
       )}
+
+      {/* Fix V2-TUT-14: confirm dialog para resetear el kanban */}
+      <ConfirmDialog
+        open={confirmReset}
+        title="Restaurar el kanban"
+        description={
+          'Vas a descartar todos los movimientos que hiciste en el kanban (drag-and-drop, asignaciones, casos nuevos) y volver al estado original del demo.\n\n¿Confirmás el reset?'
+        }
+        confirmLabel="Sí, restaurar"
+        cancelLabel="Cancelar"
+        danger
+        onConfirm={() => {
+          resetCases()
+          setConfirmReset(false)
+          toast.success('Kanban restaurado al estado original del demo')
+        }}
+        onCancel={() => setConfirmReset(false)}
+      />
+
+      {/* Fix V2-TUT-06 + V2-TUT-18: confirm dialog para salto >1 etapa */}
+      <ConfirmDialog
+        open={pendingJump !== null}
+        title="Saltar etapas del workflow"
+        description={
+          pendingJump
+            ? `Estás saltando ${pendingJump.jump} etapas (de "${pendingJump.fromLabel}" a "${pendingJump.toLabel}"). Esto puede dejar el caso sin auditoría completa intermedia.\n\n¿Confirmás el salto?`
+            : ''
+        }
+        confirmLabel="Sí, saltar etapas"
+        cancelLabel="Volver al kanban"
+        danger
+        onConfirm={() => {
+          if (!pendingJump) return
+          applyMove(
+            pendingJump.caseId,
+            pendingJump.target,
+            pendingJump.productName,
+            pendingJump.fromIdx,
+            pendingJump.toIdx,
+          )
+          setPendingJump(null)
+        }}
+        onCancel={() => {
+          setPendingJump(null)
+          setDraggingId(null)
+          setHoverColumn(null)
+        }}
+      />
     </div>
   )
 }

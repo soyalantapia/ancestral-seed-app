@@ -134,8 +134,6 @@ function hasSignificantData(d: Partial<CertifyFormData>): boolean {
 }
 
 export default function CertifyForm() {
-  // Tour guiado de 4 pasos en primera visita al form
-  useAutoStartTour('certifyForm', 1200)
   const navigate = useNavigate()
   const { data, step, setStep, updateData, reset } = useCertifyFormStore()
   const setSession = useAuthStore((s) => s.setSession)
@@ -162,6 +160,13 @@ export default function CertifyForm() {
   const [showResumeDialog, setShowResumeDialog] = useState<boolean>(() =>
     hasSignificantData(data),
   )
+
+  // Fix V2-POS-11 (auditoría v2): el tour guiado arrancaba 1.2s
+  // después del mount sin saber si había un ResumeOrFreshDialog
+  // arriba. Resultado: el spotlight aparecía DETRÁS del dialog y el
+  // user no entendía qué pasaba. Ahora le pasamos `paused` = open
+  // del dialog para que el tour espere a que se resuelva.
+  useAutoStartTour('certifyForm', 1200, showResumeDialog)
 
   const schema = stepSchemas[step]
   const methods = useForm<Partial<CertifyFormData>>({
@@ -494,12 +499,24 @@ function Stepper({
           </p>
         </div>
         <p className="mt-1 text-base font-bold text-navy-500">{currentLabel}</p>
-        {/* dot indicator row — en mobile cada dot ya visitado también
-            es clickeable */}
-        <ol className="mt-3 flex items-center gap-1.5">
+        {/* Fix V2-POS-18 (auditoría v2): los 7 dots eran barras
+            indistinguibles — el header "Paso N de 7" daba contexto del
+            actual, pero al ver los dots no quedaba claro qué era cada
+            uno. Ahora cada dot:
+              - tiene title= con el label del paso (tooltip nativo)
+              - aria-label descriptivo en TODOS (no solo en los done)
+              - los próximos pasos muestran un punto navy más claro
+                para crear jerarquía visual progresiva. */}
+        <ol
+          className="mt-3 flex items-center gap-1.5"
+          aria-label={`Progreso del formulario: paso ${current + 1} de ${steps.length}`}
+        >
           {steps.map((s, i) => {
             const active = i === current
             const done = i < current
+            const label = `Paso ${i + 1} de ${steps.length}: ${s.title}${
+              done ? ' (completado)' : active ? ' (actual)' : ' (próximo)'
+            }`
             const className = cn(
               'h-1.5 flex-1 rounded-full transition-colors',
               done && 'bg-navy-500',
@@ -511,14 +528,22 @@ function Stepper({
                 <li key={s.id} className="contents">
                   <button
                     type="button"
-                    aria-label={`Volver al paso ${i + 1}: ${s.title}`}
+                    aria-label={`Volver al ${label}`}
+                    title={s.title}
                     onClick={() => onJumpTo(i)}
                     className={cn(className, 'cursor-pointer hover:opacity-80')}
                   />
                 </li>
               )
             }
-            return <li key={s.id} className={className} />
+            return (
+              <li
+                key={s.id}
+                className={className}
+                aria-label={label}
+                title={s.title}
+              />
+            )
           })}
         </ol>
       </div>

@@ -11,7 +11,11 @@ import {
 import { toast } from 'sonner'
 import { useOnboardingStore } from '@/store/onboarding'
 import { useAuthStore } from '@/store/auth'
-import { REGLAMENTO_GLOSSARY, REGLAMENTO_DEADLINES } from '@/lib/copy'
+import {
+  REGLAMENTO_GLOSSARY,
+  REGLAMENTO_DEADLINES,
+  OFFICIAL_DOCS,
+} from '@/lib/copy'
 
 interface Topic {
   id: string
@@ -326,37 +330,15 @@ export default function Help() {
           Términos formales del Reglamento de Marca (cláusula 1.3) que
           el postulante puede necesitar al leer comunicaciones formales
           de AS. Va antes del Footer support para que esté en la
-          jerarquía visual correcta. */}
-      <section className="mt-12">
-        <header className="mb-5 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
-              Vocabulario formal
-            </p>
-            <h2 className="mt-1 text-xl font-bold text-navy-500 md:text-2xl">
-              Glosario del Reglamento
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm text-navy-300">
-              Términos que usamos en comunicaciones formales y en el
-              Reglamento de Marca. Coinciden con el documento oficial
-              descargable desde el footer.
-            </p>
-          </div>
-        </header>
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {REGLAMENTO_GLOSSARY.map((g) => (
-            <li
-              key={g.term}
-              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
-            >
-              <p className="text-sm font-bold text-navy-500">{g.term}</p>
-              <p className="mt-1.5 text-xs leading-relaxed text-navy-300">
-                {g.body}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+          jerarquía visual correcta.
+
+          Fix V2-PUB-05 (auditoría v2): con 8+ términos, encontrar uno
+          específico era tedioso (no había búsqueda). Ahora un input
+          arriba filtra por término o por contenido. Tipear "auditoría"
+          deja solo las cards que matchean. */}
+      <GlossarySection />
+
+      {/* Plazos del Reglamento — SM6 fix (movido a su propia sección abajo) */}
 
       {/* Plazos clave del Reglamento — SM6 fix */}
       <section className="mt-10 rounded-3xl border border-gold-300/50 bg-gradient-to-br from-gold-100/40 to-white p-6 shadow-sm md:p-8">
@@ -408,9 +390,19 @@ export default function Help() {
               <p className="mt-1 text-xs leading-snug text-navy-500">
                 {p.label}
               </p>
-              <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-navy-300">
-                {p.source}
-              </p>
+              {/* Fix V2-PUB-06 (auditoría v2): antes "Cláusula 1.5" era
+                  texto plano — el postulante que quería leer el contexto
+                  formal tenía que ir al footer, descargar el PDF y
+                  buscar manualmente. Ahora cada cláusula abre el PDF
+                  directo en pestaña nueva. */}
+              <a
+                href={`/${OFFICIAL_DOCS.reglamentoMarca.path}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-[10px] font-medium uppercase tracking-widest text-navy-300 underline-offset-2 hover:text-gold-700 hover:underline"
+              >
+                {p.source} ↗
+              </a>
             </div>
           ))}
         </dl>
@@ -611,5 +603,89 @@ function ContactSupportModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * Fix V2-PUB-05 (auditoría v2): glosario buscable.
+ *
+ * Antes: 8 cards en grid; el visitante buscando "auditoría" tenía
+ * que scrollear hasta encontrarla. Ahora un input de filtro arriba
+ * matchea por término o por cuerpo (case-insensitive). Si no hay
+ * matches, mensaje suave en vez de cards vacías.
+ */
+function GlossarySection() {
+  const [query, setQuery] = useState('')
+  const normalized = query.trim().toLowerCase()
+  const filtered = normalized
+    ? REGLAMENTO_GLOSSARY.filter(
+        (g) =>
+          g.term.toLowerCase().includes(normalized) ||
+          g.body.toLowerCase().includes(normalized),
+      )
+    : REGLAMENTO_GLOSSARY
+  return (
+    <section className="mt-12">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gold-700">
+            Vocabulario formal
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-navy-500 md:text-2xl">
+            Glosario del Reglamento
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-navy-300">
+            Términos que usamos en comunicaciones formales y en el
+            Reglamento de Marca. Coinciden con el documento oficial
+            descargable desde el footer.
+          </p>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar en el glosario…"
+            aria-label="Buscar en el glosario del Reglamento"
+            className="h-10 w-full rounded-full border border-neutral-300 bg-white pl-9 pr-9 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-navy-300 hover:bg-neutral-200 hover:text-navy-500"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </header>
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-8 text-center">
+          <p className="text-sm font-bold text-navy-500">
+            Sin resultados para "{query}"
+          </p>
+          <p className="mt-1 text-xs text-navy-300">
+            Probá con otro término o consultá el Reglamento completo.
+          </p>
+        </div>
+      ) : (
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {filtered.map((g) => (
+            <li
+              key={g.term}
+              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
+            >
+              <p className="text-sm font-bold text-navy-500">{g.term}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-navy-300">
+                {g.body}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }

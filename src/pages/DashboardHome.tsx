@@ -32,6 +32,7 @@ import {
   mockCertificationRequests,
 } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
+import { ConfirmDialog } from '@/components/features/ConfirmDialog'
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import { useLastVisitStore } from '@/store/lastVisit'
 import type { CertificationRequest, RequestStage, TutorMessage } from '@/types'
@@ -1071,6 +1072,11 @@ function TutorMessageCard({
     `Hola ${message.authorName.split(' ')[0]}, te escribo desde Ancestral Seed por mi solicitud.`,
   )
   const whatsappUrl = `https://wa.me/${tutorPhone}?text=${waText}`
+  // Fix V2-POS-12 (auditoría v2): antes el handler usaba window.confirm
+  // sincrono — UI fea, rompía la estética. Ahora el botón abre un
+  // ConfirmDialog y desde ahí elegimos abrir WhatsApp o el thread.
+  const [showWaConfirm, setShowWaConfirm] = useState(false)
+  const isDemoMode = import.meta.env.VITE_USE_MSW !== 'false'
   return (
     <section className="rounded-3xl border border-info-300/40 bg-info-100/40 p-5 shadow-sm md:p-6">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-info-400">
@@ -1097,30 +1103,31 @@ function TutorMessageCard({
         {/* Fix SM3 (#POS-09, auditoría UX): antes el botón WhatsApp abría
             wa.me/5491145678901 (número mock) — el user llegaba a un chat
             con un número que no existe. Ahora confirmamos antes y, si es
-            mock, sugerimos responder dentro de la plataforma. */}
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            if (import.meta.env.VITE_USE_MSW !== 'false') {
-              // En modo demo, advertir antes de abrir
-              const ok = window.confirm(
-                'Modo demo: el número de WhatsApp del tutor es de prueba. ' +
-                  '¿Querés abrirlo igual o preferís responder dentro de la plataforma?\n\n' +
-                  'OK = abrir WhatsApp · Cancelar = abrir el thread interno',
-              )
-              if (!ok) {
-                e.preventDefault()
-                window.location.href = `/mis-certificaciones/${requestId}?tab=evaluacion&meeting=${message.meetingId}`
-              }
-            }
-          }}
-          className="inline-flex items-center gap-1.5 rounded-full bg-success-300 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-success-400"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          Responder por WhatsApp
-        </a>
+            mock, sugerimos responder dentro de la plataforma.
+
+            Fix V2-POS-12 (auditoría v2): la confirmación pasó de
+            window.confirm() nativo a ConfirmDialog con estética propia
+            + a11y (role=alertdialog, aria-labelledby). */}
+        {isDemoMode ? (
+          <button
+            type="button"
+            onClick={() => setShowWaConfirm(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-success-300 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-success-400"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Responder por WhatsApp
+          </button>
+        ) : (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-success-300 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-success-400"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Responder por WhatsApp
+          </a>
+        )}
         <Link
           to={`/mis-certificaciones/${requestId}?tab=evaluacion`}
           className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
@@ -1129,6 +1136,24 @@ function TutorMessageCard({
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
+      <ConfirmDialog
+        open={showWaConfirm}
+        title="Demo mode · WhatsApp"
+        description={
+          'El número de WhatsApp del tutor es de prueba — un click va a abrir un chat con un número que no existe.\n\n' +
+          '¿Querés abrirlo igual, o preferís responder dentro de la plataforma?'
+        }
+        confirmLabel="Abrir WhatsApp igual"
+        cancelLabel="Abrir el thread interno"
+        onConfirm={() => {
+          setShowWaConfirm(false)
+          window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
+        }}
+        onCancel={() => {
+          setShowWaConfirm(false)
+          window.location.href = `/mis-certificaciones/${requestId}?tab=evaluacion&meeting=${message.meetingId}`
+        }}
+      />
     </section>
   )
 }
