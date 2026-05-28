@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!--
+    Open Graph card de Ancestral Seed — 1200×630 para WhatsApp / X /
+    Facebook / LinkedIn.
+
+    Diseño:
+    - Fondo navy-500 (#001c38) con pattern aztec sutil
+    - Halo dorado a la derecha que ancla la atención
+    - Wordmark grande "ANCESTRAL SEED" + tagline "CERTIFICACIÓN DIGITAL"
+    - Headline conversacional principal
+    - Chip dorado con propuesta de valor concreta
+    - Decoraciones de marca (chevron pattern, dot dorado)
+  -->
+
+  <defs>
+    <!-- Pattern aztec sutil sobre el navy -->
+    <pattern id="aztec" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+      <g stroke="#D4AF37" stroke-width="1" fill="none" opacity="0.08">
+        <path d="M0 40 L40 0 L80 40 L40 80 Z"/>
+        <path d="M20 40 L40 20 L60 40 L40 60 Z"/>
+      </g>
+    </pattern>
+
+    <!-- Glow dorado decorativo a la derecha -->
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#D4AF37" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Gradiente sutil del background principal -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#001c38"/>
+      <stop offset="100%" stop-color="#062B4D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Pattern overlay -->
+  <rect width="1200" height="630" fill="url(#aztec)"/>
+
+  <!-- Halo dorado en la esquina superior derecha -->
+  <ellipse cx="980" cy="180" rx="380" ry="380" fill="url(#glow)"/>
+
+  <!-- Banda inferior dorada para anclaje visual -->
+  <rect x="0" y="610" width="1200" height="20" fill="#D4AF37"/>
+
+  <!-- Wordmark — top-left -->
+  <g transform="translate(80, 80)">
+    <!-- Icono "semilla" simplificado -->
+    <g transform="translate(0, 0)">
+      <circle cx="32" cy="32" r="32" fill="#D4AF37"/>
+      <path d="M32 12 C 22 22, 22 42, 32 52 C 42 42, 42 22, 32 12 Z" fill="#001c38"/>
+      <circle cx="32" cy="32" r="3" fill="#D4AF37"/>
+    </g>
+
+    <!-- Texto wordmark -->
+    <text x="80" y="32" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
+          font-size="28" letter-spacing="5" fill="#FFFFFF">ANCESTRAL SEED</text>
+    <text x="80" y="58" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="600"
+          font-size="13" letter-spacing="7" fill="#D4AF37">CERTIFICACIÓN DIGITAL</text>
+  </g>
+
+  <!-- Chip "Verificado en blockchain" — top right -->
+  <g transform="translate(870, 90)">
+    <rect x="0" y="0" width="250" height="42" rx="21" fill="#D4AF37"/>
+    <circle cx="22" cy="21" r="6" fill="#001c38"/>
+    <text x="38" y="27" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="700"
+          font-size="13" letter-spacing="2" fill="#001c38">VERIFICADO EN BLOCKCHAIN</text>
+  </g>
+
+  <!-- Headline principal — centro vertical -->
+  <g transform="translate(80, 240)">
+    <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
+          font-size="68" fill="#FFFFFF">
+      <tspan x="0" y="0">Saberes ancestrales,</tspan>
+      <tspan x="0" y="84" fill="#D4AF37">certificados con</tspan>
+      <tspan x="0" y="168" fill="#D4AF37">tecnología.</tspan>
+    </text>
+  </g>
+
+  <!-- Tagline / propuesta de valor — bottom-left -->
+  <g transform="translate(80, 510)">
+    <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="500"
+          font-size="22" fill="#FFFFFF" opacity="0.85">
+      Auditoría cultural + blockchain inmutable
+    </text>
+    <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="700"
+          font-size="18" fill="#D4AF37" y="34" letter-spacing="2">
+      ancestralseed.com
+    </text>
+  </g>
+
+  <!-- 3 categorías oficiales del Reglamento — bottom-right -->
+  <g transform="translate(870, 480)" font-family="Montserrat, Helvetica, Arial, sans-serif">
+    <text font-weight="700" font-size="10" letter-spacing="3" fill="#D4AF37" y="0">3 CATEGORÍAS OFICIALES</text>
+
+    <g transform="translate(0, 20)">
+      <circle cx="6" cy="6" r="4" fill="#D4AF37"/>
+      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Ancestral Auténtico</text>
+    </g>
+    <g transform="translate(0, 42)">
+      <circle cx="6" cy="6" r="4" fill="#D4AF37" opacity="0.65"/>
+      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Tradicional con raíces</text>
+    </g>
+    <g transform="translate(0, 64)">
+      <circle cx="6" cy="6" r="4" fill="#D4AF37" opacity="0.35"/>
+      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Inspiración cultural</text>
+    </g>
+  </g>
+</svg>
