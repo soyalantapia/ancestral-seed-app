@@ -4,6 +4,42 @@ import { AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
+ * Fix V4-PUB-10 (auditoría v4): contador global de "scroll locks"
+ * activos. Cada modal/drawer/dialog que quiere bloquear el body
+ * scroll incrementa este contador al mount + decrementa al unmount.
+ * Body.style.overflow se setea a 'hidden' SOLO cuando el contador
+ * pasa de 0 a 1; se restaura al previo SOLO cuando vuelve a 0.
+ *
+ * Antes cada ConfirmDialog capturaba `prevOverflow` al mount y lo
+ * restauraba al unmount. Si A se abría → B se abría → A se cerraba
+ * antes que B, A restauraba al original (=scrollable) mientras B
+ * seguía abierto. Body queda scrollable con modal visible.
+ *
+ * Con el counter, el lock se mantiene mientras CUALQUIER modal esté
+ * abierto, y solo se libera cuando TODOS cerraron.
+ */
+let bodyScrollLockCount = 0
+let bodyScrollLockPrev: string | null = null
+
+function acquireBodyScrollLock(): void {
+  if (typeof document === 'undefined') return
+  if (bodyScrollLockCount === 0) {
+    bodyScrollLockPrev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  bodyScrollLockCount++
+}
+
+function releaseBodyScrollLock(): void {
+  if (typeof document === 'undefined') return
+  if (bodyScrollLockCount > 0) bodyScrollLockCount--
+  if (bodyScrollLockCount === 0) {
+    document.body.style.overflow = bodyScrollLockPrev ?? ''
+    bodyScrollLockPrev = null
+  }
+}
+
+/**
  * Diálogo de confirmación reusable que reemplaza a `window.confirm()`.
  *
  * Fix V2-TUT-06 + V2-TUT-18 + V2-POS-12 (auditoría v2): el confirm
@@ -103,12 +139,11 @@ export function ConfirmDialog({
       }
     }
     document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    acquireBodyScrollLock()
     const t = setTimeout(() => confirmRef.current?.focus(), 50)
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      releaseBodyScrollLock()
       clearTimeout(t)
     }
   }, [open, onConfirm, onCancel])

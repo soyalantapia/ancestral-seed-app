@@ -132,6 +132,30 @@ export function computeCanAdvance(
  * @param target Etapa destino del drag. Si es retroceso (índice menor),
  *               siempre se permite sin validar (corrección de errores).
  */
+/**
+ * Fix V4-TUT-09 (auditoría v4): documenta explícitamente la
+ * semántica del nombre `validateCaseAdvance`.
+ *
+ * Esta función valida si un caso puede AVANZAR HACIA `target` —
+ * es decir, "puedo entrar a target". NO valida los requisitos
+ * PROPIOS de target (los cuales se aplican una vez el caso ya
+ * está EN target y quiere ir más allá).
+ *
+ * Ejemplo:
+ * - Caso en `auditoria`, target = `evaluacion`.
+ * - La función valida que `auditoria` esté completa para pasar
+ *   (requisitos de auditoria → evaluacion).
+ * - NO valida los requisitos de `evaluacion` (Scoring ≥ 7 criterios,
+ *   etc.) — esos se evalúan cuando el caso ya está EN evaluacion y
+ *   se pretende avanzar a `certificacion`.
+ *
+ * Esto es coherente con el botón "Avanzar etapa" del expediente:
+ * primero hay que CUMPLIR los requisitos de salida de la etapa
+ * actual; los de la siguiente se chequean cuando uno ya está ahí.
+ *
+ * Para saltos (target a varias etapas de distancia), simulamos
+ * iterativamente cada salto intermedio.
+ */
 export function validateCaseAdvance(
   caseData: TutorCase,
   target: CaseStage,

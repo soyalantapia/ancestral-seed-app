@@ -810,17 +810,32 @@ function DeleteAccountModal({
             type="button"
             disabled={!canDelete}
             onClick={() => {
-              // Fix V3-POS-05 (auditoría v3): el delete-account no
-              // limpiaba ningún store local — el siguiente user en el
-              // navegador veía el draft del CertifyForm, las notas, la
-              // portada y el lastVisit del anterior. Ahora limpiamos
-              // TODO con `resetDemoStores({ forLogout: true })` antes
-              // de cerrar el modal. La sesión queda intacta porque el
-              // delete real lo procesa el backend; localmente solo
-              // garantizamos que no haya leakage.
-              resetDemoStores({ forLogout: true })
-              toast.success('Solicitud de eliminación enviada — vas a recibir un email para confirmarla')
-              onClose()
+              /**
+               * Fix V3-POS-05 + V4-POS-07 (auditoría v3+v4):
+               * limpiamos los stores del demo para evitar
+               * cross-account leak. La operación es try/catch para
+               * que un error parcial no rompa el feedback al user.
+               *
+               * V4-POS-07: si `resetDemoStores` throwea, el toast
+               * de éxito NO debe aparecer (sería mentira). Ahora
+               * mostramos toast.error específico y dejamos el modal
+               * abierto para que el user reintente o cancele.
+               */
+              try {
+                resetDemoStores({ forLogout: true })
+                toast.success(
+                  'Solicitud de eliminación enviada — vas a recibir un email para confirmarla',
+                )
+                onClose()
+              } catch (err) {
+                toast.error(
+                  'No pudimos completar la limpieza local. Reintentá o cerrá sesión manualmente.',
+                )
+                if (import.meta.env.DEV) {
+                  // eslint-disable-next-line no-console
+                  console.error('[delete-account cleanup]', err)
+                }
+              }
             }}
             className="inline-flex items-center justify-center gap-1.5 rounded-full bg-error-400 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-error-300 disabled:cursor-not-allowed disabled:opacity-40"
           >

@@ -133,30 +133,52 @@ export default function MyProfile() {
   }, [dirty])
 
   /**
-   * Fix V3-POS-09 (auditoría v3): el `useState<ProfileData>` lazy
-   * initializer corre UNA VEZ al mount con `user?.avatarUrl ?? ''`.
-   * Si `useAuthStore` carga al user async (Suspense, hidratación
-   * tardía), el data queda con avatarUrl/name vacíos y NO se
-   * sincroniza cuando llega el user. Ahora un effect mantiene
-   * `data` (y `initial` para preservar el dirty check) sincronizado
-   * con el user cuando este cambia — siempre que no haya cambios
-   * sin guardar (sino, no pisamos los edits del user).
+   * Fix V3-POS-09 + V4-POS-04 (auditoría v3+v4): el `useState`
+   * lazy initializer corre UNA VEZ al mount. Si `useAuthStore`
+   * carga al user async, el data queda con valores stale. Antes
+   * un effect sincronizaba data + initial con el user actual,
+   * SIEMPRE que no hubiera dirty.
+   *
+   * Edge V4-POS-04: si el user llegaba DURANTE dirty=true, el
+   * effect NO actualizaba (bien — preserva edits). Pero el `initial`
+   * quedaba con los valores VIEJOS pre-user — al hacer "Cancelar"
+   * el form se reseteaba al estado pre-user, inconsistente con el
+   * auth actual. Ahora cuando llega un user nuevo durante dirty=true
+   * lo "encolamos" en `pendingUserSync` y lo aplicamos en cuanto
+   * dirty vuelve a false (typical: user descarta o guarda).
    */
+  const [pendingUserSync, setPendingUserSync] = useState<{
+    name: string
+    email: string
+    avatarUrl: string
+  } | null>(null)
+
   useEffect(() => {
-    if (!user || dirty) return
-    setData((d) => ({
-      ...d,
-      name: user.name ?? d.name,
-      email: user.email ?? d.email,
-      avatarUrl: user.avatarUrl ?? d.avatarUrl,
-    }))
-    setInitial((d) => ({
-      ...d,
-      name: user.name ?? d.name,
-      email: user.email ?? d.email,
-      avatarUrl: user.avatarUrl ?? d.avatarUrl,
-    }))
-  }, [user, dirty])
+    if (!user) return
+    const sync = {
+      name: user.name ?? data.name,
+      email: user.email ?? data.email,
+      avatarUrl: user.avatarUrl ?? data.avatarUrl,
+    }
+    if (dirty) {
+      // Hay edits sin guardar; encolar para aplicar después.
+      setPendingUserSync(sync)
+      return
+    }
+    // No hay dirty — aplicar el sync inmediatamente.
+    setData((d) => ({ ...d, ...sync }))
+    setInitial((d) => ({ ...d, ...sync }))
+    setPendingUserSync(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  // Aplicar el sync encolado cuando dirty vuelve a false.
+  useEffect(() => {
+    if (dirty || !pendingUserSync) return
+    setData((d) => ({ ...d, ...pendingUserSync }))
+    setInitial((d) => ({ ...d, ...pendingUserSync }))
+    setPendingUserSync(null)
+  }, [dirty, pendingUserSync])
 
   const update = (patch: Partial<ProfileData>) => setData((d) => ({ ...d, ...patch }))
 

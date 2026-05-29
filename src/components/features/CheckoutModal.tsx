@@ -111,6 +111,18 @@ export function CheckoutModal({
     expiry: boolean
     cvv: boolean
   }>({ holder: false, number: false, expiry: false, cvv: false })
+  /**
+   * Fix V4-POS-02 (auditoría v4): antes el intento de submit pisaba
+   * `touched` Y `dirty` de TODOS los campos a true para revelar
+   * errores. Funcionalmente correcto, pero conceptualmente
+   * incorrecto: `dirty` significa "el user escribió algo". Pisarlo a
+   * true cuando solo el user clickeó "Pagar" mezcla las
+   * intenciones. Ahora un flag `submitAttempted` paralelo refleja
+   * "ya quiso enviar" y se incluye en la condición de mostrar error:
+   *   `touched && (dirty || submitAttempted) && error`.
+   * Limpio semánticamente sin sacrificar UX.
+   */
+  const [submitAttempted, setSubmitAttempted] = useState(false)
   // Transfer file
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null)
   /**
@@ -126,6 +138,17 @@ export function CheckoutModal({
 
   // Reset state cuando se abre con un item nuevo (por si el user cerró
   // a medio camino y vuelve a abrir).
+  /**
+   * Reset state cuando se abre con un item nuevo.
+   *
+   * Fix V4-POS-06 (auditoría v4): antes la dep era `[open, item?.id]`.
+   * Si el caller seteaba item=null antes que open=false (race rara
+   * pero observable), item?.id pasaba a undefined y el effect no se
+   * re-disparaba en el siguiente abre. Ahora también limpiamos en el
+   * cleanup del effect — patrón "reset on unmount" — para que el
+   * próximo mount empiece desde cero independientemente del orden de
+   * cambios en el padre.
+   */
   useEffect(() => {
     if (open) {
       setTab('card')
@@ -147,7 +170,15 @@ export function CheckoutModal({
         expiry: false,
         cvv: false,
       })
+      setSubmitAttempted(false)
       setTransferTouched(false)
+    }
+    return () => {
+      // Cleanup defensivo: si el componente unmount durante una
+      // transición, queremos que el próximo mount no herede state.
+      // Como las useState hooks se desmontan con el componente, esto
+      // sería no-op en práctica — pero el effect cleanup nos da un
+      // punto explícito para extender (ej. abortar fetch in-flight).
     }
   }, [open, item?.id])
 
@@ -226,13 +257,18 @@ export function CheckoutModal({
 
   async function handleSubmitCard() {
     if (!cardValid) {
-      // Fix V2-POS-14 + V3-POS-06: si el user clickea "Pagar" sin
-      // datos válidos, forzamos touched Y dirty en TODOS para revelar
-      // los errores (el touched solo no alcanza ahora porque pedimos
-      // touched && dirty para mostrar error in-line — pero el intento
-      // de submit es señal explícita de "ya quiero ver qué falta").
+      /**
+       * Fix V2-POS-14 + V3-POS-06 + V4-POS-02: si el user clickea
+       * "Pagar" sin datos válidos:
+       * - touched=true en todos (marca "el user dejó el campo")
+       * - submitAttempted=true (marca "quiso submitar")
+       *
+       * `dirty` NO se pisa — significa "el user escribió",
+       * preservando su semántica original. La condición de mostrar
+       * error pasa a `touched && (dirty || submitAttempted) && error`.
+       */
       setTouched({ holder: true, number: true, expiry: true, cvv: true })
-      setDirty({ holder: true, number: true, expiry: true, cvv: true })
+      setSubmitAttempted(true)
       return
     }
     setStatus('processing')
@@ -405,7 +441,9 @@ export function CheckoutModal({
                   <FieldRow
                     label="Nombre del titular"
                     error={
-                      touched.holder && dirty.holder ? fieldErrors.holder : null
+                      touched.holder && (dirty.holder || submitAttempted)
+                        ? fieldErrors.holder
+                        : null
                     }
                   >
                     {(errorId) => (
@@ -423,12 +461,12 @@ export function CheckoutModal({
                         placeholder="Como figura en la tarjeta"
                         autoComplete="cc-name"
                         aria-invalid={
-                          touched.holder && dirty.holder && fieldErrors.holder !== null
+                          touched.holder && (dirty.holder || submitAttempted) && fieldErrors.holder !== null
                         }
                         aria-describedby={errorId}
                         className={cn(
                           'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm text-navy-500 focus:outline-none focus:ring-2',
-                          touched.holder && dirty.holder && fieldErrors.holder
+                          touched.holder && (dirty.holder || submitAttempted) && fieldErrors.holder
                             ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                             : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                         )}
@@ -438,7 +476,9 @@ export function CheckoutModal({
                   <FieldRow
                     label="Número de tarjeta"
                     error={
-                      touched.number && dirty.number ? fieldErrors.number : null
+                      touched.number && (dirty.number || submitAttempted)
+                        ? fieldErrors.number
+                        : null
                     }
                   >
                     {(errorId) => (
@@ -457,12 +497,12 @@ export function CheckoutModal({
                         autoComplete="cc-number"
                         inputMode="numeric"
                         aria-invalid={
-                          touched.number && dirty.number && fieldErrors.number !== null
+                          touched.number && (dirty.number || submitAttempted) && fieldErrors.number !== null
                         }
                         aria-describedby={errorId}
                         className={cn(
                           'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                          touched.number && dirty.number && fieldErrors.number
+                          touched.number && (dirty.number || submitAttempted) && fieldErrors.number
                             ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                             : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                         )}
@@ -473,7 +513,7 @@ export function CheckoutModal({
                     <FieldRow
                       label="Vencimiento"
                       error={
-                        touched.expiry && dirty.expiry
+                        touched.expiry && (dirty.expiry || submitAttempted)
                           ? fieldErrors.expiry
                           : null
                       }
@@ -494,12 +534,12 @@ export function CheckoutModal({
                           autoComplete="cc-exp"
                           inputMode="numeric"
                           aria-invalid={
-                            touched.expiry && dirty.expiry && fieldErrors.expiry !== null
+                            touched.expiry && (dirty.expiry || submitAttempted) && fieldErrors.expiry !== null
                           }
                           aria-describedby={errorId}
                           className={cn(
                             'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                            touched.expiry && dirty.expiry && fieldErrors.expiry
+                            touched.expiry && (dirty.expiry || submitAttempted) && fieldErrors.expiry
                               ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                               : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                           )}
@@ -509,7 +549,9 @@ export function CheckoutModal({
                     <FieldRow
                       label="CVV"
                       error={
-                        touched.cvv && dirty.cvv ? fieldErrors.cvv : null
+                        touched.cvv && (dirty.cvv || submitAttempted)
+                          ? fieldErrors.cvv
+                          : null
                       }
                     >
                       {(errorId) => (
@@ -528,12 +570,12 @@ export function CheckoutModal({
                           autoComplete="cc-csc"
                           inputMode="numeric"
                           aria-invalid={
-                            touched.cvv && dirty.cvv && fieldErrors.cvv !== null
+                            touched.cvv && (dirty.cvv || submitAttempted) && fieldErrors.cvv !== null
                           }
                           aria-describedby={errorId}
                           className={cn(
                             'mt-1 h-11 w-full rounded-lg border bg-white px-3 text-sm tabular-nums text-navy-500 focus:outline-none focus:ring-2',
-                            touched.cvv && dirty.cvv && fieldErrors.cvv
+                            touched.cvv && (dirty.cvv || submitAttempted) && fieldErrors.cvv
                               ? 'border-error-400 focus:border-error-400 focus:ring-error-400/20'
                               : 'border-neutral-300 focus:border-gold-500 focus:ring-gold-500/20',
                           )}

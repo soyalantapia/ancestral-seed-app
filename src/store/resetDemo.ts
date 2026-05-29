@@ -53,7 +53,45 @@ import { useCaseSignaturesStore } from './caseSignatures'
  * estos dos (el reviewer puede estar a mitad de un draft o quiere
  * mantener las notifs), pero para logout sí los limpiamos.
  */
-export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string[] {
+/**
+ * Helper interno: notifica a las OTRAS pestañas que el localStorage
+ * fue purgado. Sin esto, otra tab con la app cargada NO recibe el
+ * storage event del removeItem (`storage` solo dispara cross-tab para
+ * `setItem`/`removeItem` en OTRA tab — pero el persist middleware
+ * inmediatamente re-escribe con su estado en memoria, anulando el
+ * cleanup).
+ *
+ * Disparamos manualmente un StorageEvent custom que el listener de
+ * notifications.ts (y futuros) puede chequear para refrescar.
+ *
+ * Fix V4-POS-11 (auditoría v4).
+ */
+function broadcastStoresReset(): void {
+  if (typeof window === 'undefined' || typeof StorageEvent === 'undefined') {
+    return
+  }
+  try {
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: '__ancestral-seed-demo-reset__',
+        newValue: String(Date.now()),
+      }),
+    )
+  } catch {
+    // Algunos browsers viejos no permiten construir StorageEvent.
+  }
+}
+
+export function resetDemoStores(opts?: {
+  forLogout?: boolean
+  /**
+   * Fix V4-POS-10 (auditoría v4): por defecto NO limpia
+   * `caseSignatures` — esas son datos del tutor y un postulante que
+   * cierra sesión no debería tener authority sobre ellas. Solo el
+   * "Restaurar demo" del kanban (forTutorReset:true) las limpia.
+   */
+  forTutorReset?: boolean
+}): readonly string[] {
   const touched: string[] = []
 
   // Stores con API reset() expuesta
@@ -112,11 +150,14 @@ export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string
   } catch {
     /* noop */
   }
-  try {
-    useCaseSignaturesStore.getState().clear()
-    touched.push('caseSignatures')
-  } catch {
-    /* noop */
+  // Fix V4-POS-10: solo limpiar firmas en reset del tutor.
+  if (opts?.forTutorReset) {
+    try {
+      useCaseSignaturesStore.getState().clear()
+      touched.push('caseSignatures')
+    } catch {
+      /* noop */
+    }
   }
 
   // Limpiezas adicionales solo en logout / delete-account — datos
@@ -151,5 +192,7 @@ export function resetDemoStores(opts?: { forLogout?: boolean }): readonly string
     }
   }
 
+  // Fix V4-POS-11: notificar a otras tabs para que refresquen.
+  broadcastStoresReset()
   return touched
 }

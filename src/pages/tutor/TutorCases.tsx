@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -753,10 +753,12 @@ export default function TutorCases() {
         cancelLabel="Cancelar"
         danger
         onConfirm={() => {
-          resetDemoStores()
+          // Fix V4-POS-10: forTutorReset=true incluye firmas en el
+          // cleanup. El logout del postulante NO usa este flag.
+          resetDemoStores({ forTutorReset: true })
           setConfirmReset(false)
           toast.success(
-            'Demo restaurado · kanban, notas, checklist, tareas y portadas vuelven al estado original',
+            'Demo restaurado · kanban, notas, firmas, checklist, tareas y portadas vuelven al estado original',
           )
         }}
         onCancel={() => setConfirmReset(false)}
@@ -1404,39 +1406,37 @@ function KanbanCardMenu({
   const menuRef = useRef<HTMLUListElement>(null)
   const MENU_WIDTH = 192 // w-48
 
+  /**
+   * Fix V4-TUT-07 (auditoría v4): `computePos` antes se redeclaraba
+   * en CADA render del effect. Los `removeEventListener` con la ref
+   * vieja no matcheaban la nueva, lo cual podía generar leak de
+   * listeners en open/close rápidos. Ahora `useCallback` mantiene la
+   * referencia estable mientras `anchorEl` no cambia.
+   */
+  const computePos = useCallback(() => {
+    if (!anchorEl) return
+    const rect = anchorEl.getBoundingClientRect()
+    // Preferir alineación a la derecha del botón.
+    // Fix V4-TUT-06: clamp Math.max(8, ...) siempre.
+    const wantRight = rect.right
+    const overflowsRight =
+      wantRight + 4 > window.innerWidth || wantRight - MENU_WIDTH < 8
+    const desiredLeft = rect.right - MENU_WIDTH
+    void overflowsRight
+    const left = Math.max(8, desiredLeft)
+    setPos({ top: rect.bottom + 4, left })
+  }, [anchorEl])
+
   useEffect(() => {
     if (!anchorEl) return
-    const computePos = () => {
-      const rect = anchorEl.getBoundingClientRect()
-      // Preferir alineación a la derecha del botón. Si se sale del
-      // viewport (rect.right + width > innerWidth), flipear al lado
-      // izquierdo del botón.
-      //
-      // Fix V4-TUT-06 (auditoría v4): antes la rama "no overflowsRight"
-      // calculaba `rect.right - MENU_WIDTH` sin clamp. Si rect.right
-      // era < MENU_WIDTH (card scrolleada off-screen a la izquierda),
-      // el left resultaba negativo y el menú aparecía cortado fuera del
-      // viewport. Ahora envolvemos siempre con Math.max(8, ...).
-      const wantRight = rect.right
-      const overflowsRight =
-        wantRight + 4 > window.innerWidth || wantRight - MENU_WIDTH < 8
-      const desiredLeft = rect.right - MENU_WIDTH
-      const left = Math.max(
-        8,
-        overflowsRight ? desiredLeft : desiredLeft,
-      )
-      setPos({ top: rect.bottom + 4, left })
-    }
     computePos()
-    // Recompute si la ventana cambia (resize) o el user scrollea fuera
-    // del kanban — el menú flotante necesita seguir al ancla.
     window.addEventListener('resize', computePos)
     window.addEventListener('scroll', computePos, true)
     return () => {
       window.removeEventListener('resize', computePos)
       window.removeEventListener('scroll', computePos, true)
     }
-  }, [anchorEl])
+  }, [anchorEl, computePos])
 
   if (!anchorEl || !pos) return null
   return createPortal(
