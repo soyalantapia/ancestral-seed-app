@@ -113,10 +113,17 @@
       usamos labels genéricos representativos de la categoría 1 del
       Reglamento sin atribuir a una persona real.
     -->
+    <!--
+      Fix V4-PUB-08 (auditoría v4): font-size del nombre bajado a 20px
+      y subtítulo a 12px para dar más margen al sello (que ocupa
+      desde x=290 hasta x=366). Antes con font-size=22, "Saber ancestral
+      certificado" llegaba a ~295px y dejaba apenas 16px de margen
+      contra el sello en y=130. Ahora dejamos ~28px.
+    -->
     <text x="24" y="74" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="800" font-size="22" fill="#001c38">Saber ancestral certificado</text>
-    <text x="24" y="98" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="500" font-size="13" fill="#5C6878">Auditoría cultural + Reglamento de Marca</text>
+          font-weight="800" font-size="20" fill="#001c38">Saber ancestral certificado</text>
+    <text x="24" y="96" font-family="Montserrat, Helvetica, Arial, sans-serif"
+          font-weight="500" font-size="12" fill="#5C6878">Auditoría cultural + Reglamento de Marca</text>
 
     <!--
       Hash blockchain — placeholder claramente decorativo (fix
