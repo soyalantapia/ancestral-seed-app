@@ -535,10 +535,10 @@ function Pillars() {
  */
 function LatamAlMundo() {
   const stats = [
-    { icon: MapPin, value: '12+', label: 'Países representados' },
-    { icon: Users, value: '85+', label: 'Comunidades originarias' },
-    { icon: Globe2, value: '40+', label: 'Destinos de exportación' },
-    { icon: Languages, value: '6', label: 'Lenguas habladas' },
+    { icon: MapPin, value: '+20', label: 'Países representados' },
+    { icon: Users, value: '+800', label: 'Pueblos originarios' },
+    { icon: Globe2, value: '9%', label: 'De la población latinoamericana' },
+    { icon: Languages, value: '+500', label: 'Lenguas habladas' },
   ]
 
   return (
@@ -722,7 +722,7 @@ function BlockchainSection() {
   const items: AccordionItem[] = [
     {
       id: 'q1',
-      question: '¿Qué es la blockchain? (explicado con un cuaderno)',
+      question: '¿Qué es la blockchain?',
       answer: (
         <>
           <p>
