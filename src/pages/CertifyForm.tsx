@@ -12,7 +12,6 @@ import {
   Headphones,
   Image as ImageIcon,
   Play,
-  Save,
   Sparkles,
   Upload,
   X,
@@ -197,8 +196,6 @@ export default function CertifyForm() {
   const setSession = useAuthStore((s) => s.setSession)
   const [submitted, setSubmitted] = useState(false)
   const [postponeOpen, setPostponeOpen] = useState(false)
-  // Autosave UI: timestamp del último guardado para mostrar "Guardado 19:43"
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
 
   /**
    * Fix SA3 (#POS-21, auditoría UX): el bug crítico era que entrar a
@@ -251,7 +248,6 @@ export default function CertifyForm() {
       }
       autosaveTimeoutRef.current = setTimeout(() => {
         updateData(values as Partial<CertifyFormData>)
-        setLastSavedAt(new Date())
       }, 500)
     })
     return () => {
@@ -338,20 +334,9 @@ export default function CertifyForm() {
       <section className="relative bg-white">
         <div className="mx-auto -mt-6 max-w-[1100px] px-4 md:-mt-10 md:px-8">
           <div className="relative rounded-2xl bg-white px-6 py-8 text-center shadow-md md:px-12 md:py-10">
+            {/* El autoguardado corre en segundo plano (sin badge visible).
+                Solo dejamos la acción de "Postergar". */}
             <div className="absolute right-4 top-4 flex items-center gap-2 md:right-6 md:top-6">
-              {/* Badge de autosave — visible cuando ya guardamos al menos
-                  una vez. Comunica al user que su progreso no se pierde
-                  si refresca / cierra la pestaña. */}
-              {lastSavedAt && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-success-100 px-3 py-1.5 text-[11px] font-bold text-success-300 ring-1 ring-success-300/30 md:text-xs">
-                  <Save className="h-3 w-3" />
-                  Borrador guardado ·{' '}
-                  {lastSavedAt.toLocaleTimeString('es-AR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              )}
               <button
                 type="button"
                 onClick={() => setPostponeOpen(true)}
