@@ -22,7 +22,17 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
   return lazy(async () => {
     const STORAGE_KEY = 'ancestral-seed-chunk-reload'
     try {
-      return await factory()
+      const mod = await factory()
+      // Éxito: recién ACÁ limpiamos el flag. (Antes se limpiaba en cada
+      // boot del bundle, lo que anulaba el guard "recargar una sola vez":
+      // con un chunk persistentemente desactualizado —p. ej. index.html
+      // cacheado apuntando a un chunk borrado— la página entraba en loop
+      // de reloads. Ahora un fallo recarga UNA vez y, si sigue fallando,
+      // cae al ErrorBoundary en lugar de trabarse recargando.)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(STORAGE_KEY)
+      }
+      return mod
     } catch (err) {
       const alreadyReloaded =
         typeof window !== 'undefined' &&
@@ -36,11 +46,6 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
       throw err
     }
   })
-}
-
-// Reset del flag de retry cuando el bundle nuevo cargó OK
-if (typeof window !== 'undefined') {
-  window.sessionStorage.removeItem('ancestral-seed-chunk-reload')
 }
 
 // Lazy pages — cada route se descarga on-demand
