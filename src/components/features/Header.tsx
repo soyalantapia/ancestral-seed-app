@@ -37,6 +37,8 @@ const navItems = [
   { to: '/#latam-al-mundo', label: 'LATAM al mundo' },
   { to: '/#nosotros', label: 'Nosotros' },
   { to: '/directorio', label: 'Certificados' },
+  { to: '/verificar', label: 'Verificar' },
+  { to: '/comprador/wallet', label: 'Para marcas' },
 ]
 
 export function Header() {

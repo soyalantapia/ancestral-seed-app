@@ -511,8 +511,8 @@ function LatamAlMundo() {
           </div>
         </div>
 
-        {/* Cinta de stats — separada con divisor sutil, centrada full-width */}
-        <div className="mt-20 border-t border-neutral-200 pt-12 md:mt-28 md:pt-14">
+        {/* Cinta de stats — centrada full-width, sin divisor */}
+        <div className="mt-20 md:mt-28">
           <dl className="mx-auto grid max-w-5xl grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
             {stats.map((s) => {
               const Icon = s.icon
