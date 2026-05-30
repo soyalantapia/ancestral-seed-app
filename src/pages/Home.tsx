@@ -8,6 +8,7 @@ import {
   Languages,
   Leaf,
   MapPin,
+  Pause,
   Shield,
   Sparkles,
   Users,
@@ -246,6 +247,11 @@ const YT_EMBED_URL =
 function HeroVideoPlaceholder() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [muted, setMuted] = useState(true)
+  const [paused, setPaused] = useState(false)
+  // Fix mute/scroll: una vez que el user toca el botón de mute, NO
+  // queremos que el auto-unmute por scroll/wheel/touch vuelva a activar
+  // el sonido. Este ref marca "el user ya tomó control manual".
+  const userControlledRef = useRef(false)
 
   /**
    * Manda un comando al player vía postMessage. Si el iframe aún no
@@ -262,6 +268,9 @@ function HeroVideoPlaceholder() {
   }
 
   function toggleMute() {
+    // El user tomó control manual del audio → desactivamos para siempre
+    // el auto-unmute por scroll/touch (ver effect abajo).
+    userControlledRef.current = true
     sendCommand(muted ? 'unMute' : 'mute')
     setMuted((m) => !m)
   }
@@ -282,7 +291,7 @@ function HeroVideoPlaceholder() {
    * El botón sigue disponible para mute/unmute manual después.
    */
   useEffect(() => {
-    if (!muted) return
+    if (!muted || userControlledRef.current) return
     const events: Array<keyof WindowEventMap> = [
       'pointerdown',
       'touchstart',
@@ -291,6 +300,9 @@ function HeroVideoPlaceholder() {
       'wheel',
     ]
     function onFirstInteraction() {
+      // Si el user ya silenció manualmente entre el registro y el
+      // disparo del listener, NO reactivamos el sonido.
+      if (userControlledRef.current) return
       sendCommand('unMute')
       sendCommand('setVolume', 100)
       setMuted(false)
@@ -306,6 +318,64 @@ function HeroVideoPlaceholder() {
       events.forEach((e) => window.removeEventListener(e, onFirstInteraction))
     }
   }, [muted])
+
+  /**
+   * Detección de play/pausa vía YouTube IFrame Player API.
+   *
+   * Con `controls=0` el user igual puede pausar tocando el centro del
+   * video (comportamiento nativo de YouTube). Para mostrar el ícono de
+   * pausa centrado escuchamos los mensajes `postMessage` que el player
+   * emite: estado 1 = playing, 2 = paused (YT.PlayerState).
+   *
+   * El handshake `{event:'listening'}` (en handleIframeLoad) le pide al
+   * player que empiece a emitir esos `infoDelivery`/`onStateChange`.
+   */
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (typeof e.origin === 'string' && !e.origin.includes('youtube')) return
+      let payload: unknown = e.data
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload)
+        } catch {
+          return
+        }
+      }
+      if (typeof payload !== 'object' || payload === null) return
+      const data = payload as { event?: string; info?: unknown }
+      let state: unknown
+      if (data.event === 'onStateChange') {
+        state = data.info
+      } else if (
+        data.event === 'infoDelivery' &&
+        typeof data.info === 'object' &&
+        data.info !== null
+      ) {
+        state = (data.info as { playerState?: unknown }).playerState
+      }
+      if (state === 1 || state === 3) setPaused(false)
+      else if (state === 2) setPaused(true)
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
+
+  // Handshake para que el player emita eventos de estado (play/pausa).
+  // El JS del player puede no estar listo justo en `onLoad`, así que
+  // reintentamos el `listening` un par de veces para cubrir la carrera
+  // de inicialización (sin loop infinito).
+  function handleIframeLoad() {
+    const win = iframeRef.current?.contentWindow
+    if (!win) return
+    const ping = () =>
+      win.postMessage(
+        JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }),
+        '*',
+      )
+    ping()
+    window.setTimeout(ping, 400)
+    window.setTimeout(ping, 1200)
+  }
 
   return (
     <div className="flex w-full flex-col items-center gap-4 lg:gap-5">
@@ -327,6 +397,7 @@ function HeroVideoPlaceholder() {
             referrerPolicy="strict-origin-when-cross-origin"
             className="absolute inset-0 h-full w-full border-0"
             loading="lazy"
+            onLoad={handleIframeLoad}
           />
 
           {/* SM8 fix: overlay TOP que tapa la franja donde YouTube fuerza
@@ -351,6 +422,24 @@ function HeroVideoPlaceholder() {
             aria-hidden
             className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-10 bg-gradient-to-t from-navy-500/90 to-transparent"
           />
+
+          {/* Indicador de pausa centrado: aparece cuando el user pausa
+              el video (tocando el centro). pointer-events-none para no
+              bloquear el toque que lo reanuda. */}
+          {paused && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[6] flex items-center justify-center"
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black/55 backdrop-blur-sm">
+                <Pause
+                  className="h-8 w-8 text-white"
+                  fill="currentColor"
+                  strokeWidth={0}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Botón de mute/unmute — más sutil ahora porque el sonido ya
               se activa solo al primer click/scroll/touch del usuario.
@@ -457,7 +546,7 @@ function LatamAlMundo() {
       id="latam-al-mundo"
       className="scroll-mt-24 bg-white"
     >
-      <div className="mx-auto max-w-[1240px] px-4 py-20 md:px-8 md:py-32">
+      <div className="mx-auto max-w-[1240px] px-4 pt-12 pb-20 md:px-8 md:pt-20 md:pb-28">
         {/* Bloque principal: copy + mapa con MUCHO aire */}
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-20">
           {/* Copy */}
