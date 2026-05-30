@@ -536,7 +536,7 @@ function Pillars() {
 function LatamAlMundo() {
   const stats = [
     { icon: MapPin, value: '+20', label: 'Países representados' },
-    { icon: Users, value: '+800', label: 'Pueblos originarios' },
+    { icon: Users, value: '+800', label: 'Pueblos indígenas' },
     { icon: Globe2, value: '9%', label: 'De la población latinoamericana' },
     { icon: Languages, value: '+500', label: 'Lenguas habladas' },
   ]

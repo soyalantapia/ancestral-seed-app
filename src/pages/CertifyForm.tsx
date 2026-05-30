@@ -420,24 +420,27 @@ export default function CertifyForm() {
               </div>
             </div>
 
-            {/* RIGHT: video panel + help button */}
+            {/* RIGHT: video panel (el botón de ayuda ahora flota
+                abajo a la derecha, ver más abajo) */}
             <div className="lg:col-span-5">
-              <div className="space-y-4 lg:sticky lg:top-6">
+              <div className="lg:sticky lg:top-6">
                 <VideoPanel />
-                <div className="flex justify-center lg:justify-end">
-                  <a
-                    href="mailto:soporte@ancestralseed.org?subject=Necesito%20ayuda%20con%20el%20formulario%20de%20certificación"
-                    className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-navy-400"
-                  >
-                    Necesito ayuda
-                    <Headphones className="h-4 w-4" />
-                  </a>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Botón de ayuda flotante — fijo abajo a la derecha, siempre
+          accesible sin importar el scroll del formulario. */}
+      <a
+        href="mailto:soporte@ancestralseed.org?subject=Necesito%20ayuda%20con%20el%20formulario%20de%20certificación"
+        className="fixed right-5 bottom-5 z-40 inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/10 transition-all hover:bg-navy-400 md:right-8 md:bottom-8"
+      >
+        Necesito ayuda
+        <Headphones className="h-4 w-4" />
+      </a>
+
       {/* Tour de 4 pasos al primer ingreso al form. Se monta acá para que
           el spotlight pueda apuntar a elementos del propio form. */}
       <GuidedTour />

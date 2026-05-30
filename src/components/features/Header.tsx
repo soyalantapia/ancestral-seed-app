@@ -36,9 +36,9 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { to: '/#latam-al-mundo', label: 'LATAM al mundo' },
   { to: '/#nosotros', label: 'Nosotros' },
+  { to: '/#como-funciona', label: 'Cómo te protegemos' },
+  { to: '/#proceso', label: 'Proceso' },
   { to: '/directorio', label: 'Certificados' },
-  { to: '/verificar', label: 'Verificar' },
-  { to: '/comprador/wallet', label: 'Para marcas' },
 ]
 
 export function Header() {
