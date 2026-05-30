@@ -24,6 +24,8 @@ import { toast } from 'sonner'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Combobox } from '@/components/ui/combobox'
+import { LATAM_COUNTRIES, GENERIC_DOC_TYPES, getLatamCountry } from '@/data/latam'
 import { Logo } from '@/components/features/Logo'
 import { useCertifyFormStore, type CertifyFormData } from '@/store/certifyForm'
 import { useAuthStore } from '@/store/auth'
@@ -36,15 +38,15 @@ const stepSchemas = [
   // Step 1 — Identidad
   z.object({
     applicantName: z.string().min(2, 'Tu nombre completo'),
-    documentType: z.enum(['DNI', 'Pasaporte', 'CUIT'], { message: 'Elegí un tipo' }),
-    documentNumber: z.string().min(5, 'Documento inválido'),
     email: z.string().email('Email inválido'),
+    country: z.string().min(2, 'Seleccioná un país'),
     phonePrefix: z.string().min(1, 'Prefijo'),
     phoneNumber: z.string().min(6, 'Teléfono inválido'),
-    country: z.string().min(2, 'Seleccioná un país'),
-    region: z.string().min(2, 'Seleccioná una región'),
     department: z.string().min(2, 'Seleccioná departamento o provincia'),
+    documentType: z.string().min(2, 'Elegí un tipo'),
+    documentNumber: z.string().min(5, 'Documento inválido'),
     address: z.string().min(3, 'Indicá una dirección'),
+    region: z.string().optional().or(z.literal('')),
   }),
   // Step 2 — Comunidad
   z.object({
@@ -657,22 +659,31 @@ function Select({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registration: any
 }) {
+  // `registration` viene de register('field'); usamos su .name para
+  // manejar el valor vía watch/setValue y renderizar un Combobox
+  // buscable (todo select del form tiene buscador + flechita).
+  const name = registration.name
+  const {
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<Partial<CertifyFormData>>()
+  const value = (watch(name) as string) ?? ''
+  const hasError = Boolean(
+    (errors as Record<string, unknown>)[name as string],
+  )
   return (
-    <select
+    <Combobox
       id={id}
-      defaultValue=""
-      className="mt-2 h-11 w-full appearance-none rounded-lg border border-neutral-300 bg-white bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_14px_center] bg-no-repeat px-3 pr-10 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
-      {...registration}
-    >
-      <option value="" disabled>
-        {placeholder}
-      </option>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
+      value={value}
+      onChange={(v) =>
+        setValue(name, v as never, { shouldValidate: true, shouldDirty: true })
+      }
+      options={options.map((o) => ({ value: o, label: o }))}
+      placeholder={placeholder}
+      invalid={hasError}
+      className="mt-2"
+    />
   )
 }
 
@@ -681,7 +692,41 @@ function Select({
 // ─────────────────────────────────────────────────────────────────────────────
 
 function StepIdentidad() {
-  const { register } = useFormContext<Partial<CertifyFormData>>()
+  const { register, watch, setValue } = useFormContext<Partial<CertifyFormData>>()
+
+  const country = watch('country') ?? ''
+  const phonePrefix = watch('phonePrefix') ?? ''
+  const documentType = watch('documentType') ?? ''
+  const department = watch('department') ?? ''
+  const countryData = getLatamCountry(country)
+
+  const countryOptions = LATAM_COUNTRIES.map((c) => ({
+    value: c.name,
+    label: c.name,
+    icon: <span className="text-base leading-none">{c.flag}</span>,
+    keywords: c.dialCode,
+  }))
+  const subLabel = countryData?.subdivisionLabel ?? 'Provincia / Departamento'
+  const subOptions = (countryData?.subdivisions ?? []).map((s) => ({
+    value: s,
+    label: s,
+  }))
+  const docOptions = (countryData?.documentTypes ?? GENERIC_DOC_TYPES).map((d) => ({
+    value: d,
+    label: d,
+  }))
+
+  // Al elegir país: autocompleta el prefijo telefónico y resetea los
+  // campos que dependen del país (subdivisión, documento) para que NO
+  // queden valores de otro país.
+  function onCountryChange(name: string) {
+    const c = getLatamCountry(name)
+    setValue('country', name, { shouldValidate: true, shouldDirty: true })
+    if (c) setValue('phonePrefix', c.dialCode, { shouldValidate: true })
+    setValue('department', '', { shouldValidate: false })
+    setValue('documentType', '', { shouldValidate: false })
+  }
+
   return (
     <div>
       <StepHeader
@@ -689,66 +734,64 @@ function StepIdentidad() {
         description="Completá tus datos personales para iniciar la certificación."
       />
       <div className="space-y-5">
-        <FieldRow>
-          <div>
-            <Label htmlFor="applicantName">Nombre y apellido</Label>
-            <Input
-              id="applicantName"
-              placeholder="Ej.: Pedro Fernandez"
-              className="mt-2"
-              {...register('applicantName')}
-            />
-            <FieldError name="applicantName" />
-          </div>
-          <div>
-            <Label>Documento</Label>
-            <div className="mt-2 flex gap-2">
-              <select
-                aria-label="Tipo de documento"
-                defaultValue=""
-                className="h-11 w-24 appearance-none rounded-lg border border-neutral-300 bg-white bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23334060%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22/></svg>')] bg-[length:12px_12px] bg-[position:right_10px_center] bg-no-repeat px-3 pr-8 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
-                {...register('documentType')}
-              >
-                <option value="" disabled>
-                  Tipo
-                </option>
-                <option value="DNI">DNI</option>
-                <option value="Pasaporte">Pasaporte</option>
-                <option value="CUIT">CUIT</option>
-              </select>
-              <Input
-                placeholder="99.999.999"
-                className="flex-1"
-                {...register('documentNumber')}
-              />
-            </div>
-            <FieldError name="documentNumber" />
-          </div>
-        </FieldRow>
+        {/* 1 — Nombre completo */}
+        <div>
+          <Label htmlFor="applicantName">Nombre completo</Label>
+          <Input
+            id="applicantName"
+            placeholder="Ej.: Pedro Fernández"
+            className="mt-2"
+            {...register('applicantName')}
+          />
+          <FieldError name="applicantName" />
+        </div>
 
+        {/* 2 — Correo electrónico */}
+        <div>
+          <Label htmlFor="email">Correo electrónico</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="ejemplo.email@gmail.com"
+            className="mt-2"
+            {...register('email')}
+          />
+          <FieldError name="email" />
+        </div>
+
+        {/* 3 — País (con bandera) + 4 — Teléfono (prefijo según país) */}
         <FieldRow>
           <div>
-            <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="ejemplo.email@gmail.com"
+            <Label htmlFor="country">País</Label>
+            <Combobox
+              id="country"
+              value={country}
+              onChange={onCountryChange}
+              options={countryOptions}
+              placeholder="Elegí tu país"
+              searchPlaceholder="Buscar país…"
               className="mt-2"
-              {...register('email')}
             />
-            <FieldError name="email" />
+            <FieldError name="country" />
           </div>
           <div>
-            <Label>Teléfono</Label>
+            <Label htmlFor="phoneNumber">Teléfono</Label>
             <div className="mt-2 flex gap-2">
+              <span
+                className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-neutral-100 px-3 text-sm text-navy-500"
+                aria-label="Prefijo telefónico según el país"
+                title="Se completa solo al elegir el país"
+              >
+                {countryData && (
+                  <span className="text-base leading-none">{countryData.flag}</span>
+                )}
+                <span>{phonePrefix || '+—'}</span>
+              </span>
               <Input
-                className="w-16"
-                placeholder="+1"
-                {...register('phonePrefix')}
-              />
-              <Input
+                id="phoneNumber"
                 className="flex-1"
                 placeholder="1234 5678"
+                inputMode="tel"
                 {...register('phoneNumber')}
               />
             </div>
@@ -756,34 +799,26 @@ function StepIdentidad() {
           </div>
         </FieldRow>
 
+        {/* 5 — Subdivisión (label + opciones según país) + Dirección */}
         <FieldRow>
           <div>
-            <Label htmlFor="country">País</Label>
-            <Select
-              id="country"
-              options={['Argentina', 'Colombia', 'Perú', 'México', 'Bolivia', 'Ecuador', 'Chile']}
-              registration={register('country')}
-            />
-            <FieldError name="country" />
-          </div>
-          <div>
-            <Label htmlFor="region">Región/Territorio</Label>
-            <Select
-              id="region"
-              options={['Norte', 'Centro', 'Sur', 'Litoral', 'Patagonia', 'Cuyo', 'NOA', 'NEA']}
-              registration={register('region')}
-            />
-            <FieldError name="region" />
-          </div>
-        </FieldRow>
-
-        <FieldRow>
-          <div>
-            <Label htmlFor="department">Departmento/Provincia</Label>
-            <Select
+            <Label htmlFor="department">{subLabel}</Label>
+            <Combobox
               id="department"
-              options={['Jujuy', 'Salta', 'Tucumán', 'Catamarca', 'La Rioja', 'Otro']}
-              registration={register('department')}
+              value={department}
+              onChange={(v) =>
+                setValue('department', v, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              options={subOptions}
+              placeholder={
+                countryData ? `Elegí ${subLabel.toLowerCase()}` : 'Elegí primero un país'
+              }
+              searchPlaceholder="Buscar…"
+              disabled={!countryData}
+              className="mt-2"
             />
             <FieldError name="department" />
           </div>
@@ -791,11 +826,43 @@ function StepIdentidad() {
             <Label htmlFor="address">Dirección</Label>
             <Input
               id="address"
-              placeholder=""
+              placeholder="Calle, número, localidad"
               className="mt-2"
               {...register('address')}
             />
             <FieldError name="address" />
+          </div>
+        </FieldRow>
+
+        {/* Documento (tipos según país) */}
+        <FieldRow>
+          <div>
+            <Label htmlFor="documentType">Tipo de documento</Label>
+            <Combobox
+              id="documentType"
+              value={documentType}
+              onChange={(v) =>
+                setValue('documentType', v, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              options={docOptions}
+              placeholder="Elegí tipo"
+              searchPlaceholder="Buscar…"
+              className="mt-2"
+            />
+            <FieldError name="documentType" />
+          </div>
+          <div>
+            <Label htmlFor="documentNumber">Número de documento</Label>
+            <Input
+              id="documentNumber"
+              placeholder="99.999.999"
+              className="mt-2"
+              {...register('documentNumber')}
+            />
+            <FieldError name="documentNumber" />
           </div>
         </FieldRow>
       </div>

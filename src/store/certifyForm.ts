@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 export interface CertifyFormData {
   // Step 1 — Identidad del solicitante
   applicantName: string
-  documentType: 'DNI' | 'Pasaporte' | 'CUIT' | ''
+  documentType: string
   documentNumber: string
   email: string
   phonePrefix: string
