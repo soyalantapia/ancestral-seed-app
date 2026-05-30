@@ -951,12 +951,20 @@ function BlockchainModal({
 }) {
   useEscape(open, onClose)
   if (!open) return null
-  const network = 'Polygon Mainnet'
-  // Block number derivado del hash (mock estable, consistente por cert)
+  /**
+   * Fix #FEAT-05 + ADR-0002 (análisis proyecto): antes el modal
+   * mostraba "Polygon Mainnet" y linkeaba a polygonscan que devolvía
+   * "No matching results found" — riesgo reputacional. Ahora copy
+   * honesto "Vista previa institucional · activación Q3 2026" y el
+   * link al explorador queda DESACTIVADO con tooltip explicativo.
+   *
+   * El hash sigue mostrándose porque es un ID único interno (sirve
+   * para QR físico + verificación cross). El bloque mock se conserva
+   * para el visual pero se etiqueta como "Bloque previsto".
+   */
+  const network = 'Polygon Amoy (testnet) — previsto Q3 2026'
   const blockNumber =
-    52_000_000 +
-    parseInt(hash.slice(2, 8), 16) % 200_000
-  const explorerUrl = `https://polygonscan.com/search?q=${hash}`
+    52_000_000 + (parseInt(hash.slice(2, 8), 16) % 200_000)
 
   return (
     <div
@@ -988,16 +996,32 @@ function BlockchainModal({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-100 text-gold-700 ring-4 ring-gold-100/60">
             <Network className="h-7 w-7" />
           </div>
-          <p className="mt-4 text-center text-xs uppercase tracking-widest text-success-300">
-            Registro inmutable
+          <p className="mt-4 text-center text-xs uppercase tracking-widest text-warning-400">
+            Vista previa institucional
           </p>
           <p className="mt-1 text-center text-sm font-bold text-navy-500">
             {title}
           </p>
 
+          {/* Fix #FEAT-05: disclaimer claro al inicio del modal */}
+          <div className="mt-4 rounded-2xl border border-warning-300 bg-warning-100/40 p-3 text-xs leading-relaxed text-navy-500">
+            <p className="font-bold text-warning-400">
+              Modo demo institucional
+            </p>
+            <p className="mt-1">
+              El registro on-chain real se activa en producción a partir
+              del Q3 2026 (red Polygon Amoy → mainnet). Los datos abajo
+              representan la metadata que será sellada en blockchain. El
+              hash es un identificador único que también valida el QR
+              físico del producto.
+            </p>
+          </div>
+
           <dl className="mt-5 space-y-3 text-sm">
-            <KV label="Red">{network}</KV>
-            <KV label="Bloque">#{blockNumber.toLocaleString('es-AR')}</KV>
+            <KV label="Red prevista">{network}</KV>
+            <KV label="Bloque (estimado)">
+              #{blockNumber.toLocaleString('es-AR')}
+            </KV>
             <KV label="Fecha de sellado">{formatDate(issuedAt)}</KV>
           </dl>
 
@@ -1021,17 +1045,23 @@ function BlockchainModal({
             </div>
           </div>
 
-          <a
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+          {/* Fix #FEAT-05: link a explorador deshabilitado mientras la
+              integración real está pendiente. Antes devolvía 404 en
+              polygonscan y dañaba la credibilidad. */}
+          <button
+            type="button"
+            disabled
+            title="Disponible cuando se active la integración Q3 2026"
+            className="mt-5 inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-dashed border-neutral-300 bg-white px-5 py-3 text-sm font-semibold text-navy-300"
           >
             <ExternalLink className="h-4 w-4" />
-            Abrir en explorador
-          </a>
+            Abrir en explorador · pendiente Q3 2026
+          </button>
           <p className="mt-3 text-center text-[11px] text-navy-300">
-            Verificá la inmutabilidad en una blockchain pública
+            Decisión documentada en{' '}
+            <code className="text-navy-500">
+              docs/adr/0002-blockchain-disclaimer-vs-integracion.md
+            </code>
           </p>
         </div>
       </div>

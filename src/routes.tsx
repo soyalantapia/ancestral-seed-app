@@ -73,6 +73,16 @@ const TutorAgenda = lazyWithRetry(() => import('@/pages/tutor/TutorAgenda'))
 const TutorTasks = lazyWithRetry(() => import('@/pages/tutor/TutorTasks'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 const Legal = lazyWithRetry(() => import('@/pages/Legal'))
+// Fix análisis proyecto — páginas nuevas Ola 2 + Ola 3
+const Renovar = lazyWithRetry(() => import('@/pages/Renovar'))
+const Apelar = lazyWithRetry(() => import('@/pages/Apelar'))
+const PlanMejora = lazyWithRetry(() => import('@/pages/PlanMejora'))
+const Denuncias = lazyWithRetry(() => import('@/pages/Denuncias'))
+const MisDatos = lazyWithRetry(() => import('@/pages/MisDatos'))
+const BuyerWallet = lazyWithRetry(() => import('@/pages/comprador/BuyerWallet'))
+const CoordinadorEquipo = lazyWithRetry(
+  () => import('@/pages/coordinador/CoordinadorEquipo'),
+)
 
 function PageFallback() {
   return (
@@ -110,6 +120,8 @@ export const router = createBrowserRouter(
         { path: 'recuperar', element: withSuspense(<RecoverPassword />) },
         { path: 'certificar', element: withSuspense(<CertifyForm />) },
         { path: 'legal/:section', element: withSuspense(<Legal />) },
+        // Fix #FEAT-06: denuncia pública sin login
+        { path: 'denuncias', element: withSuspense(<Denuncias />) },
       ],
     },
     {
@@ -127,6 +139,30 @@ export const router = createBrowserRouter(
         { path: 'configuracion', element: withSuspense(<Settings />) },
         { path: 'ayuda', element: withSuspense(<Help />) },
         { path: 'dashboard', element: <Navigate to="/inicio" replace /> },
+        // Fix #FEAT-02: renovación
+        {
+          path: 'mis-certificaciones/:id/renovar',
+          element: withSuspense(<Renovar />),
+        },
+        // Fix #FEAT-03: apelación
+        {
+          path: 'mis-certificaciones/:id/apelar',
+          element: withSuspense(<Apelar />),
+        },
+        // Fix #FEAT-08: plan de mejora
+        {
+          path: 'mis-certificaciones/:id/plan-mejora',
+          element: withSuspense(<PlanMejora />),
+        },
+        // Fix #FEAT-13: derechos del titular de datos
+        { path: 'mis-datos', element: withSuspense(<MisDatos />) },
+        // Fix #FEAT-01: rol Comprador B2B
+        { path: 'comprador/wallet', element: withSuspense(<BuyerWallet />) },
+        // Fix #FEAT-04 + 11: rol Coordinador
+        {
+          path: 'coordinador/equipo',
+          element: withSuspense(<CoordinadorEquipo />),
+        },
       ],
     },
     {

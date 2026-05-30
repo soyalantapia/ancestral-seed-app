@@ -1,0 +1,32 @@
+# Fix #GAP-06 (análisis proyecto): pre-commit hooks con lefthook.
+# Antes lint/types/tests eran opcionales — uno podía pushear código
+# roto y el CI atrapaba después (cuando ya estaba en main). Con esto
+# el `git commit` falla local antes de mandar nada.
+#
+# Lefthook se elige sobre husky porque es 1 binario sin node_modules
+# dependency. Instalación: `npx lefthook install` (una vez).
+
+pre-commit:
+  parallel: true
+  commands:
+    lint-staged:
+      glob: '*.{ts,tsx,mjs,js}'
+      run: npx eslint --max-warnings 0 {staged_files}
+    typecheck:
+      glob: '*.{ts,tsx}'
+      run: npx tsc -b --noEmit
+
+commit-msg:
+  commands:
+    msg-format:
+      run: |
+        # Mínimo razonable: 10+ chars en la primera línea.
+        if [ "$(head -1 {1} | wc -c)" -lt 10 ]; then
+          echo "❌ Commit message demasiado corto"
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    tests:
+      run: npm test -- --run

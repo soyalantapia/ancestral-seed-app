@@ -1,0 +1,44 @@
+# Fix #GAP-01 (análisis proyecto): CI mínimo en GitHub Actions.
+# Antes el deploy era 100% manual desde la Mac del autor — sin
+# verificación automática, sin red de seguridad. Ahora cada PR y push
+# a main corre lint + types + tests + build. Si algo falla, no merge.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Lint + Types + Test + Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verify assets
+        run: npm run verify-assets
+
+      - name: Type check
+        run: npx tsc -b --noEmit
+
+      - name: Tests
+        run: npm test
+
+      - name: Build (full)
+        run: npm run build
+        env:
+          VITE_USE_MSW: 'false'

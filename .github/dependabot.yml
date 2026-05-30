@@ -1,0 +1,28 @@
+# Fix #GAP-05 (análisis proyecto): sin Dependabot las CVEs nuevas
+# (d3-color, etc.) no se detectan hasta que alguien hace `npm audit`
+# manual. Ahora chequeo semanal automático con PRs agrupados.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      production-deps:
+        dependency-type: production
+        update-types: [minor, patch]
+      dev-deps:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # Pinneados a major exacto por compat: revisar manual
+      - dependency-name: 'react'
+      - dependency-name: 'react-dom'
+      - dependency-name: 'react-router-dom'
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly

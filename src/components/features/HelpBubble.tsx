@@ -47,11 +47,16 @@ export function HelpBubble() {
                 subtitle="Guías paso a paso y FAQ"
                 onClick={() => setOpen(false)}
               />
+              {/* Fix #FEAT-17 (análisis proyecto): el item "Chat con
+                  soporte" mentía — linkeaba a /ayuda sin chat real.
+                  Cambiado a "Centro de ayuda" honest. Cuando se
+                  integre un widget de chat (Crisp/Intercom),
+                  reactivar con copy "Chat en vivo". */}
               <HelpItem
                 icon={MessageSquare}
                 to="/ayuda"
-                title="Chat con soporte"
-                subtitle="Lun a Vie · 9 a 18hs (GMT-3)"
+                title="FAQ y guías"
+                subtitle="Buscá tu duda en el glosario y los plazos"
                 onClick={() => setOpen(false)}
               />
               <HelpItem

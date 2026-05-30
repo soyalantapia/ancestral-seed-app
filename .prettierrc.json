@@ -1,0 +1,10 @@
+{
+  "_comment": "Fix #GAP-07: configuración Prettier explícita. Antes el formato dependía del editor de cada uno.",
+  "semi": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "arrowParens": "always",
+  "endOfLine": "lf"
+}
