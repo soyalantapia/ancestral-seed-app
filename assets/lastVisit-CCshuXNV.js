@@ -1,1 +1,0 @@
-import{n as e,t}from"./middleware-HU0GtQT3.js";var n=e()(t(e=>({lastVisitAt:null,markVisited:()=>e({lastVisitAt:new Date().toISOString()})}),{name:`ancestral-seed-last-visit-v1`}));export{n as t};
