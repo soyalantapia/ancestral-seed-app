@@ -49,14 +49,26 @@ const stepSchemas = [
     region: z.string().optional().or(z.literal('')),
   }),
   // Step 2 — Comunidad
-  z.object({
-    communityRole: z.string().min(2, 'Seleccioná un rol'),
-    communityActivity: z.string().min(2, 'Seleccioná una actividad'),
-    hasKinship: z.enum(['si', 'no'], { message: 'Elegí una opción' }),
-    communityName: z.string().min(2, 'Indicá el nombre'),
-    territoryName: z.string().optional().or(z.literal('')),
-    inspirationCommunity: z.string().min(2, 'Indicá comunidad o región'),
-  }),
+  z
+    .object({
+      communityRole: z.string().min(2, 'Seleccioná un rol'),
+      communityRoleOther: z.string().optional().or(z.literal('')),
+      communityActivity: z.string().min(2, 'Seleccioná una actividad'),
+      hasKinship: z.enum(['si', 'no'], { message: 'Elegí una opción' }),
+      communityName: z.string().min(2, 'Indicá el nombre'),
+      territoryName: z.string().optional().or(z.literal('')),
+      inspirationCommunity: z.string().min(2, 'Indicá comunidad o región'),
+    })
+    .superRefine((val, ctx) => {
+      // Si el rol es "Otro", la aclaración pasa a ser obligatoria.
+      if (val.communityRole === 'Otro' && !(val.communityRoleOther ?? '').trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['communityRoleOther'],
+          message: 'Aclará cuál es tu rol',
+        })
+      }
+    }),
   // Step 3 — Producto
   z.object({
     productName: z.string().min(3, 'Mínimo 3 caracteres'),
@@ -877,6 +889,7 @@ function StepIdentidad() {
 function StepComunidad() {
   const { register, watch, setValue } = useFormContext<Partial<CertifyFormData>>()
   const has = watch('hasKinship')
+  const role = watch('communityRole')
   return (
     <div>
       <StepHeader
@@ -889,10 +902,21 @@ function StepComunidad() {
             <Label htmlFor="communityRole">¿Qué rol cumple?</Label>
             <Select
               id="communityRole"
-              options={['Artesano/a', 'Productor/a', 'Líder comunitario', 'Curador/a', 'Intermediario/a', 'Otro']}
+              options={['Artesano/a', 'Productor/a', 'Líder comunitario', 'Otro']}
               registration={register('communityRole')}
             />
             <FieldError name="communityRole" />
+            {role === 'Otro' && (
+              <div className="mt-2">
+                <Input
+                  id="communityRoleOther"
+                  placeholder="Aclará cuál es tu rol"
+                  aria-label="Aclará cuál es tu rol"
+                  {...register('communityRoleOther')}
+                />
+                <FieldError name="communityRoleOther" />
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor="communityActivity">¿Cuál actividad realiza?</Label>
@@ -1533,7 +1557,12 @@ function StepRevision({
       title: 'Comunidad',
       step: 1,
       items: [
-        ['Rol', data.communityRole],
+        [
+          'Rol',
+          data.communityRole === 'Otro'
+            ? data.communityRoleOther || 'Otro'
+            : data.communityRole,
+        ],
         ['Actividad', data.communityActivity],
         ['Parentesco', data.hasKinship],
         ['Comunidad', data.communityName],

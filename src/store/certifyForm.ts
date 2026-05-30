@@ -16,6 +16,7 @@ export interface CertifyFormData {
 
   // Step 2 — Comunidad
   communityRole: string
+  communityRoleOther: string
   communityActivity: string
   hasKinship: 'si' | 'no' | ''
   communityName: string
