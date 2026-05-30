@@ -59,13 +59,55 @@ interface CertifyFormState {
   reset: () => void
 }
 
-const initial: Partial<CertifyFormData> = {
+// Todos los campos arrancan definidos (string → '', array → [], enum →
+// '', bool → false). Si un campo string quedara `undefined`, Zod haría
+// el chequeo de tipo antes del `.min()` y mostraría "expected string,
+// received undefined" en vez del mensaje amigable del `.min()`.
+const initial: CertifyFormData = {
+  // Step 1 — Identidad
+  applicantName: '',
   documentType: '',
+  documentNumber: '',
+  email: '',
   phonePrefix: '+54',
+  phoneNumber: '',
+  country: '',
+  region: '',
+  department: '',
+  address: '',
+
+  // Step 2 — Comunidad
+  communityRole: '',
+  communityRoleOther: '',
+  communityActivity: '',
+  communityActivityOther: '',
   hasKinship: '',
+  communityName: '',
+  territoryName: '',
+  inspirationCommunity: '',
+
+  // Step 3 — Producto
+  productName: '',
+  productType: '',
+  productSector: '',
+  productSectorOther: '',
+  productSubcategory: '',
+  productSubcategoryOther: '',
+
+  // Step 4 — Proceso
+  processDescription: '',
+  producerType: '',
+  productionCapacity: '',
   batchType: '',
   batchIdentifiers: [],
+
+  // Step 5 — Evidencias
+  coverImageName: '',
   galleryNames: [],
+  videoUrl: '',
+  references: '',
+
+  // Step 6 — Privacidad
   acceptTerms: false,
   acceptDataPolicy: false,
   acceptPublic: false,
@@ -81,6 +123,19 @@ export const useCertifyFormStore = create<CertifyFormState>()(
         set((s) => ({ data: { ...s.data, ...patch } })),
       reset: () => set({ data: initial, step: 0 }),
     }),
-    { name: 'ancestral-seed-certify-form-v2' },
+    {
+      name: 'ancestral-seed-certify-form-v2',
+      // Borradores viejos pueden no tener todas las claves string; sin
+      // este merge llegarían como `undefined` y Zod mostraría el error
+      // de tipo en vez del mensaje amigable. Rellenamos sobre `initial`.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<CertifyFormState>
+        return {
+          ...current,
+          step: p.step ?? current.step,
+          data: { ...initial, ...(p.data ?? {}) },
+        }
+      },
+    },
   ),
 )

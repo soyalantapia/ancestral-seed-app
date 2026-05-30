@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { Toaster } from 'sonner'
+// Side-effect: instala el error map global de Zod (mensajes en español).
+// Debe ir antes que cualquier schema valide para estandarizar errores.
+import './lib/zodErrorMap'
 import { router } from './routes'
 import { useThemeEffect } from './hooks/useThemeEffect'
 import './index.css'

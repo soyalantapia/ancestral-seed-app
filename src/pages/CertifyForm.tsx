@@ -1405,7 +1405,9 @@ function StepEvidencias() {
             })}
           </ul>
         )}
-        <FieldError name="coverImageName" />
+        {/* galleryNames (min 3) es la restricción que importa: si hay ≥3
+            fotos, la portada siempre queda seteada. Mostramos ese error. */}
+        <FieldError name="galleryNames" />
 
         <EvidenceSection
           title="Video del producto o proceso"
