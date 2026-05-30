@@ -18,6 +18,7 @@ export interface CertifyFormData {
   communityRole: string
   communityRoleOther: string
   communityActivity: string
+  communityActivityOther: string
   hasKinship: 'si' | 'no' | ''
   communityName: string
   territoryName: string
@@ -27,7 +28,9 @@ export interface CertifyFormData {
   productName: string
   productType: string
   productSector: string
+  productSectorOther: string
   productSubcategory: string
+  productSubcategoryOther: string
 
   // Step 4 — Proceso de producción o prestación
   processDescription: string

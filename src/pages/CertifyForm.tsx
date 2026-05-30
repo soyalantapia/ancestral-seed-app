@@ -54,13 +54,14 @@ const stepSchemas = [
       communityRole: z.string().min(2, 'Seleccioná un rol'),
       communityRoleOther: z.string().optional().or(z.literal('')),
       communityActivity: z.string().min(2, 'Seleccioná una actividad'),
+      communityActivityOther: z.string().optional().or(z.literal('')),
       hasKinship: z.enum(['si', 'no'], { message: 'Elegí una opción' }),
       communityName: z.string().min(2, 'Indicá el nombre'),
       territoryName: z.string().optional().or(z.literal('')),
       inspirationCommunity: z.string().min(2, 'Indicá comunidad o región'),
     })
     .superRefine((val, ctx) => {
-      // Si el rol es "Otro", la aclaración pasa a ser obligatoria.
+      // Si se eligió "Otro", la aclaración pasa a ser obligatoria.
       if (val.communityRole === 'Otro' && !(val.communityRoleOther ?? '').trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -68,14 +69,46 @@ const stepSchemas = [
           message: 'Aclará cuál es tu rol',
         })
       }
+      if (
+        val.communityActivity === 'Otro' &&
+        !(val.communityActivityOther ?? '').trim()
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['communityActivityOther'],
+          message: 'Aclará la actividad',
+        })
+      }
     }),
   // Step 3 — Producto
-  z.object({
-    productName: z.string().min(3, 'Mínimo 3 caracteres'),
-    productType: z.string().min(2, 'Seleccioná un tipo'),
-    productSector: z.string().min(2, 'Seleccioná un sector'),
-    productSubcategory: z.string().min(2, 'Seleccioná una subcategoría'),
-  }),
+  z
+    .object({
+      productName: z.string().min(3, 'Mínimo 3 caracteres'),
+      productType: z.string().min(2, 'Seleccioná un tipo'),
+      productSector: z.string().min(2, 'Seleccioná un sector'),
+      productSectorOther: z.string().optional().or(z.literal('')),
+      productSubcategory: z.string().min(2, 'Seleccioná una subcategoría'),
+      productSubcategoryOther: z.string().optional().or(z.literal('')),
+    })
+    .superRefine((val, ctx) => {
+      if (val.productSector === 'Otro' && !(val.productSectorOther ?? '').trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['productSectorOther'],
+          message: 'Especificá el sector',
+        })
+      }
+      if (
+        val.productSubcategory === 'Otro' &&
+        !(val.productSubcategoryOther ?? '').trim()
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['productSubcategoryOther'],
+          message: 'Especificá la subcategoría',
+        })
+      }
+    }),
   // Step 4 — Proceso
   z.object({
     processDescription: z.string().min(20, 'Mínimo 20 caracteres').max(400, 'Máximo 400'),
@@ -145,6 +178,17 @@ function hasSignificantData(d: Partial<CertifyFormData>): boolean {
       (d.galleryNames && d.galleryNames.length > 0) ||
       (d.batchIdentifiers && d.batchIdentifiers.length > 0),
   )
+}
+
+/**
+ * Para el resumen: si el campo es "Otro", muestra la aclaración escrita
+ * (campo companion) en vez del literal "Otro".
+ */
+function displayOther(
+  main: string | undefined,
+  other: string | undefined,
+): string | undefined {
+  return main === 'Otro' ? other || 'Otro' : main
 }
 
 export default function CertifyForm() {
@@ -663,11 +707,13 @@ function Select({
   id,
   options,
   placeholder = 'Seleccionar',
+  otherPlaceholder = 'Especificá cuál',
   registration,
 }: {
   id: string
   options: string[]
   placeholder?: string
+  otherPlaceholder?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registration: any
 }) {
@@ -680,22 +726,54 @@ function Select({
     setValue,
     formState: { errors },
   } = useFormContext<Partial<CertifyFormData>>()
+  const errMap = errors as Record<string, { message?: string } | undefined>
   const value = (watch(name) as string) ?? ''
-  const hasError = Boolean(
-    (errors as Record<string, unknown>)[name as string],
-  )
+  const hasError = Boolean(errMap[name as string])
+
+  // Si la opción es "Otro", mostramos un input para aclarar. El texto se
+  // guarda en el campo companion `${name}Other` (mismo patrón para todo
+  // select que tenga "Otro").
+  const otherName = `${name}Other`
+  const showOther = value === 'Otro'
+  const otherValue = (watch(otherName as keyof CertifyFormData) as string) ?? ''
+  const otherErr = errMap[otherName]
+
   return (
-    <Combobox
-      id={id}
-      value={value}
-      onChange={(v) =>
-        setValue(name, v as never, { shouldValidate: true, shouldDirty: true })
-      }
-      options={options.map((o) => ({ value: o, label: o }))}
-      placeholder={placeholder}
-      invalid={hasError}
-      className="mt-2"
-    />
+    <>
+      <Combobox
+        id={id}
+        value={value}
+        onChange={(v) =>
+          setValue(name, v as never, { shouldValidate: true, shouldDirty: true })
+        }
+        options={options.map((o) => ({ value: o, label: o }))}
+        placeholder={placeholder}
+        invalid={hasError}
+        className="mt-2"
+      />
+      {showOther && (
+        <div className="mt-2">
+          <Input
+            id={`${id}-other`}
+            value={otherValue}
+            onChange={(e) =>
+              setValue(otherName as never, e.target.value as never, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
+            }
+            placeholder={otherPlaceholder}
+            aria-label={otherPlaceholder}
+            className={cn(otherErr && 'border-error-400')}
+          />
+          {otherErr?.message && (
+            <p className="mt-1 text-xs font-medium text-error-400">
+              {otherErr.message}
+            </p>
+          )}
+        </div>
+      )}
+    </>
   )
 }
 
@@ -889,7 +967,6 @@ function StepIdentidad() {
 function StepComunidad() {
   const { register, watch, setValue } = useFormContext<Partial<CertifyFormData>>()
   const has = watch('hasKinship')
-  const role = watch('communityRole')
   return (
     <div>
       <StepHeader
@@ -903,26 +980,17 @@ function StepComunidad() {
             <Select
               id="communityRole"
               options={['Artesano/a', 'Productor/a', 'Líder comunitario', 'Otro']}
+              otherPlaceholder="Aclará cuál es tu rol"
               registration={register('communityRole')}
             />
             <FieldError name="communityRole" />
-            {role === 'Otro' && (
-              <div className="mt-2">
-                <Input
-                  id="communityRoleOther"
-                  placeholder="Aclará cuál es tu rol"
-                  aria-label="Aclará cuál es tu rol"
-                  {...register('communityRoleOther')}
-                />
-                <FieldError name="communityRoleOther" />
-              </div>
-            )}
           </div>
           <div>
             <Label htmlFor="communityActivity">¿Cuál actividad realiza?</Label>
             <Select
               id="communityActivity"
               options={['Tejido', 'Orfebrería', 'Cerámica', 'Cocina ancestral', 'Medicina', 'Agricultura', 'Otro']}
+              otherPlaceholder="Aclará la actividad"
               registration={register('communityActivity')}
             />
             <FieldError name="communityActivity" />
@@ -1033,6 +1101,7 @@ function StepProducto() {
             <Select
               id="productSector"
               options={['Joyería y orfebrería', 'Tejidos y textiles', 'Cocina ancestral', 'Productos agroecológicos', 'Turismo cultural', 'Medicina ancestral', 'Cerámica y alfarería', 'Otro']}
+              otherPlaceholder="Especificá el sector"
               registration={register('productSector')}
             />
             <FieldError name="productSector" />
@@ -1044,6 +1113,7 @@ function StepProducto() {
           <Select
             id="productSubcategory"
             options={['Filigrana', 'Tejido en telar', 'Bordado', 'Cestería', 'Hilado', 'Cerámica negra', 'Otro']}
+            otherPlaceholder="Especificá la subcategoría"
             registration={register('productSubcategory')}
           />
           <FieldError name="productSubcategory" />
@@ -1557,13 +1627,8 @@ function StepRevision({
       title: 'Comunidad',
       step: 1,
       items: [
-        [
-          'Rol',
-          data.communityRole === 'Otro'
-            ? data.communityRoleOther || 'Otro'
-            : data.communityRole,
-        ],
-        ['Actividad', data.communityActivity],
+        ['Rol', displayOther(data.communityRole, data.communityRoleOther)],
+        ['Actividad', displayOther(data.communityActivity, data.communityActivityOther)],
         ['Parentesco', data.hasKinship],
         ['Comunidad', data.communityName],
         ['Territorio propio', data.territoryName],
@@ -1576,8 +1641,8 @@ function StepRevision({
       items: [
         ['Nombre', data.productName],
         ['Tipo', data.productType],
-        ['Sector', data.productSector],
-        ['Subcategoría', data.productSubcategory],
+        ['Sector', displayOther(data.productSector, data.productSectorOther)],
+        ['Subcategoría', displayOther(data.productSubcategory, data.productSubcategoryOther)],
       ],
     },
     {
