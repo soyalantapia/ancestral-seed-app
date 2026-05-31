@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Check,
@@ -43,7 +43,22 @@ export function InternalNotesPanel({
   entityKey,
   currentUser,
 }: InternalNotesPanelProps) {
-  const notes = useInternalNotesStore((s) => s.notesFor(entityKey))
+  // Importante: seleccionamos el array crudo `notes` (referencia estable)
+  // y derivamos el filtrado/orden con useMemo. Si en cambio usáramos el
+  // selector `s.notesFor(entityKey)`, devolvería un array NUEVO en cada
+  // render → useSyncExternalStore detecta "cambio" infinito → "Maximum
+  // update depth exceeded" (crasheaba la pestaña de notas).
+  const allNotes = useInternalNotesStore((s) => s.notes)
+  const notes = useMemo(
+    () =>
+      allNotes
+        .filter((n) => n.entityKey === entityKey)
+        .sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+          return (b.at ?? '').localeCompare(a.at ?? '')
+        }),
+    [allNotes, entityKey],
+  )
   const addNote = useInternalNotesStore((s) => s.addNote)
   const updateNote = useInternalNotesStore((s) => s.updateNote)
   const removeNote = useInternalNotesStore((s) => s.removeNote)

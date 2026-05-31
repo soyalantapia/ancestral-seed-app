@@ -47,8 +47,10 @@ export function GuidedTour() {
   const step = useOnboardingStore((s) => s.step)
   const next = useOnboardingStore((s) => s.next)
   const prev = useOnboardingStore((s) => s.prev)
-  const pause = useOnboardingStore((s) => s.pause)
+  // Cerrar el tour (X, click afuera o Esc) lo marca como completado para
+  // que NO vuelva a aparecer. Se puede reabrir desde Ayuda → "Ver tour".
   const finish = useOnboardingStore((s) => s.finish)
+  const dismiss = finish
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -264,7 +266,7 @@ export function GuidedTour() {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
-        pause()
+        dismiss()
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
         if (isLast) finish()
@@ -276,7 +278,7 @@ export function GuidedTour() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [activeTour, isFirst, isLast, next, prev, pause, finish])
+  }, [activeTour, isFirst, isLast, next, prev, dismiss, finish])
 
   if (!tour || !currentStep) return null
 
@@ -301,11 +303,11 @@ export function GuidedTour() {
     >
         {/* Overlays oscuros (4 paneles que dejan un agujero sobre el target) */}
         {hasSpotlight ? (
-          <SpotlightCutout rect={targetRect!} padding={PAD} onClick={pause} />
+          <SpotlightCutout rect={targetRect!} padding={PAD} onClick={dismiss} />
         ) : (
           <div
             className="absolute inset-0 bg-navy-500/60 backdrop-blur-sm"
-            onClick={pause}
+            onClick={dismiss}
           />
         )}
 
@@ -367,7 +369,7 @@ export function GuidedTour() {
             </div>
             <button
               type="button"
-              onClick={pause}
+              onClick={dismiss}
               aria-label="Cerrar tour"
               className="rounded-full p-1.5 text-navy-300 hover:bg-neutral-100"
             >

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -173,12 +173,16 @@ export default function TutorCertificationDetail() {
    * hidratado (el sentinel `seeded` garantiza que después de la
    * primera apertura del drawer el store tiene la verdad).
    */
-  const notesFromStore = useInternalNotesStore((s) =>
-    s.notesFor(certEntityKey(cert.id)),
+  // Seleccionamos el COUNT (primitivo estable) en vez de notesFor(...),
+  // que devolvería un array nuevo en cada render y dispararía el loop de
+  // useSyncExternalStore ("Maximum update depth exceeded").
+  const notesCountFromStore = useInternalNotesStore(
+    (s) =>
+      s.notes.filter((n) => n.entityKey === certEntityKey(cert.id)).length,
   )
   const notesCount =
-    notesFromStore.length > 0
-      ? notesFromStore.length
+    notesCountFromStore > 0
+      ? notesCountFromStore
       : getInitialNotesByCert(cert.id).length
 
   return (
@@ -1501,8 +1505,18 @@ function NotesDrawer({
   // mismo store que el caso activo, con entityKey distinto (cert-XXX).
   // La primera vez que se abre el drawer hidratamos con los seeds
   // de getInitialNotesByCert si todavía no hay notas para ese cert.
-  const notes = useInternalNotesStore((s) =>
-    s.notesFor(certEntityKey(certId)),
+  // Array crudo + useMemo (ver nota en InternalNotesPanel): notesFor()
+  // devuelve un array nuevo en cada render y rompe useSyncExternalStore.
+  const allNotes = useInternalNotesStore((s) => s.notes)
+  const notes = useMemo(
+    () =>
+      allNotes
+        .filter((n) => n.entityKey === certEntityKey(certId))
+        .sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+          return (b.at ?? '').localeCompare(a.at ?? '')
+        }),
+    [allNotes, certId],
   )
   const addNoteToStore = useInternalNotesStore((s) => s.addNote)
   const updateNoteInStore = useInternalNotesStore((s) => s.updateNote)
