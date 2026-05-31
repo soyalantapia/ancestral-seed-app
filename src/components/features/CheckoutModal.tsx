@@ -196,8 +196,6 @@ export function CheckoutModal({
     }
   }, [open, onClose, status])
 
-  if (!item) return null
-
   function formatCardNumber(raw: string): string {
     const digits = raw.replace(/\D/g, '').slice(0, 19)
     return digits.replace(/(\d{4})(?=\d)/g, '$1 ')
@@ -247,6 +245,12 @@ export function CheckoutModal({
     !fieldErrors.number &&
     !fieldErrors.expiry &&
     !fieldErrors.cvv
+
+  // Guard DESPUÉS de todos los hooks (Rules of Hooks). Antes estaba arriba
+  // del useMemo de fieldErrors: al abrir el modal (item null → objeto) el
+  // conteo de hooks cambiaba (14 → 15) y React crasheaba con "Rendered
+  // more hooks than during the previous render".
+  if (!item) return null
 
   function copyToClipboard(value: string, label: string) {
     navigator.clipboard?.writeText(value).then(
