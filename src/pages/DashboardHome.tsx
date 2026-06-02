@@ -70,15 +70,17 @@ function selectFeatured(
       completedCount(b) - completedCount(a) ||
       b.createdAt.localeCompare(a.createdAt),
   )
+  const active = (r: CertificationRequest) =>
+    r.status === 'En curso' || r.status === 'En emisión'
   if (vista === 'emitido') {
     return byProgress.find(isCertified) ?? byProgress[0]
   }
   if (vista === 'revision') {
-    return byProgress.find((r) => !isCertified(r)) ?? byProgress[0]
+    return byProgress.find(active) ?? byProgress[0]
   }
-  // Auto: priorizamos un trayecto en curso (necesita atención); si no
-  // hay, mostramos el certificado más reciente.
-  return byProgress.find((r) => !isCertified(r)) ?? byProgress[0]
+  // Auto: priorizamos un trayecto ACTIVO (necesita atención); si no hay,
+  // el certificado más reciente; recién después, cualquier otro (denegada).
+  return byProgress.find(active) ?? byProgress.find(isCertified) ?? byProgress[0]
 }
 
 interface NextStep {

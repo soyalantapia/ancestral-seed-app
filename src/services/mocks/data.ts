@@ -461,6 +461,53 @@ export const mockCertificationRequests: CertificationRequest[] = [
       producerType: 'Yo misma · con apoyo familiar',
     },
   },
+  // Certificación DENEGADA — cierra la 3ª ruta del ciclo (Apelar). El
+  // postulante puede apelar al Comité dentro del plazo reglamentario.
+  {
+    id: 'req-003',
+    number: '#003',
+    productName: 'Aretes en mostacilla',
+    createdAt: '2026-01-15',
+    currentStage: 'evaluacion',
+    status: 'Denegada',
+    progressLabel: 'Denegada en evaluación · podés apelar',
+    diagnosticCompleted: true,
+    pendingItems: [],
+    stages: [
+      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '15/01/2026' },
+      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '22/01/2026' },
+      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '08/02/2026' },
+      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '01/03/2026' },
+      { stage: 'evaluacion', label: 'Evaluación', status: 'completed', date: '18/03/2026' },
+      { stage: 'certificacion', label: 'Certificación', status: 'pending' },
+    ],
+    meetings: [],
+    scheduledMeetings: [],
+    evidences: [
+      { id: 'e3-1', name: 'aretes.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-01-17T10:00:00-03:00' },
+    ],
+    payments: [
+      { id: 'p3-1', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2026-02-01', paidAt: '2026-01-25' },
+    ],
+    history: [
+      { id: 'h3-1', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2026-01-15T18:00:00-03:00' },
+      { id: 'h3-2', kind: 'stage_changed', title: 'Certificación denegada', description: 'Puntaje 64% — por debajo del mínimo (80%). Reglamento 1.5.', actor: 'Auditor', at: '2026-03-18T12:00:00-03:00' },
+    ],
+    submittedData: {
+      applicantName: 'Camila Montes',
+      email: 'camila@ancestralseed.org',
+      phone: '+57 2345-6789',
+      country: 'Colombia',
+      region: 'Caribe colombiano',
+      community: 'Sierra Nevada de Santa Marta',
+      inspirationCommunity: 'Comunidad Kogi',
+      productType: 'Producto físico',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Mostacilla',
+      processDescription: 'Aretes tejidos en mostacilla con patrones tradicionales.',
+      producerType: 'Yo misma',
+    },
+  },
   {
     id: 'req-001',
     number: '#001',

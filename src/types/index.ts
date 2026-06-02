@@ -603,7 +603,7 @@ export interface CertificationRequest {
   pendingItems: string[]
   meetings: AuditMeeting[]
   scheduledMeetings: AuditMeeting[]
-  status: 'En curso' | 'En emisión' | 'Certificado'
+  status: 'En curso' | 'En emisión' | 'Certificado' | 'Denegada'
   progressLabel: string
   diagnosticDeadline?: string
   diagnosticCompleted?: boolean

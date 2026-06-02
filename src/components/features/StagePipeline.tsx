@@ -85,6 +85,7 @@ export function StageStatusBadge({ status }: { status: string }) {
     'En curso': 'bg-gold-100 text-gold-700',
     'En emisión': 'bg-info-100 text-info-400',
     Vigente: 'bg-success-100 text-success-300 ring-1 ring-success-300/30',
+    Denegada: 'bg-error-100 text-error-400 ring-1 ring-error-200',
   }
   return (
     <span

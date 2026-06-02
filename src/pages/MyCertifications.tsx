@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils'
  * - Certificadas: con licencia ya otorgada → link a /certificado/[slug]
  * - Postergadas: borradores guardados en el CertifyForm store
  */
-const tabs = ['En curso', 'En emisión', 'Certificadas', 'Postergadas'] as const
+const tabs = ['En curso', 'En emisión', 'Certificadas', 'Denegadas', 'Postergadas'] as const
 type Tab = (typeof tabs)[number]
 
 const sortOptions = [
@@ -48,10 +48,13 @@ type SortId = (typeof sortOptions)[number]['id']
  * 'Certificado' del modelo (singular en types/index.ts), "Postergadas"
  * no es un status de request sino del store del CertifyForm.
  */
-function statusForTab(tab: Tab): 'En curso' | 'En emisión' | 'Certificado' | null {
+function statusForTab(
+  tab: Tab,
+): 'En curso' | 'En emisión' | 'Certificado' | 'Denegada' | null {
   if (tab === 'En curso') return 'En curso'
   if (tab === 'En emisión') return 'En emisión'
   if (tab === 'Certificadas') return 'Certificado'
+  if (tab === 'Denegadas') return 'Denegada'
   return null // Postergadas no tiene status
 }
 
@@ -430,7 +433,9 @@ export default function MyCertifications() {
                       ? 'En emisión'
                       : r.status === 'Certificado'
                         ? 'Vigente'
-                        : STAGES[r.currentStage]?.label ?? 'En curso'
+                        : r.status === 'Denegada'
+                          ? 'Denegada'
+                          : STAGES[r.currentStage]?.label ?? 'En curso'
                   }
                 />
               </div>

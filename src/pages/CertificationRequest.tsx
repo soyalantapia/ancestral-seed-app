@@ -162,7 +162,11 @@ export default function CertificationRequest() {
                 status={
                   request.status === 'En emisión'
                     ? 'En emisión'
-                    : STAGES[request.currentStage]?.label ?? 'En curso'
+                    : request.status === 'Certificado'
+                      ? 'Vigente'
+                      : request.status === 'Denegada'
+                        ? 'Denegada'
+                        : STAGES[request.currentStage]?.label ?? 'En curso'
                 }
               />
               {request.pendingItems.length > 0 && (
@@ -207,10 +211,11 @@ export default function CertificationRequest() {
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
               <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
             </dl>
-            {/* Aviso de inactividad — solo si la solicitud está en proceso
-                (para una certificación emitida no aplica). Colapsable para
-                no intimidar. */}
-            {request.status !== 'Certificado' && (
+            {/* Aviso de inactividad — solo si la solicitud está activa
+                (no aplica a una emitida ni a una denegada). Colapsable
+                para no intimidar. */}
+            {(request.status === 'En curso' ||
+              request.status === 'En emisión') && (
               <details className="mt-3 text-[11px] text-navy-300">
                 <summary className="inline-flex cursor-pointer list-none items-center font-medium text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
                   ¿Hay un plazo para responder?
@@ -244,6 +249,19 @@ export default function CertificationRequest() {
                 >
                   <Sparkles className="h-4 w-4" />
                   Plan de mejora
+                </Link>
+              </div>
+            )}
+
+            {/* Certificación denegada → acceso a la apelación. */}
+            {request.status === 'Denegada' && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  to={`/mis-certificaciones/${request.id}/apelar`}
+                  className="inline-flex items-center gap-2 rounded-full bg-error-400 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-error-300"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  Apelar la denegación
                 </Link>
               </div>
             )}
@@ -2058,6 +2076,19 @@ function computeNextStep(
       onAction: () => setTab('Seguimiento'),
       urgent: false,
       icon: Check,
+    }
+  }
+
+  // Denegada → opción de apelar dentro del plazo.
+  if (request.status === 'Denegada') {
+    return {
+      title: 'Tu certificación fue denegada',
+      description:
+        'No alcanzó el puntaje mínimo. Podés ver los motivos en Evaluación y presentar una apelación al Comité dentro del plazo.',
+      ctaLabel: 'Ver los motivos',
+      onAction: () => setTab('Evaluación'),
+      urgent: true,
+      icon: AlertTriangle,
     }
   }
 
