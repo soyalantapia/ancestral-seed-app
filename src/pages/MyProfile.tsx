@@ -246,18 +246,36 @@ export default function MyProfile() {
               style={{ width: `${completionPct}%` }}
             />
           </div>
-          <ul className="mt-4 grid grid-cols-1 gap-1.5 text-xs md:grid-cols-3">
-            {fields.map(([label, ok]) => (
-              <li key={label} className="flex items-center gap-2">
-                {ok ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success-300" />
-                ) : (
-                  <Circle className="h-3.5 w-3.5 shrink-0 text-navy-300" />
-                )}
-                <span className={ok ? 'text-navy-500' : 'text-navy-300'}>{label}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Resumen: solo lo que falta (un checklist de 9 ítems intimida
+              de entrada). El detalle completo queda en "Ver todo". */}
+          <div className="mt-4 text-xs md:text-sm">
+            <p className="text-navy-500">
+              <span className="font-bold">Te falta:</span>{' '}
+              {fields
+                .filter(([, ok]) => !ok)
+                .map(([label]) => label)
+                .join(' · ')}
+            </p>
+            <details className="mt-2">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-semibold text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
+                Ver todo el checklist
+              </summary>
+              <ul className="mt-2 grid grid-cols-1 gap-1.5 text-xs md:grid-cols-3">
+                {fields.map(([label, ok]) => (
+                  <li key={label} className="flex items-center gap-2">
+                    {ok ? (
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success-300" />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 text-navy-300" />
+                    )}
+                    <span className={ok ? 'text-navy-500' : 'text-navy-300'}>
+                      {label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
         </div>
       )}
 

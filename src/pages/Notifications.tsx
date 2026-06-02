@@ -25,14 +25,11 @@ const typeFilters: Array<{
   kinds: NotificationKind[]
   unreadOnly?: boolean
 }> = [
+  // Fix UX (revisión postulante): 6 filtros sobre-segmentaban ~5 notifs.
+  // Dejamos solo Todas / No leídas — el resto era ruido. El tipo ya se ve
+  // en el tag de cada item.
   { id: 'all', label: 'Todas', kinds: [] },
   { id: 'unread', label: 'No leídas', kinds: [], unreadOnly: true },
-  { id: 'audit', label: 'Auditoría', kinds: ['audit_proposed', 'audit_accepted'] },
-  { id: 'evidence', label: 'Evidencias', kinds: ['evidence_request', 'document_uploaded'] },
-  { id: 'message', label: 'Mensajes', kinds: ['message_received'] },
-  // Fix SM3 (#POS-37): "Estado" era ambiguo con "estado de cuenta".
-  // "Avances" comunica que son cambios de etapa o publicación.
-  { id: 'stage', label: 'Avances', kinds: ['stage_changed', 'cert_published'] },
 ]
 
 const iconMap: Record<NotificationKind, typeof Bell> = {

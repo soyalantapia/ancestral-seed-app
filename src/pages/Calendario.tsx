@@ -90,7 +90,28 @@ export default function Calendario() {
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
+  // Fix UX: antes el calendario abría siempre en el mes corriente; si no
+  // tenía eventos, el usuario veía una grilla vacía sin entender por qué.
+  // Ahora, si el mes actual no tiene eventos, abrimos en el mes del evento
+  // más cercano a hoy.
+  const [cursor, setCursor] = useState(() => {
+    const hasThisMonth = allEvents.some(
+      (e) =>
+        e.date.getFullYear() === today.getFullYear() &&
+        e.date.getMonth() === today.getMonth(),
+    )
+    if (hasThisMonth || allEvents.length === 0) {
+      return new Date(today.getFullYear(), today.getMonth(), 1)
+    }
+    const nearest = allEvents
+      .slice()
+      .sort(
+        (a, b) =>
+          Math.abs(a.date.getTime() - today.getTime()) -
+          Math.abs(b.date.getTime() - today.getTime()),
+      )[0]
+    return new Date(nearest.date.getFullYear(), nearest.date.getMonth(), 1)
+  })
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
   const year = cursor.getFullYear()
@@ -118,14 +139,22 @@ export default function Calendario() {
   const dayFocus = selectedDate ?? today
   const dayEvents = allEvents.filter((e) => sameDay(e.date, dayFocus))
 
-  // Próximos eventos (next 30 days)
-  const next30 = (() => {
-    const horizon = new Date(today)
-    horizon.setDate(horizon.getDate() + 30)
-    return allEvents
-      .filter((e) => e.date >= today && e.date <= horizon)
+  // Agenda lateral: priorizamos eventos futuros; si no hay ninguno
+  // (ej. demo con fechas pasadas), mostramos igual los eventos ordenados
+  // por cercanía a hoy para que la columna nunca quede vacía sin motivo.
+  const agenda = (() => {
+    const upcoming = allEvents
+      .filter((e) => e.date >= today)
       .slice()
       .sort((a, b) => a.date.getTime() - b.date.getTime())
+    if (upcoming.length > 0) return upcoming
+    return allEvents
+      .slice()
+      .sort(
+        (a, b) =>
+          Math.abs(a.date.getTime() - today.getTime()) -
+          Math.abs(b.date.getTime() - today.getTime()),
+      )
   })()
 
   const goPrev = () => {
@@ -303,21 +332,28 @@ export default function Calendario() {
             )}
           </section>
 
-          {/* Próximos 30 días */}
+          {/* Agenda — tus fechas */}
           <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
             <h3 className="text-base font-bold text-navy-500">
-              Próximos 30 días
+              Tus fechas
             </h3>
-            {next30.length === 0 ? (
+            {agenda.length === 0 ? (
               <p className="mt-3 text-sm text-navy-300">
-                Sin eventos próximos.
+                Todavía no tenés reuniones ni vencimientos. Aparecen acá en
+                cuanto tu tutor agende o se genere un pago.
               </p>
             ) : (
               <ul className="mt-4 space-y-3">
-                {next30.slice(0, 8).map((e) => {
+                {agenda.slice(0, 8).map((e) => {
                   const days = Math.round(
                     (e.date.getTime() - today.getTime()) / 86_400_000,
                   )
+                  const when =
+                    days === 0
+                      ? 'hoy'
+                      : days > 0
+                        ? `en ${days}d`
+                        : `hace ${-days}d`
                   return (
                     <li key={e.id}>
                       <Link
@@ -332,7 +368,7 @@ export default function Calendario() {
                               month: 'short',
                             })}
                             {' · '}
-                            {days === 0 ? 'hoy' : `${days}d`}
+                            {when}
                           </p>
                           <p className="mt-0.5 truncate text-sm font-bold text-navy-500">
                             {e.title}

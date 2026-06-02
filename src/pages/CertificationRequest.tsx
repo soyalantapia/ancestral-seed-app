@@ -10,6 +10,7 @@ import {
   Calendar as CalendarIcon,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -49,13 +50,15 @@ import { REGLAMENTO_DEADLINES, STAGES } from '@/lib/copy'
 import { useCoverByRequestStore } from '@/store/coverByRequest'
 import { cn, downloadBlob } from '@/lib/utils'
 
+// Fix UX (revisión postulante): la barra tenía 6 tabs que se cortaban en
+// mobile y mezclaban acción con referencia. Dejamos 4 tabs accionables;
+// "Datos de la solicitud" e "Historial" pasan a acordeones al pie (son
+// referencia, no flujo de acción).
 const tabs = [
   'Seguimiento',
   'Evaluación',
-  'Datos de la solicitud',
   'Evidencias',
   'Pagos',
-  'Historial',
 ] as const
 
 type Tab = (typeof tabs)[number]
@@ -63,9 +66,7 @@ type Tab = (typeof tabs)[number]
 function tabFromParam(p: string | null): Tab {
   if (p === 'evaluacion') return 'Evaluación'
   if (p === 'evidencias') return 'Evidencias'
-  if (p === 'datos') return 'Datos de la solicitud'
   if (p === 'pagos') return 'Pagos'
-  if (p === 'historial') return 'Historial'
   return 'Seguimiento'
 }
 
@@ -77,9 +78,7 @@ export default function CertificationRequest() {
     const slug =
       t === 'Evaluación' ? 'evaluacion'
       : t === 'Evidencias' ? 'evidencias'
-      : t === 'Datos de la solicitud' ? 'datos'
       : t === 'Pagos' ? 'pagos'
-      : t === 'Historial' ? 'historial'
       : ''
     if (slug) setParams({ tab: slug }, { replace: true })
     else setParams({}, { replace: true })
@@ -216,40 +215,6 @@ export default function CertificationRequest() {
               solicitud se cierra automáticamente (Reglamento 1.5).
             </p>
 
-            {/* Quick actions */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setTab('Evidencias')}
-                className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-4 py-2 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
-              >
-                <Plus className="h-4 w-4" />
-                Añadir evidencias
-              </button>
-              {!request.diagnosticCompleted && request.diagnosticDeadline && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTab('Evaluación')
-                    setDiagnosticOpen(true)
-                  }}
-                  className="inline-flex items-center gap-2 rounded-full border border-navy-500 bg-white px-4 py-2 text-sm font-bold text-navy-500 transition-colors hover:bg-navy-500 hover:text-white"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  Completar diagnóstico
-                </button>
-              )}
-              {request.meetings.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setThreadFor(request.meetings[0])}
-                  className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Mensaje al tutor
-                </button>
-              )}
-            </div>
           </div>
 
           {/* Right: decorative pattern */}
@@ -298,10 +263,31 @@ export default function CertificationRequest() {
             threads={request.threads ?? {}}
           />
         )}
-        {tab === 'Datos de la solicitud' && <DatosTab request={request} />}
         {tab === 'Evidencias' && <EvidenciasTab request={request} />}
         {tab === 'Pagos' && <PagosTab request={request} />}
-        {tab === 'Historial' && <HistorialTab request={request} /> }
+      </div>
+
+      {/* Referencia (no flujo de acción) — colapsadas por defecto para no
+          saturar la barra de tabs. */}
+      <div className="mt-10 space-y-3">
+        <details className="group rounded-2xl border border-neutral-200 bg-white">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-bold text-navy-500">
+            Datos que enviaste en el formulario
+            <ChevronDown className="h-4 w-4 shrink-0 text-navy-300 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-t border-neutral-100 p-5">
+            <DatosTab request={request} />
+          </div>
+        </details>
+        <details className="group rounded-2xl border border-neutral-200 bg-white">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-bold text-navy-500">
+            Historial completo del expediente
+            <ChevronDown className="h-4 w-4 shrink-0 text-navy-300 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="border-t border-neutral-100 p-5">
+            <HistorialTab request={request} />
+          </div>
+        </details>
       </div>
 
       <RescheduleSheet
@@ -2089,8 +2075,8 @@ function computeNextStep(
     title: 'Tu solicitud está en revisión por el tutor',
     description:
       'No tenés nada pendiente por ahora. Te avisamos por email cuando haya novedades.',
-    ctaLabel: 'Ver historial',
-    onAction: () => setTab('Historial'),
+    ctaLabel: 'Ver seguimiento',
+    onAction: () => setTab('Seguimiento'),
     urgent: false,
     icon: Check,
   }

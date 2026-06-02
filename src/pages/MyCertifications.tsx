@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AlertCircle,
+  ArrowRight,
   Award,
   Calendar,
   ChevronDown,
   Clock,
   FileText,
-  MoreHorizontal,
   PauseCircle,
   Plus,
   Search,
@@ -412,59 +412,62 @@ export default function MyCertifications() {
           {requests.map((r) => (
             <li
               key={r.id}
-              className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="flex flex-col rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
-              <div className="flex items-start justify-between">
-                <p className="text-base font-bold text-navy-500">
-                  {r.productName}
-                </p>
-                <button type="button" aria-label="Más opciones" className="text-navy-300 hover:text-navy-500">
-                  <MoreHorizontal className="h-5 w-5" />
-                </button>
-              </div>
-
-              <dl className="mt-3 space-y-2 text-sm">
-                <Row
-                  icon={Clock}
-                  label="Estado:"
-                  value={
-                    <StageStatusBadge
-                      status={
-                        r.status === 'En emisión'
-                          ? 'En emisión'
-                          : r.status === 'Certificado'
-                            ? 'Vigente'
-                            : STAGES[r.currentStage]?.label ?? 'En curso'
-                      }
-                    />
+              {/* Encabezado: nombre + estado (jerarquía clara) */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-base font-bold leading-tight text-navy-500">
+                    {r.productName}
+                  </h3>
+                  <p className="mt-1 text-xs text-navy-300">
+                    {r.number} · Creada {r.createdAt}
+                  </p>
+                </div>
+                <StageStatusBadge
+                  status={
+                    r.status === 'En emisión'
+                      ? 'En emisión'
+                      : r.status === 'Certificado'
+                        ? 'Vigente'
+                        : STAGES[r.currentStage]?.label ?? 'En curso'
                   }
                 />
-                <Row icon={TrendingUp} label="Progreso:" value={r.progressLabel} />
-                <Row icon={Calendar} label="Fecha de creación:" value={r.createdAt} />
-                {r.pendingItems.length > 0 && (
-                  <div className="flex items-start gap-2 text-navy-500">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-error-300" />
-                    <span className="font-bold">Pendientes:</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {r.pendingItems.map((p) => (
-                        <span
-                          key={p}
-                          className="inline-flex items-center rounded-full bg-error-100 px-2 py-0.5 text-xs font-semibold text-error-400 ring-1 ring-error-200"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </dl>
+              </div>
 
-              <div className="mt-5 flex justify-end">
+              {/* Qué está pasando ahora */}
+              <p className="mt-3 text-sm leading-relaxed text-navy-400">
+                {r.progressLabel}
+              </p>
+
+              {/* Lo que el usuario tiene que hacer — destacado */}
+              {r.pendingItems.length > 0 && (
+                <div className="mt-3 rounded-xl border border-error-200 bg-error-100/40 p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-error-400">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    Te falta para avanzar
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {r.pendingItems.map((p) => (
+                      <span
+                        key={p}
+                        className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-error-400 ring-1 ring-error-200"
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* CTA primario — alineado al pie para cards parejas */}
+              <div className="mt-auto pt-5">
                 <Link
                   to={`/mis-certificaciones/${r.id}`}
-                  className="inline-flex items-center rounded-full bg-navy-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
                 >
-                  Ver solicitud
+                  {r.pendingItems.length > 0 ? 'Continuar' : 'Ver solicitud'}
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </li>

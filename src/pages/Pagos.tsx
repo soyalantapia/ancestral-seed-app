@@ -408,10 +408,16 @@ export default function Pagos() {
                       (p.status === 'pending' &&
                         days !== null &&
                         days < 0)) && (
-                      <p className="mt-1 text-[11px] font-medium text-error-400">
-                        Si no se regulariza en 30 días corridos, tu
-                        solicitud queda pausada hasta subsanar.
-                      </p>
+                      <details className="mt-1.5 text-[11px] text-navy-300">
+                        <summary className="cursor-pointer list-none font-medium text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
+                          ¿Qué pasa si no pago a tiempo?
+                        </summary>
+                        <p className="mt-1 leading-relaxed">
+                          Tu solicitud queda <strong className="font-semibold text-navy-500">en pausa</strong> (no se
+                          cierra ni se pierde). La retomás cuando regularices el
+                          pago, sin empezar de nuevo.
+                        </p>
+                      </details>
                     )}
                   </div>
                   <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
