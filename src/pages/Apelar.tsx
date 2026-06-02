@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, Clock, FileUp, Send, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Breadcrumbs } from '@/components/features/Breadcrumbs'
+import { mockCertificationRequests } from '@/services/mocks/data'
 
 /**
  * Fix #FEAT-03 (análisis proyecto): flujo de APELACIÓN para el
@@ -23,6 +24,7 @@ import { Breadcrumbs } from '@/components/features/Breadcrumbs'
 export default function Apelar() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const request = mockCertificationRequests.find((r) => r.id === id)
   const [motivo, setMotivo] = useState('')
   const [fundamentacion, setFundamentacion] = useState('')
   const [sent, setSent] = useState(false)
@@ -62,7 +64,10 @@ export default function Apelar() {
       <Breadcrumbs
         items={[
           { label: 'Mis certificaciones', to: '/mis-certificaciones' },
-          { label: id ?? '—', to: `/mis-certificaciones/${id}` },
+          {
+            label: request?.productName ?? 'Solicitud',
+            to: `/mis-certificaciones/${id}`,
+          },
           { label: 'Apelar denegación' },
         ]}
       />

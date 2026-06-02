@@ -205,15 +205,23 @@ export default function CertificationRequest() {
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
               <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
             </dl>
-            {/* SM6 fix: aviso de cierre por inactividad — Reglamento 1.5 */}
-            <p className="mt-3 text-[11px] text-navy-300">
-              Si pasan{' '}
-              <strong className="text-navy-500">
-                {REGLAMENTO_DEADLINES.inactivityDaysToCloseCase} días corridos
-              </strong>{' '}
-              sin avance de tu parte (respuestas, evidencias, pagos), la
-              solicitud se cierra automáticamente (Reglamento 1.5).
-            </p>
+            {/* Aviso de inactividad — fuera del hero prominente, en un
+                colapsable, para no intimidar (era un párrafo rojo/gris
+                fijo que sumaba ansiedad). */}
+            <details className="mt-3 text-[11px] text-navy-300">
+              <summary className="inline-flex cursor-pointer list-none items-center font-medium text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
+                ¿Hay un plazo para responder?
+              </summary>
+              <p className="mt-1 leading-relaxed">
+                Si pasan{' '}
+                <strong className="text-navy-500">
+                  {REGLAMENTO_DEADLINES.inactivityDaysToCloseCase} días corridos
+                </strong>{' '}
+                sin novedades de tu parte (respuestas, evidencias o pagos), la
+                solicitud se cierra y la podés reabrir cuando quieras
+                (Reglamento 1.5).
+              </p>
+            </details>
 
           </div>
 

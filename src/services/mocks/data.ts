@@ -100,7 +100,7 @@ export const mockAuthors: Author[] = [
     slug: 'camila-montes',
     name: 'Camila Montes',
     title: 'Artesana · Sierra Nevada de Santa Marta',
-    bio: 'Trabaja la filigrana ancestral, una técnica de orfebrería que aprendió y desarrolló a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
+    bio: 'Trabajo la filigrana ancestral, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     avatarUrl: 'https://i.pravatar.cc/300?img=47',
     location: 'Colombia · Caribe colombiano',
     email: 'camila.montes@ancestralseed.io',
@@ -177,7 +177,7 @@ export const mockCertifications: Certification[] = [
     status: 'verified',
     category: 'Caribe colombiano',
     description:
-      'Filigrana, una técnica de orfebrería que aprendió y desarrolló a partir de una herencia cultural transmitida en su familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
+      'Filigrana, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     coverUrl: '/cards/card-filigrana.webp',
     hash: '0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6',
     officialCategory: 'tradicional',

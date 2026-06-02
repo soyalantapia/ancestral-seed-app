@@ -42,7 +42,7 @@ export default function MisDatos() {
         <ActionRow
           icon={Download}
           title="Exportar mis datos"
-          body="Recibís un ZIP con JSON completo + PDF resumen. SLA: 30 días corridos."
+          body="Te enviamos un archivo con toda tu información y un PDF resumen. Llega por email en hasta 30 días."
           cta="Solicitar exportación"
           onClick={() =>
             toast.success(

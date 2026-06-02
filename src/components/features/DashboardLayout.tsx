@@ -282,7 +282,9 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           tabIndex={-1}
           className="flex flex-1 flex-col bg-white focus:outline-none"
         >
-          <div className="flex-1">
+          {/* pb-24: deja aire al pie para que el botón flotante de Ayuda
+              (HelpBubble, fixed bottom-right) no tape el último CTA. */}
+          <div className="flex-1 pb-24">
             <ErrorBoundary key={location.pathname}>
               {children ?? <Outlet />}
             </ErrorBoundary>

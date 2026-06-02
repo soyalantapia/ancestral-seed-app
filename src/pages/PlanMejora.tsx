@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { Sparkles, CheckCircle2, Circle, ArrowRight, Lightbulb, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { Breadcrumbs } from '@/components/features/Breadcrumbs'
+import { mockCertificationRequests } from '@/services/mocks/data'
 
 /**
  * Fix #FEAT-08 (análisis proyecto): visualización del Plan de Mejora
@@ -65,6 +66,7 @@ const RESPONSABLE_META: Record<
 
 export default function PlanMejora() {
   const { id } = useParams()
+  const request = mockCertificationRequests.find((r) => r.id === id)
   const [actions, setActions] = useState(DEMO_ACTIONS)
   const done = actions.filter((a) => a.done).length
   const pct = Math.round((done / actions.length) * 100)
@@ -76,7 +78,10 @@ export default function PlanMejora() {
       <Breadcrumbs
         items={[
           { label: 'Mis certificaciones', to: '/mis-certificaciones' },
-          { label: id ?? '—', to: `/mis-certificaciones/${id}` },
+          {
+            label: request?.productName ?? 'Solicitud',
+            to: `/mis-certificaciones/${id}`,
+          },
           { label: 'Plan de mejora' },
         ]}
       />
@@ -97,6 +102,13 @@ export default function PlanMejora() {
           Ancestral Auténtico</strong>.
         </p>
       </header>
+
+      {request && request.status !== 'Certificado' && (
+        <p className="mt-4 rounded-2xl border border-gold-300/60 bg-gold-100/40 px-4 py-3 text-sm text-navy-500">
+          El plan de mejora se arma una vez que tu certificación ya tiene
+          categoría asignada — te mostramos el flujo como referencia.
+        </p>
+      )}
 
       <section className="mt-6 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
         <div className="flex items-end justify-between gap-3">

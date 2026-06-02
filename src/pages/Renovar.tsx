@@ -60,11 +60,18 @@ export default function Renovar() {
           Renovar "{request.productName}"
         </h1>
         <p className="mt-2 text-sm text-navy-300">
-          Wizard reducido de 3 pasos. La renovación reutiliza tu
-          expediente vigente — solo confirmás continuidad + subís
-          evidencias actualizadas.
+          En 3 pasos rápidos. Reusamos lo que ya cargaste: solo confirmás
+          que tu trabajo sigue igual y subís fotos nuevas.
         </p>
       </header>
+
+      {request.status !== 'Certificado' && (
+        <p className="mt-4 rounded-2xl border border-gold-300/60 bg-gold-100/40 px-4 py-3 text-sm text-navy-500">
+          Esta solicitud todavía está <strong>en proceso</strong>. La
+          renovación se habilita cuando tu certificado ya está emitido y
+          vigente — te mostramos el flujo como referencia.
+        </p>
+      )}
 
       <div className="mt-6 flex items-center gap-1">
         {(['confirmar', 'evidencias', 'declaracion'] as const).map((s, i) => {
@@ -96,8 +103,8 @@ export default function Renovar() {
               Paso 1 · Confirmar continuidad
             </h2>
             <p className="mt-2 text-sm text-navy-300">
-              ¿La práctica certificada sigue activa con las mismas
-              características que cuando se emitió el cert original?
+              ¿Tu producto o práctica sigue igual que cuando se emitió el
+              certificado original?
             </p>
             <ul className="mt-4 space-y-2 text-sm text-navy-500">
               <li className="flex items-start gap-2">
