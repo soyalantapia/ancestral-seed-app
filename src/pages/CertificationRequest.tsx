@@ -274,7 +274,10 @@ export default function CertificationRequest() {
       </section>
 
       {/* Sticky tabs */}
-      <div className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10">
+      <div
+        data-tour="seguimiento"
+        className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10"
+      >
         <div className="flex gap-1 py-3">
           {tabs.map((t) => {
             return (

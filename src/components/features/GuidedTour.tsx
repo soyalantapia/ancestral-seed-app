@@ -84,13 +84,14 @@ export function GuidedTour() {
     if (!el) return null
     const r = el.getBoundingClientRect()
     if (r.width === 0 && r.height === 0) return null
-    // Si el target es más grande que el 85% del viewport en CUALQUIER dimensión,
-    // el spotlight cubriría casi toda la pantalla y el "agujero" terminaría
-    // dejando todo el contenido visible — perdiendo el sentido del highlight.
-    // En ese caso, devolvemos null para que el step caiga a modal centrado.
-    const vw = window.innerWidth
+    // Caemos a modal centrado SOLO si el target es tan ALTO que no quedaría
+    // lugar para abrir el tooltip arriba/abajo. Un elemento ANCHO pero de
+    // poca altura (las tarjetas full-width en mobile) SÍ se resalta bien: el
+    // oscurecido de arriba/abajo lo enmarca. Antes la condición también
+    // miraba el ancho con `||`, y por eso en mobile casi todas las tarjetas
+    // caían a modal centrado en vez de hacer spotlight.
     const vh = window.innerHeight
-    if (r.height > vh * 0.85 || r.width > vw * 0.85) return null
+    if (r.height > vh * 0.85) return null
     return { top: r.top, left: r.left, width: r.width, height: r.height }
   }, [])
 
@@ -269,7 +270,10 @@ export function GuidedTour() {
         dismiss()
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        if (isLast) finish()
+        if (currentStep?.ctaTo) {
+          navigate(currentStep.ctaTo)
+          finish()
+        } else if (isLast) finish()
         else next()
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
@@ -278,7 +282,7 @@ export function GuidedTour() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [activeTour, isFirst, isLast, next, prev, dismiss, finish])
+  }, [activeTour, isFirst, isLast, next, prev, dismiss, finish, currentStep?.ctaTo, navigate])
 
   if (!tour || !currentStep) return null
 
@@ -431,11 +435,21 @@ export function GuidedTour() {
               )}
               <button
                 type="button"
-                onClick={() => (isLast ? finish() : next())}
+                onClick={() => {
+                  if (currentStep.ctaTo) {
+                    navigate(currentStep.ctaTo)
+                    finish()
+                  } else if (isLast) finish()
+                  else next()
+                }}
                 className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
               >
-                {isLast ? '¡Listo!' : currentStep.nextLabel ?? 'Continuar'}
-                {!isLast && <ArrowRight className="h-4 w-4" />}
+                {isLast
+                  ? currentStep.nextLabel ?? '¡Listo!'
+                  : currentStep.nextLabel ?? 'Continuar'}
+                {(!isLast || currentStep.ctaTo) && (
+                  <ArrowRight className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>

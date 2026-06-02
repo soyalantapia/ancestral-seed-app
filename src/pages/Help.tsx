@@ -193,10 +193,10 @@ export default function Help() {
               </span>
               <div>
                 <p className="text-sm font-bold text-navy-500">
-                  ¿Te perdiste? Volvé al tour guiado
+                  ¿Te perdiste? Volvé al recorrido guiado
                 </p>
                 <p className="mt-0.5 text-xs text-navy-300">
-                  8 pasos con spotlight que te muestran qué hace cada sección.
+                  Un recorrido de 1 minuto por todo el proceso, paso a paso.
                 </p>
               </div>
             </div>
@@ -205,12 +205,12 @@ export default function Help() {
                 type="button"
                 onClick={() => {
                   resetTour('solicitante')
-                  toast.success('Tour del solicitante iniciado')
+                  toast.success('Empezamos el recorrido')
                 }}
                 className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy-500 px-4 text-xs font-bold text-white shadow-sm hover:bg-navy-400"
               >
                 <Compass className="h-3.5 w-3.5" />
-                Tour solicitante
+                Ver cómo funciona
               </button>
               {/* Tour tutor solo si el user tiene rol tutor (#PUB-28) */}
               {showTutorTour && (

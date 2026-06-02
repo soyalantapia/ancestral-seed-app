@@ -36,6 +36,11 @@ export interface TourStep {
   scrollIntoView?: boolean
   /** Label custom del botón siguiente. Default: 'Continuar'. */
   nextLabel?: string
+  /** Si está, el botón primario navega a esta ruta y cierra el tour (en vez
+   *  de avanzar al siguiente step). Para el paso final que "lanza" la acción
+   *  —abrir el formulario de certificación— sin que el tour quede encima de
+   *  los diálogos del formulario (retomar borrador / empezar de nuevo). */
+  ctaTo?: string
 }
 
 interface TourDefinition {
@@ -46,74 +51,87 @@ interface TourDefinition {
 }
 
 /**
- * Tour del solicitante.
+ * Recorrido del postulante — "Cómo funciona".
  *
- * Lo muestra de a poco: una frase corta por paso, resaltando el elemento
- * en pantalla. Lenguaje neutro, sin saturar de texto.
+ * Rediseño 2026-06 (estrategia de producto): un ÚNICO recorrido guiado que
+ * cruza el viaje completo —inicio → detalle de una certificación →
+ * formulario— y termina parado en el formulario, listo para empezar.
+ *
+ * Principios:
+ *   - Orientado al objetivo (activar la 1ª certificación), no a mostrar
+ *     botones sueltos de la interfaz.
+ *   - Mobile-first REAL: cada ancla existe y se ve tanto en celular como en
+ *     desktop. Se eliminaron los pasos que rompían en mobile (menú lateral
+ *     oculto, atajo Cmd+K, "ver sitio público" del header).
+ *   - Una frase corta por paso, lenguaje digno y neutro.
+ *   - Termina lanzando la acción: el último paso deja al usuario en
+ *     /certificar (la navegación por `route` hace el trabajo; al cerrar el
+ *     tour queda parado en el formulario).
+ *
+ * La invitación a este recorrido es suave (componente TourInvite): no
+ * secuestra la pantalla; ofrece "¿Te muestro cómo funciona?" y solo arranca
+ * si la persona acepta.
  */
 export const solicitanteTour: TourDefinition = {
   id: 'solicitante',
-  label: 'Tour del solicitante',
+  label: 'Cómo funciona',
   steps: [
     {
       id: 'welcome',
-      title: 'Te damos la bienvenida',
+      title: 'Te acompañamos a certificar',
       body:
-        'Validamos la autenticidad de tu producto, servicio u oficio ancestral y emitimos un certificado digital verificable.',
+        'Validamos que tu producto, servicio u oficio ancestral es auténtico y te damos un certificado digital, con un perfil que cualquiera puede verificar por QR.',
       placement: 'center',
       route: '/inicio',
-      nextLabel: 'Mostrame',
+      nextLabel: 'Mostrame el camino',
     },
     {
-      id: 'pipeline',
-      title: 'Tu progreso',
-      body: 'Acá ves en qué etapa está cada certificación.',
+      id: 'next-step',
+      title: 'Tu próximo paso, siempre claro',
+      body: 'Acá te decimos qué hacer ahora para que tu certificación avance. No te perdés.',
+      target: '[data-tour="quick-actions"]',
+      placement: 'bottom',
+      route: '/inicio',
+    },
+    {
+      id: 'list',
+      title: 'Todas tus certificaciones',
+      body: 'De un vistazo ves cada una y en qué etapa está.',
       target: '[data-tour="solicitudes-list"]',
       placement: 'top',
       route: '/inicio',
     },
     {
-      id: 'quick-actions',
-      title: 'Atajos rápidos',
-      body: 'Iniciar una certificación, subir evidencias o verificar, de un toque.',
-      target: '[data-tour="quick-actions"]',
-      placement: 'bottom',
-    },
-    {
-      id: 'sidebar-nav',
-      title: 'Menú lateral',
-      body: 'Certificaciones, calendario, pagos, documentos y perfil, siempre a mano.',
-      target: '[data-tour="sidebar"]',
-      placement: 'right',
-    },
-    {
-      id: 'public-profile',
-      title: 'Tu perfil público',
-      body: 'Así te ve quien escanea el QR de tu producto certificado.',
-      target: '[data-tour="public-site"]',
-      placement: 'bottom',
-    },
-    {
-      id: 'certificar',
-      title: 'Nueva certificación',
-      body: 'Un formulario de 7 pasos que se autoguarda. Empezá cuando quieras.',
+      id: 'start-here',
+      title: 'Acá empezás una nueva',
+      body: 'Tu certificación arranca con un formulario de 7 pasos cortos que se guarda solo: salí y volvé cuando quieras.',
       target: '[data-tour="cta-nueva-cert"]',
       placement: 'bottom',
-      nextLabel: 'Entiendo',
+      route: '/inicio',
     },
     {
-      id: 'cmdk',
-      title: 'Atajo de teclado',
-      body: 'Apretá Cmd+K (o Ctrl+K) para saltar a cualquier sección al instante.',
-      placement: 'center',
+      id: 'seguimiento',
+      title: 'Después, seguís tu proceso',
+      body: 'Al abrir una certificación ves sus etapas, las evidencias que subiste y los pagos, todo en un lugar.',
+      target: '[data-tour="seguimiento"]',
+      placement: 'bottom',
+      route: '/mis-certificaciones/req-001',
+      scrollIntoView: true,
     },
     {
       id: 'help',
-      title: '¿Dudas?',
-      body: 'En Ayuda tenés guías paso a paso y soporte directo.',
-      target: '[data-tour="help-link"]',
-      placement: 'right',
-      nextLabel: 'Empezar',
+      title: 'Nunca estás solo/a',
+      body: 'Tocá el botón de ayuda cuando tengas una duda. Te damos una mano.',
+      target: '[data-tour="help-fab"]',
+      placement: 'top',
+    },
+    {
+      id: 'launch',
+      title: '¿Arrancamos?',
+      body: 'Ya conocés el camino. Cuando quieras, empezá tu primera certificación: te guiamos en cada paso.',
+      placement: 'center',
+      nextLabel: 'Empezar mi certificación',
+      ctaTo: '/certificar',
     },
   ],
 }

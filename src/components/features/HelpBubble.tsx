@@ -14,6 +14,7 @@ export function HelpBubble() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        data-tour="help-fab"
         className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy-500 text-white shadow-lg shadow-navy-500/30 transition-all hover:scale-105 hover:bg-navy-400"
         aria-label="Ayuda"
       >

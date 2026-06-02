@@ -28,7 +28,6 @@ import { LATAM_COUNTRIES, GENERIC_DOC_TYPES, getLatamCountry } from '@/data/lata
 import { Logo } from '@/components/features/Logo'
 import { useCertifyFormStore, type CertifyFormData } from '@/store/certifyForm'
 import { useAuthStore } from '@/store/auth'
-import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import { GuidedTour } from '@/components/features/GuidedTour'
 import { cn } from '@/lib/utils'
 
@@ -216,12 +215,11 @@ export default function CertifyForm() {
     hasSignificantData(data),
   )
 
-  // Fix V2-POS-11 (auditoría v2): el tour guiado arrancaba 1.2s
-  // después del mount sin saber si había un ResumeOrFreshDialog
-  // arriba. Resultado: el spotlight aparecía DETRÁS del dialog y el
-  // user no entendía qué pasaba. Ahora le pasamos `paused` = open
-  // del dialog para que el tour espere a que se resuelva.
-  useAutoStartTour('certifyForm', 1200, showResumeDialog)
+  // Rediseño del tour (2026-06): el recorrido guiado del postulante ahora
+  // es UN solo tour largo que cruza inicio → detalle → formulario y termina
+  // parado acá, en /certificar. Por eso ya NO auto-arrancamos un tour
+  // separado del formulario: duplicaría el recorrido justo al terminarlo.
+  // El tour completo se reabre desde Ayuda → "Ver cómo funciona".
 
   const schema = stepSchemas[step]
   const methods = useForm<Partial<CertifyFormData>>({

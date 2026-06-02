@@ -26,6 +26,9 @@ interface OnboardingState {
   setStep: (n: number) => void
   /** Resetea — útil para "ver tour de nuevo" desde Settings/Help. */
   reset: (tour: TourId) => void
+  /** Marca un tour como visto SIN abrirlo — para el "Ahora no" de la
+   *  invitación suave (no queremos que vuelva a ofrecerse cada visita). */
+  decline: (tour: TourId) => void
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -56,6 +59,8 @@ export const useOnboardingStore = create<OnboardingState>()(
           step: 0,
           completed: { ...s.completed, [tour]: false },
         })),
+      decline: (tour) =>
+        set((s) => ({ completed: { ...s.completed, [tour]: true } })),
     }),
     {
       name: 'ancestral-seed-onboarding',
