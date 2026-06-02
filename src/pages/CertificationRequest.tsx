@@ -21,7 +21,9 @@ import {
   MessageSquare,
   Plus,
   Receipt,
+  RefreshCw,
   Send,
+  Sparkles,
   Trash2,
   Upload,
   X,
@@ -205,23 +207,46 @@ export default function CertificationRequest() {
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
               <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
             </dl>
-            {/* Aviso de inactividad — fuera del hero prominente, en un
-                colapsable, para no intimidar (era un párrafo rojo/gris
-                fijo que sumaba ansiedad). */}
-            <details className="mt-3 text-[11px] text-navy-300">
-              <summary className="inline-flex cursor-pointer list-none items-center font-medium text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
-                ¿Hay un plazo para responder?
-              </summary>
-              <p className="mt-1 leading-relaxed">
-                Si pasan{' '}
-                <strong className="text-navy-500">
-                  {REGLAMENTO_DEADLINES.inactivityDaysToCloseCase} días corridos
-                </strong>{' '}
-                sin novedades de tu parte (respuestas, evidencias o pagos), la
-                solicitud se cierra y la podés reabrir cuando quieras
-                (Reglamento 1.5).
-              </p>
-            </details>
+            {/* Aviso de inactividad — solo si la solicitud está en proceso
+                (para una certificación emitida no aplica). Colapsable para
+                no intimidar. */}
+            {request.status !== 'Certificado' && (
+              <details className="mt-3 text-[11px] text-navy-300">
+                <summary className="inline-flex cursor-pointer list-none items-center font-medium text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
+                  ¿Hay un plazo para responder?
+                </summary>
+                <p className="mt-1 leading-relaxed">
+                  Si pasan{' '}
+                  <strong className="text-navy-500">
+                    {REGLAMENTO_DEADLINES.inactivityDaysToCloseCase} días corridos
+                  </strong>{' '}
+                  sin novedades de tu parte (respuestas, evidencias o pagos), la
+                  solicitud se cierra y la podés reabrir cuando quieras
+                  (Reglamento 1.5).
+                </p>
+              </details>
+            )}
+
+            {/* Certificación emitida → accesos a renovar / plan de mejora
+                (antes eran rutas huérfanas sin punto de entrada). */}
+            {request.status === 'Certificado' && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  to={`/mis-certificaciones/${request.id}/renovar`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-4 py-2 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Renovar certificación
+                </Link>
+                <Link
+                  to={`/mis-certificaciones/${request.id}/plan-mejora`}
+                  className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Plan de mejora
+                </Link>
+              </div>
+            )}
 
           </div>
 
@@ -2023,6 +2048,19 @@ function computeNextStep(
   request: CertificationRequestType,
   setTab: (t: Tab) => void,
 ): NextStep {
+  // Certificación ya emitida → mensaje celebratorio, no "en revisión".
+  if (request.status === 'Certificado') {
+    return {
+      title: 'Tu certificación está vigente',
+      description:
+        'Tu certificado está emitido y es verificable. Podés verlo en tu ficha pública, compartirlo o renovarlo.',
+      ctaLabel: 'Ver el recorrido',
+      onAction: () => setTab('Seguimiento'),
+      urgent: false,
+      icon: Check,
+    }
+  }
+
   const pendingPayments = (request.payments ?? []).filter(
     (p) => p.status === 'overdue',
   )

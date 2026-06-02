@@ -400,6 +400,67 @@ export const PLACEHOLDER_TOKEN = PLACEHOLDER
 // ─── Dashboard mocks ─────────────────────────────────────────────────────────
 
 export const mockCertificationRequests: CertificationRequest[] = [
+  // Certificación YA EMITIDA — cierra el ciclo de vida del postulante:
+  // habilita el estado "certificado" del panel, suma a Documentos
+  // (emitidos), y da punto de entrada real a Renovar / Plan de mejora.
+  {
+    id: 'req-000',
+    number: '#000',
+    productName: 'Collar en filigrana tradicional',
+    createdAt: '2025-06-10',
+    currentStage: 'certificacion',
+    status: 'Certificado',
+    progressLabel: 'Certificado emitido y vigente',
+    diagnosticCompleted: true,
+    pendingItems: [],
+    stages: [
+      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '10/06/2025' },
+      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '18/06/2025' },
+      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '05/07/2025' },
+      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '21/08/2025' },
+      { stage: 'evaluacion', label: 'Evaluación', status: 'completed', date: '12/09/2025' },
+      { stage: 'certificacion', label: 'Certificación', status: 'completed', date: '20/09/2025' },
+    ],
+    meetings: [
+      {
+        id: 'm-000',
+        auditorName: TUTOR_NAME,
+        type: 'Videollamada',
+        scheduledAt: '2025-08-21T11:00:00-03:00',
+        timezone: 'GMT-3',
+        message: 'Auditoría de cierre realizada.',
+        status: 'accepted',
+      },
+    ],
+    scheduledMeetings: [],
+    evidences: [
+      { id: 'e0-1', name: 'collar-frente.jpg', kind: 'image', sizeKb: 1320, uploadedAt: '2025-06-12T10:00:00-03:00', thumbUrl: '/cards/card-filigrana.webp' },
+      { id: 'e0-2', name: 'proceso-completo.mp4', kind: 'video', sizeKb: 21400, uploadedAt: '2025-06-12T10:05:00-03:00' },
+    ],
+    payments: [
+      { id: 'p0-1', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2025-06-30', paidAt: '2025-06-20' },
+      { id: 'p0-2', concept: 'Emisión del certificado en blockchain', amount: 15000, currency: 'ARS', status: 'paid', dueDate: '2025-09-15', paidAt: '2025-09-14' },
+    ],
+    history: [
+      { id: 'h0-1', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2025-06-10T18:00:00-03:00' },
+      { id: 'h0-2', kind: 'stage_changed', title: 'Auditoría aprobada', description: 'Puntaje 92%', actor: 'Auditor', at: '2025-09-12T12:00:00-03:00' },
+      { id: 'h0-3', kind: 'cert_published', title: 'Certificado emitido', description: 'Hash registrado en blockchain', actor: 'Sistema', at: '2025-09-20T09:00:00-03:00' },
+    ],
+    submittedData: {
+      applicantName: 'Camila Montes',
+      email: 'camila@ancestralseed.org',
+      phone: '+57 2345-6789',
+      country: 'Colombia',
+      region: 'Caribe colombiano',
+      community: 'Sierra Nevada de Santa Marta',
+      inspirationCommunity: 'Comunidad Kogi',
+      productType: 'Producto físico',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Filigrana',
+      processDescription: 'Collar tejido a mano en filigrana de plata, técnica heredada de la comunidad.',
+      producerType: 'Yo misma · con apoyo familiar',
+    },
+  },
   {
     id: 'req-001',
     number: '#001',
