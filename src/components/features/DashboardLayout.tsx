@@ -280,7 +280,7 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex flex-1 flex-col bg-white focus:outline-none"
+          className="flex min-w-0 flex-1 flex-col bg-white focus:outline-none"
         >
           {/* pb-24: deja aire al pie para que el botón flotante de Ayuda
               (HelpBubble, fixed bottom-right) no tape el último CTA. */}
