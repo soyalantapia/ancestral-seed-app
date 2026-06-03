@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  ArrowRight,
   Award,
   Bell,
   Calendar,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNotificationsStore } from '@/store/notifications'
+import { deriveActionAlerts } from '@/lib/alerts'
+import { mockCertificationRequests } from '@/services/mocks/data'
 import type { NotificationKind } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -75,6 +78,11 @@ export default function Notifications() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [query, setQuery] = useState('')
 
+  // Alertas accionables (pagos, propuestas del auditor, diagnóstico, apelar):
+  // antes eran un banner dentro del detalle de cada certificación; ahora se
+  // centralizan acá, arriba del log de novedades.
+  const alerts = deriveActionAlerts(mockCertificationRequests)
+
   const selectedFilter = typeFilters.find((f) => f.id === typeFilter)
   let filtered = items
   if (selectedFilter?.unreadOnly) {
@@ -119,6 +127,79 @@ export default function Notifications() {
           </button>
         )}
       </div>
+
+      {/* Necesitan tu acción — alertas accionables centralizadas */}
+      {alerts.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-navy-300">
+            Necesitan tu acción
+          </h2>
+          <ul className="mt-3 space-y-3">
+            {alerts.map((a) => {
+              const Icon = a.icon
+              return (
+                <li
+                  key={a.id}
+                  className={cn(
+                    'overflow-hidden rounded-2xl border shadow-sm',
+                    a.urgent
+                      ? 'border-error-300/60 bg-gradient-to-br from-error-100/60 to-white'
+                      : 'border-gold-300/60 bg-gradient-to-br from-gold-100/40 to-white',
+                  )}
+                >
+                  <div className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
+                    <div
+                      className={cn(
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                        a.urgent
+                          ? 'bg-error-400 text-white shadow-sm'
+                          : 'bg-gold-500 text-navy-500 shadow-sm',
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={cn(
+                          'text-[11px] font-bold uppercase tracking-widest',
+                          a.urgent ? 'text-error-400' : 'text-gold-700',
+                        )}
+                      >
+                        {a.urgent ? 'Acción urgente' : 'Para hacer'}
+                      </p>
+                      <p className="mt-0.5 text-base font-bold text-navy-500">
+                        {a.title}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-navy-300">
+                        {a.body}
+                      </p>
+                    </div>
+                    <Link
+                      to={a.cta.to}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors',
+                        a.urgent
+                          ? 'bg-error-400 hover:bg-error-300'
+                          : 'bg-navy-500 hover:bg-navy-400',
+                      )}
+                    >
+                      {a.cta.label}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+
+      {/* Novedades — el log de notificaciones */}
+      {alerts.length > 0 && (
+        <h2 className="mt-8 text-xs font-bold uppercase tracking-wider text-navy-300">
+          Novedades
+        </h2>
+      )}
 
       {/* Search bar */}
       <div className="mt-6 relative">

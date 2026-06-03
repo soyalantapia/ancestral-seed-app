@@ -312,7 +312,7 @@ export default function CertifyForm() {
         onGoDashboard={() => {
           reset()
           setSubmitted(false)
-          navigate('/inicio')
+          navigate('/mis-certificaciones')
         }}
         onReset={() => {
           reset()

@@ -33,7 +33,7 @@ function suggestionsFor(pathname: string) {
   if (lower.includes('perfil') || lower.includes('autor')) {
     return [
       { to: '/directorio', icon: FileSearch, label: 'Ver directorio' },
-      { to: '/inicio', icon: Home, label: 'Tu panel' },
+      { to: '/mis-certificaciones', icon: Home, label: 'Mis certificaciones' },
     ]
   }
   return [

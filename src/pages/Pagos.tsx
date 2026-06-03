@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
   ArrowRight,
@@ -7,9 +8,11 @@ import {
   CreditCard,
   Download,
   Filter,
+  Plus,
   Receipt,
   Search,
-  Settings as SettingsIcon,
+  Trash2,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
@@ -19,6 +22,12 @@ import {
   type CheckoutPaymentInput,
   type CheckoutResult,
 } from '@/components/features/CheckoutModal'
+import {
+  AddPaymentModal,
+  type SavedPaymentMethod,
+} from '@/components/features/AddPaymentModal'
+import { useEscape } from '@/hooks/useEscape'
+import { useAuthStore } from '@/store/auth'
 import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
 // Fix V2-POS-10 (auditoría v2): buildPaymentReceipt() generaba un
@@ -115,6 +124,9 @@ export default function Pagos() {
   const [paidOverrides, setPaidOverrides] = useState<
     Record<string, { paidAt: string; method: 'card' | 'transfer' }>
   >({})
+  // Factura: vista previa en modal — se ve y se descarga acá mismo, sin
+  // tener que ir a Documentos.
+  const [invoice, setInvoice] = useState<FlatPayment | null>(null)
 
   const allPayments: FlatPayment[] = useMemo(
     () =>
@@ -211,7 +223,8 @@ export default function Pagos() {
             Pagos
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-navy-300 md:text-base">
-            Historial completo y próximos vencimientos en un solo lugar.
+            Todos tus pagos y facturas en un solo lugar. Mirá o descargá
+            cualquier comprobante desde acá.
           </p>
         </div>
         <button
@@ -448,60 +461,14 @@ export default function Pagos() {
                         Pagar
                         <ArrowRight className="h-3.5 w-3.5" />
                       </button>
-                    ) : p.invoiceUrl ? (
+                    ) : p.status === 'paid' ? (
                       <button
                         type="button"
-                        onClick={async () => {
-                          // Fix V2-POS-10 (auditoría v2): antes
-                          // descargaba un .txt con separadores ASCII
-                          // — inconsistente con CertificationRequest
-                          // que descarga PDF real. Ahora ambos paths
-                          // usan buildPaymentReceiptPdf de @/lib/pdf.
-                          //
-                          // Fix V3-POS-13 (auditoría v3): el dynamic
-                          // import de jsPDF puede fallar (offline,
-                          // chunk cache miss, CSP). Antes el
-                          // toast.info("Generando…") quedaba colgado
-                          // sin reemplazo. Ahora envolvemos en try/catch
-                          // y mostramos toast.error específico,
-                          // descartando el toast loading con id estable.
-                          const loadingId = toast.loading(
-                            'Generando comprobante…',
-                          )
-                          try {
-                            const {
-                              buildPaymentReceiptPdf,
-                              downloadPdfBlob,
-                            } = await import('@/lib/pdf')
-                            const blob = buildPaymentReceiptPdf({
-                              id: p.id,
-                              concept: p.concept,
-                              requestNumber: p.requestNumber,
-                              requestName: p.requestName,
-                              amount: p.amount,
-                              currency: p.currency,
-                              status: p.status,
-                              dueDate: p.dueDate,
-                              paidAt: p.paidAt,
-                            })
-                            downloadPdfBlob(`factura-${p.id}.pdf`, blob)
-                            toast.dismiss(loadingId)
-                            toast.success(`Factura ${p.id} descargada`)
-                          } catch (err) {
-                            toast.dismiss(loadingId)
-                            toast.error(
-                              'No pudimos generar el PDF — revisá tu conexión o reintentá.',
-                            )
-                            if (import.meta.env.DEV) {
-                              // eslint-disable-next-line no-console
-                              console.error('[pago/factura PDF]', err)
-                            }
-                          }
-                        }}
+                        onClick={() => setInvoice(p)}
                         className="inline-flex h-9 items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
                       >
-                        <Download className="h-3.5 w-3.5" />
-                        Factura
+                        <Receipt className="h-3.5 w-3.5" />
+                        Ver factura
                       </button>
                     ) : null}
                   </div>
@@ -512,15 +479,9 @@ export default function Pagos() {
         )}
       </section>
 
-      {/* Link sutil a métodos de pago en Configuración */}
-      <Link
-        to="/configuracion"
-        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-navy-300 transition-colors hover:text-navy-500"
-      >
-        <SettingsIcon className="h-4 w-4" />
-        Gestionar métodos de pago
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
+      {/* Métodos de pago — se movieron acá desde Configuración (eliminada):
+          Pagos es ahora el centro financiero único. */}
+      <PaymentMethodsSection />
 
       {/* Checkout — abre al click "Pagar" sobre cualquier pago pendiente */}
       <CheckoutModal
@@ -529,7 +490,204 @@ export default function Pagos() {
         onClose={() => setCheckoutItem(null)}
         onPaid={handlePaid}
       />
+
+      {/* Factura — vista previa + descarga, sin salir de Pagos */}
+      <InvoiceModal payment={invoice} onClose={() => setInvoice(null)} />
     </div>
+  )
+}
+
+// ─── Factura (vista previa + descarga) ───────────────────────────────────────
+
+function facturaNumber(p: FlatPayment): string {
+  const cert = p.requestNumber.replace('#', '')
+  const seq = (p.id.replace(/\D/g, '') || '1').padStart(4, '0')
+  return `FAC-${cert}-${seq}`
+}
+
+function InvoiceModal({
+  payment,
+  onClose,
+}: {
+  payment: FlatPayment | null
+  onClose: () => void
+}) {
+  const user = useAuthStore((s) => s.user)
+  useEscape(payment !== null, onClose)
+
+  async function download() {
+    if (!payment) return
+    const loadingId = toast.loading('Generando factura…')
+    try {
+      const { buildPaymentReceiptPdf, downloadPdfBlob } = await import(
+        '@/lib/pdf'
+      )
+      const blob = buildPaymentReceiptPdf({
+        id: payment.id,
+        concept: payment.concept,
+        requestNumber: payment.requestNumber,
+        requestName: payment.requestName,
+        amount: payment.amount,
+        currency: payment.currency,
+        status: payment.status,
+        dueDate: payment.dueDate,
+        paidAt: payment.paidAt,
+      })
+      downloadPdfBlob(`factura-${payment.id}.pdf`, blob)
+      toast.dismiss(loadingId)
+      toast.success('Factura descargada')
+    } catch (err) {
+      toast.dismiss(loadingId)
+      toast.error('No pudimos generar el PDF — reintentá.')
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error('[factura PDF]', err)
+      }
+    }
+  }
+
+  return (
+    <AnimatePresence>
+      {payment && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-navy-500/40 p-4 backdrop-blur-sm"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Factura"
+            className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-success-100 text-success-300">
+                  <Receipt className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-navy-300">
+                    Factura
+                  </p>
+                  <p className="text-sm font-bold text-navy-500">
+                    {facturaNumber(payment)}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar"
+                className="rounded-full p-1.5 text-navy-300 transition-colors hover:bg-neutral-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Cuerpo */}
+            <div className="px-6 py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-widest text-navy-300">
+                    Emisor
+                  </p>
+                  <p className="mt-0.5 text-sm font-bold text-navy-500">
+                    Ancestral Seed Foundation
+                  </p>
+                  <p className="text-xs text-navy-300">
+                    Certificación de autenticidad cultural
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-100 px-3 py-1 text-xs font-bold text-success-300 ring-1 ring-success-300/30">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Pagada
+                </span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-navy-300">
+                    Facturado a
+                  </p>
+                  <p className="mt-0.5 font-semibold text-navy-500">
+                    {user?.name ?? 'Camila Montes'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-navy-300">
+                    Fecha de pago
+                  </p>
+                  <p className="mt-0.5 font-semibold text-navy-500">
+                    {payment.paidAt
+                      ? new Date(payment.paidAt).toLocaleDateString('es-AR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : '—'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-200">
+                <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-navy-500">
+                      {payment.concept}
+                    </p>
+                    <p className="truncate text-xs text-navy-300">
+                      {payment.requestNumber} · {payment.requestName}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-navy-500">
+                    {fmt(payment.amount, payment.currency)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <p className="text-sm font-bold text-navy-500">Total</p>
+                  <p className="text-lg font-bold text-navy-500">
+                    {fmt(payment.amount, payment.currency)}
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-3 text-[11px] leading-relaxed text-navy-300">
+                Comprobante emitido por Ancestral Seed. Siempre vas a poder
+                volver a verlo o descargarlo acá, en Pagos.
+              </p>
+            </div>
+
+            {/* Acciones */}
+            <div className="flex flex-col-reverse gap-2 border-t border-neutral-200 px-6 py-4 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-10 items-center justify-center rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                onClick={download}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
+              >
+                <Download className="h-4 w-4" />
+                Descargar PDF
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -633,5 +791,101 @@ function KpiCard({
         <p className="mt-1 text-[11px] font-semibold text-navy-400">{sub}</p>
       )}
     </div>
+  )
+}
+
+// ─── Métodos de pago (movido desde Configuración) ───────────────────────────
+
+function PaymentMethodsSection() {
+  const [methods, setMethods] = useState<SavedPaymentMethod[]>([])
+  const [addOpen, setAddOpen] = useState(false)
+
+  const handleAdd = (pm: Omit<SavedPaymentMethod, 'id'>) => {
+    setMethods((prev) => [
+      { ...pm, id: `pm-${prev.length}-${pm.last4}` },
+      ...prev,
+    ])
+    setAddOpen(false)
+    toast.success(`Tarjeta ${pm.brand.toUpperCase()} •••• ${pm.last4} agregada`)
+  }
+
+  return (
+    <section className="mt-6 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <CreditCard className="h-5 w-5 text-navy-500" />
+          <h2 className="text-lg font-bold text-navy-500">Métodos de pago</h2>
+        </div>
+        {methods.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gold-500 px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Agregar
+          </button>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-navy-300">
+        Tarjetas guardadas para pagar más rápido la próxima vez.
+      </p>
+
+      {methods.length === 0 ? (
+        <div className="mt-4 rounded-2xl border border-dashed border-neutral-300 p-6 text-center">
+          <CreditCard className="mx-auto h-7 w-7 text-navy-300" />
+          <p className="mt-2 text-sm font-semibold text-navy-500">
+            No tenés métodos guardados
+          </p>
+          <p className="text-xs text-navy-300">
+            Agregá uno y lo usás directo en tu próximo pago.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gold-500 px-4 py-2 text-xs font-bold text-navy-500 hover:bg-gold-400"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Agregar método
+          </button>
+        </div>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {methods.map((m) => (
+            <li
+              key={m.id}
+              className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3"
+            >
+              <span className="flex h-10 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-navy-500 to-navy-400 text-[10px] font-bold uppercase tracking-widest text-white">
+                {m.brand}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-navy-500">
+                  •••• •••• •••• {m.last4}
+                </p>
+                <p className="truncate text-xs text-navy-300">
+                  {m.holder} · vence {m.expiry}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMethods((prev) => prev.filter((x) => x.id !== m.id))
+                  toast.success('Tarjeta eliminada')
+                }}
+                className="rounded-full p-2 text-navy-300 hover:bg-error-100 hover:text-error-400"
+                aria-label="Eliminar tarjeta"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {addOpen && (
+        <AddPaymentModal onClose={() => setAddOpen(false)} onAdd={handleAdd} />
+      )}
+    </section>
   )
 }

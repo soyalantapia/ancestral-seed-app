@@ -23,7 +23,7 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const setSession = useAuthStore((s) => s.setSession)
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/inicio'
+  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/mis-certificaciones'
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,

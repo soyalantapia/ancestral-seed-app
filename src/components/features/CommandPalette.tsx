@@ -8,14 +8,12 @@ import {
   Calendar,
   CreditCard,
   FileBadge2,
-  FileText,
   HelpCircle,
   Home,
   LayoutDashboard,
   LogOut,
   Moon,
   Search,
-  Settings as SettingsIcon,
   ShieldCheck,
   Sun,
   Users,
@@ -143,14 +141,11 @@ export function CommandPalette() {
       { id: 'certify', label: 'Certificar producto', group: 'Navegación', icon: FileBadge2, action: go('/certificar'), keywords: ['nuevo', 'crear', 'iniciar', 'formulario', 'solicitar', 'postular'] },
 
       // Solicitante
-      { id: 'dashboard', label: 'Mi panel', group: 'Cuenta', icon: LayoutDashboard, action: go('/inicio'), requiresAuth: true, keywords: ['dashboard', 'panel', 'inicio', 'home'] },
-      { id: 'my-certs', label: 'Mis certificaciones', group: 'Cuenta', icon: FileBadge2, action: go('/mis-certificaciones'), requiresAuth: true, keywords: ['certificar', 'solicitudes', 'requests'] },
-      { id: 'docs', label: 'Documentos', group: 'Cuenta', icon: FileText, action: go('/documentos'), requiresAuth: true, keywords: ['pdf', 'evidencias', 'facturas', 'archivos'] },
-      { id: 'pagos', label: 'Pagos y facturas', group: 'Cuenta', icon: CreditCard, action: go('/pagos'), requiresAuth: true, keywords: ['cobros', 'facturación', 'billing'] },
+      { id: 'my-certs', label: 'Mis certificaciones', group: 'Cuenta', icon: FileBadge2, action: go('/mis-certificaciones'), requiresAuth: true, keywords: ['certificar', 'solicitudes', 'requests', 'inicio', 'panel'] },
+      { id: 'pagos', label: 'Pagos y facturas', group: 'Cuenta', icon: CreditCard, action: go('/pagos'), requiresAuth: true, keywords: ['cobros', 'facturación', 'billing', 'documentos', 'facturas'] },
       { id: 'cal', label: 'Calendario', group: 'Cuenta', icon: Calendar, action: go('/calendario'), requiresAuth: true, keywords: ['agenda', 'reuniones', 'meetings'] },
       { id: 'notifs', label: 'Notificaciones', group: 'Cuenta', icon: Bell, action: go('/notificaciones'), requiresAuth: true, keywords: ['avisos', 'alertas'] },
       { id: 'profile', label: 'Mi perfil', group: 'Cuenta', icon: Users, action: go('/mi-perfil'), requiresAuth: true, keywords: ['cuenta', 'datos', 'usuario'] },
-      { id: 'settings', label: 'Configuración', group: 'Cuenta', icon: SettingsIcon, action: go('/configuracion'), requiresAuth: true, keywords: ['ajustes', 'preferencias', 'settings'] },
       { id: 'help', label: 'Ayuda', group: 'Cuenta', icon: HelpCircle, action: go('/ayuda'), requiresAuth: true, keywords: ['soporte', 'faq', 'preguntas'] },
 
       // Tutor

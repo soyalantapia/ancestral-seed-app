@@ -54,8 +54,8 @@ interface TourDefinition {
  * Recorrido del postulante — "Cómo funciona".
  *
  * Rediseño 2026-06 (estrategia de producto): un ÚNICO recorrido guiado que
- * cruza el viaje completo —inicio → detalle de una certificación →
- * formulario— y termina parado en el formulario, listo para empezar.
+ * cruza el viaje completo —Mis certificaciones (la página principal) →
+ * detalle de la certificación → formulario— y termina lanzando el formulario.
  *
  * Principios:
  *   - Orientado al objetivo (activar la 1ª certificación), no a mostrar
@@ -64,13 +64,11 @@ interface TourDefinition {
  *     desktop. Se eliminaron los pasos que rompían en mobile (menú lateral
  *     oculto, atajo Cmd+K, "ver sitio público" del header).
  *   - Una frase corta por paso, lenguaje digno y neutro.
- *   - Termina lanzando la acción: el último paso deja al usuario en
- *     /certificar (la navegación por `route` hace el trabajo; al cerrar el
- *     tour queda parado en el formulario).
+ *   - Termina lanzando la acción: el último paso navega a /certificar
+ *     (TourStep.ctaTo) y cierra el tour, parado en el formulario.
  *
- * La invitación a este recorrido es suave (componente TourInvite): no
- * secuestra la pantalla; ofrece "¿Te muestro cómo funciona?" y solo arranca
- * si la persona acepta.
+ * Se dispara desde la pestaña "Tutorial" del sidebar (acción directa, no una
+ * ruta). El reglón welcome navega a /mis-certificaciones si hace falta.
  */
 export const solicitanteTour: TourDefinition = {
   id: 'solicitante',
@@ -82,36 +80,28 @@ export const solicitanteTour: TourDefinition = {
       body:
         'Validamos que tu producto, servicio u oficio ancestral es auténtico y te damos un certificado digital, con un perfil que cualquiera puede verificar por QR.',
       placement: 'center',
-      route: '/inicio',
+      route: '/mis-certificaciones',
       nextLabel: 'Mostrame el camino',
     },
     {
-      id: 'next-step',
-      title: 'Tu próximo paso, siempre claro',
-      body: 'Acá te decimos qué hacer ahora para que tu certificación avance. No te perdés.',
-      target: '[data-tour="quick-actions"]',
-      placement: 'bottom',
-      route: '/inicio',
-    },
-    {
       id: 'list',
-      title: 'Todas tus certificaciones',
-      body: 'De un vistazo ves cada una y en qué etapa está.',
+      title: 'Tu certificación, de un vistazo',
+      body: 'Acá ves tu certificación y en qué etapa está. Todo tu proceso, en un solo lugar.',
       target: '[data-tour="solicitudes-list"]',
       placement: 'top',
-      route: '/inicio',
+      route: '/mis-certificaciones',
     },
     {
       id: 'start-here',
-      title: 'Acá empezás una nueva',
-      body: 'Tu certificación arranca con un formulario de 7 pasos cortos que se guarda solo: salí y volvé cuando quieras.',
+      title: 'Empezás una nueva acá',
+      body: 'Cada certificación arranca con un formulario de 7 pasos cortos que se guarda solo: salí y volvé cuando quieras.',
       target: '[data-tour="cta-nueva-cert"]',
       placement: 'bottom',
-      route: '/inicio',
+      route: '/mis-certificaciones',
     },
     {
       id: 'seguimiento',
-      title: 'Después, seguís tu proceso',
+      title: 'Adentro, seguís tu proceso',
       body: 'Al abrir una certificación ves sus etapas, las evidencias que subiste y los pagos, todo en un lugar.',
       target: '[data-tour="seguimiento"]',
       placement: 'bottom',

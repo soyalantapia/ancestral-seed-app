@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEscape } from '@/hooks/useEscape'
 import {
+  ArrowRight,
   BookOpen,
   Camera,
   CheckCircle2,
@@ -105,6 +106,15 @@ export default function MyProfile() {
   const coverInputRef = useRef<HTMLInputElement>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
+  // Refs de cada sección — para que "Completar perfil" lleve al usuario
+  // directo a lo que falta (scroll + activar el control correspondiente).
+  const heroRef = useRef<HTMLElement>(null)
+  const personalRef = useRef<HTMLElement>(null)
+  const bioRef = useRef<HTMLElement>(null)
+  const bioTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const communityRef = useRef<HTMLElement>(null)
+  const historiaTextareaRef = useRef<HTMLTextAreaElement>(null)
+
   /**
    * Fix V2-POS-19 (auditoría v2): antes el dirty check era un
    * `JSON.stringify(data) !== JSON.stringify(initial)` puro. Eso
@@ -182,6 +192,45 @@ export default function MyProfile() {
 
   const update = (patch: Partial<ProfileData>) => setData((d) => ({ ...d, ...patch }))
 
+  /**
+   * Lleva al usuario al control de un ítem faltante del perfil: scrollea a
+   * su sección y la "activa" (abre el editor / enfoca el campo / abre el
+   * selector de foto). Así "Completar perfil" no solo dice qué falta — te
+   * lleva a hacerlo, uno por uno.
+   */
+  const goToField = (label: string) => {
+    const scroll = (ref: React.RefObject<HTMLElement | null>) =>
+      ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    switch (label) {
+      case 'Nombre completo':
+      case 'Email':
+      case 'Teléfono':
+      case 'País y región':
+        setEditingPersonal(true)
+        setTimeout(() => scroll(personalRef), 60)
+        break
+      case 'Biografía':
+        scroll(bioRef)
+        setTimeout(() => bioTextareaRef.current?.focus(), 360)
+        break
+      case 'Comunidad y rol':
+        scroll(communityRef)
+        break
+      case 'Historia':
+        scroll(communityRef)
+        setTimeout(() => historiaTextareaRef.current?.focus(), 360)
+        break
+      case 'Foto de portada':
+        scroll(heroRef)
+        coverInputRef.current?.click()
+        break
+      case 'Avatar personalizado':
+        scroll(heroRef)
+        avatarInputRef.current?.click()
+        break
+    }
+  }
+
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>, key: 'coverUrl' | 'avatarUrl') => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -246,33 +295,69 @@ export default function MyProfile() {
               style={{ width: `${completionPct}%` }}
             />
           </div>
-          {/* Resumen: solo lo que falta (un checklist de 9 ítems intimida
-              de entrada). El detalle completo queda en "Ver todo". */}
-          <div className="mt-4 text-xs md:text-sm">
-            <p className="text-navy-500">
-              <span className="font-bold">Te falta:</span>{' '}
+          <div className="mt-4">
+            {/* CTA principal: te lleva a la primera cosa que falta y te
+                va guiando (al completarla, apunta a la siguiente). */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const next = fields.find(([, ok]) => !ok)
+                  if (next) goToField(next[0])
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
+              >
+                Completar perfil
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <p className="text-xs text-navy-300 md:text-sm">
+                Te llevamos a cada cosa que falta, una por una.
+              </p>
+            </div>
+
+            {/* Chips: tocá uno para ir directo a ese ítem. */}
+            <div className="mt-3 flex flex-wrap gap-2">
               {fields
                 .filter(([, ok]) => !ok)
-                .map(([label]) => label)
-                .join(' · ')}
-            </p>
-            <details className="mt-2">
+                .map(([label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => goToField(label)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gold-300 bg-white px-3 py-1 text-xs font-semibold text-navy-500 transition-colors hover:border-gold-500 hover:bg-gold-100"
+                  >
+                    <Circle className="h-3 w-3 text-gold-700" />
+                    {label}
+                  </button>
+                ))}
+            </div>
+
+            <details className="mt-3 text-xs md:text-sm">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-semibold text-navy-400 underline-offset-2 hover:text-navy-500 hover:underline">
                 Ver todo el checklist
               </summary>
               <ul className="mt-2 grid grid-cols-1 gap-1.5 text-xs md:grid-cols-3">
-                {fields.map(([label, ok]) => (
-                  <li key={label} className="flex items-center gap-2">
-                    {ok ? (
+                {fields.map(([label, ok]) =>
+                  ok ? (
+                    <li key={label} className="flex items-center gap-2 px-1 py-0.5">
                       <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success-300" />
-                    ) : (
-                      <Circle className="h-3.5 w-3.5 shrink-0 text-navy-300" />
-                    )}
-                    <span className={ok ? 'text-navy-500' : 'text-navy-300'}>
-                      {label}
-                    </span>
-                  </li>
-                ))}
+                      <span className="text-navy-500">{label}</span>
+                    </li>
+                  ) : (
+                    <li key={label}>
+                      <button
+                        type="button"
+                        onClick={() => goToField(label)}
+                        className="flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-gold-100"
+                      >
+                        <Circle className="h-3.5 w-3.5 shrink-0 text-navy-300" />
+                        <span className="text-navy-400 underline-offset-2 hover:underline">
+                          {label}
+                        </span>
+                      </button>
+                    </li>
+                  ),
+                )}
               </ul>
             </details>
           </div>
@@ -322,7 +407,10 @@ export default function MyProfile() {
       {tab === 'Mi perfil' && (
         <div className="mt-8 space-y-6">
           {/* Identity hero card — cover + avatar + name + role */}
-          <section className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+          <section
+            ref={heroRef}
+            className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm"
+          >
             <div className="relative">
               {data.coverUrl ? (
                 <img src={data.coverUrl} alt="Portada" className="aspect-[16/5] w-full object-cover md:aspect-[16/4]" />
@@ -411,7 +499,10 @@ export default function MyProfile() {
           </section>
 
           {/* Datos personales */}
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+          <section
+            ref={personalRef}
+            className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
@@ -449,7 +540,10 @@ export default function MyProfile() {
           </section>
 
           {/* Sobre mí */}
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+          <section
+            ref={bioRef}
+            className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
+          >
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
                 <BookOpen className="h-4 w-4" />
@@ -460,6 +554,7 @@ export default function MyProfile() {
               Tu biografía personal. Aparece en tu perfil público y en el header de tus fichas.
             </p>
             <textarea
+              ref={bioTextareaRef}
               rows={7}
               className="mt-3 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm leading-relaxed text-navy-500 focus:border-gold-500 focus:outline-none"
               value={data.bio}
@@ -469,7 +564,10 @@ export default function MyProfile() {
           </section>
 
           {/* Datos de comunidad */}
-          <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+          <section
+            ref={communityRef}
+            className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8"
+          >
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-100 text-gold-700">
                 <Users className="h-4 w-4" />
@@ -491,6 +589,7 @@ export default function MyProfile() {
               Podés compartir una breve historia sobre tu comunidad, su origen o lo que representa.
             </p>
             <textarea
+              ref={historiaTextareaRef}
               rows={7}
               className="mt-3 w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-sm leading-relaxed text-navy-500 focus:border-gold-500 focus:outline-none"
               value={data.history}

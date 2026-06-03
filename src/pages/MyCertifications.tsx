@@ -1,19 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AlertCircle,
   ArrowRight,
   Award,
-  Calendar,
-  ChevronDown,
   Clock,
   FileText,
   PauseCircle,
   Plus,
   Search,
-  SlidersHorizontal,
   TrendingUp,
-  X,
 } from 'lucide-react'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import { StageStatusBadge } from '@/components/features/StagePipeline'
@@ -22,40 +17,22 @@ import { STAGES } from '@/lib/copy'
 import { cn } from '@/lib/utils'
 
 /**
- * Fix SB4 (#POS-11, auditoría UX): antes solo "En curso" y "En emisión".
- * El postulante con certificación EMITIDA no la encontraba acá, y los
- * borradores postergados tampoco aparecían.
+ * Decisión de producto (jun-2026): el postulante tiene POCAS certificaciones,
+ * así que reemplazamos las 5 tabs de estado + chips de filtro + orden
+ * (maquinaria pensada para gestionar decenas de registros, que acá mostraba
+ * "0,0,0,0" y agregaba ruido) por UNA sola lista con todo, ordenada "lo activo
+ * primero". El estado de cada certificación ya se lee de un vistazo en su badge
+ * + barra de progreso. La búsqueda aparece solo cuando hay suficientes ítems.
  *
- * Ahora 4 tabs cubren todos los estados de vida del journey:
- * - En curso: postulaciones activas con tutor revisando
- * - En emisión: aprobadas, esperando emisión administrativa
- * - Certificadas: con licencia ya otorgada → link a /certificado/[slug]
- * - Postergadas: borradores guardados en el CertifyForm store
+ * Orden: lo que requiere atención arriba (En curso → En emisión), luego los
+ * logros (Certificado) y al final lo cerrado (Denegada). El borrador postergado
+ * del CertifyForm, si existe, va primero ("seguí donde lo dejaste").
  */
-const tabs = ['En curso', 'En emisión', 'Certificadas', 'Denegadas', 'Postergadas'] as const
-type Tab = (typeof tabs)[number]
-
-const sortOptions = [
-  { id: 'recent', label: 'Más recientes' },
-  { id: 'oldest', label: 'Más antiguas' },
-  { id: 'name', label: 'Nombre A-Z' },
-  { id: 'pending', label: 'Más pendientes' },
-] as const
-type SortId = (typeof sortOptions)[number]['id']
-
-/**
- * Mapeo tab → status del request. "Certificadas" corresponde al status
- * 'Certificado' del modelo (singular en types/index.ts), "Postergadas"
- * no es un status de request sino del store del CertifyForm.
- */
-function statusForTab(
-  tab: Tab,
-): 'En curso' | 'En emisión' | 'Certificado' | 'Denegada' | null {
-  if (tab === 'En curso') return 'En curso'
-  if (tab === 'En emisión') return 'En emisión'
-  if (tab === 'Certificadas') return 'Certificado'
-  if (tab === 'Denegadas') return 'Denegada'
-  return null // Postergadas no tiene status
+const STATUS_ORDER: Record<string, number> = {
+  'En curso': 0,
+  'En emisión': 1,
+  Certificado: 2,
+  Denegada: 3,
 }
 
 /** Estado del wizard postergado — derivado del store. */
@@ -67,12 +44,7 @@ interface PostponedDraft {
 }
 
 export default function MyCertifications() {
-  const [tab, setTab] = useState<Tab>('En curso')
   const [query, setQuery] = useState('')
-  const [sortBy, setSortBy] = useState<SortId>('recent')
-  const [sortOpen, setSortOpen] = useState(false)
-  const [filterPending, setFilterPending] = useState(false)
-  const [filterUpcoming, setFilterUpcoming] = useState(false)
 
   // Borrador del CertifyForm (para tab "Postergadas")
   const formData = useCertifyFormStore((s) => s.data)
@@ -107,45 +79,23 @@ export default function MyCertifications() {
     }
   }, [formData, formStep])
 
-  const requests = useMemo(() => {
-    const status = statusForTab(tab)
-    if (status === null) return [] // Postergadas no usa requests
-    let r = mockCertificationRequests.filter((r) => r.status === status)
-    if (query) {
-      r = r.filter((x) => x.productName.toLowerCase().includes(query.toLowerCase()))
-    }
-    if (filterPending) {
-      r = r.filter((x) => x.pendingItems.length > 0)
-    }
-    if (filterUpcoming) {
-      r = r.filter((x) => x.scheduledMeetings.length > 0)
-    }
-    // sort
-    const sorted = [...r]
-    if (sortBy === 'recent') {
-      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    } else if (sortBy === 'oldest') {
-      sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    } else if (sortBy === 'name') {
-      sorted.sort((a, b) => a.productName.localeCompare(b.productName))
-    } else if (sortBy === 'pending') {
-      sorted.sort((a, b) => b.pendingItems.length - a.pendingItems.length)
-    }
-    return sorted
-  }, [tab, query, sortBy, filterPending, filterUpcoming])
-
-  // Conteo por tab — el bottom-counter del chip de la tab muestra la
-  // cantidad real de items disponibles en cada tab.
-  function countForTab(t: Tab): number {
-    const status = statusForTab(t)
-    if (status === null) {
-      return postponedDraft ? 1 : 0
-    }
-    return mockCertificationRequests.filter((r) => r.status === status).length
-  }
-
-  const activeFiltersCount = (filterPending ? 1 : 0) + (filterUpcoming ? 1 : 0)
   const allRequests = mockCertificationRequests
+
+  const requests = useMemo(() => {
+    const sorted = [...allRequests].sort((a, b) => {
+      const pa = STATUS_ORDER[a.status] ?? 9
+      const pb = STATUS_ORDER[b.status] ?? 9
+      if (pa !== pb) return pa - pb
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+    const q = query.trim().toLowerCase()
+    if (!q) return sorted
+    return sorted.filter((x) => x.productName.toLowerCase().includes(q))
+  }, [allRequests, query])
+
+  // La búsqueda solo aparece cuando la lista es lo bastante larga como para
+  // necesitarla (progressive disclosure); con pocas certificaciones, estorba.
+  const showSearch = allRequests.length > 4
   const isEmpty = allRequests.length === 0 && !postponedDraft
 
   // First-time empty state
@@ -188,17 +138,20 @@ export default function MyCertifications() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 md:w-auto">
-          <div className="relative w-full md:w-64">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar"
-              className="h-11 w-full rounded-full border border-neutral-300 bg-white pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
-            />
-          </div>
+          {showSearch && (
+            <div className="relative w-full md:w-64">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar"
+                className="h-11 w-full rounded-full border border-neutral-300 bg-white pl-11 pr-4 text-sm text-navy-500 placeholder:text-navy-300 focus:border-gold-500 focus:outline-none"
+              />
+            </div>
+          )}
           <Link
             to="/certificar"
+            data-tour="cta-nueva-cert"
             className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-full bg-gold-500 px-4 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
           >
             <Plus className="h-4 w-4" />
@@ -207,128 +160,18 @@ export default function MyCertifications() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((t) => {
-            const count = countForTab(t)
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTab(t)}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition-colors',
-                  tab === t
-                    ? 'bg-gold-100 text-gold-700 ring-1 ring-gold-300'
-                    : 'text-navy-300 hover:bg-neutral-100 hover:text-navy-500',
-                )}
-              >
-                {t}
-                <span
-                  className={cn(
-                    'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold',
-                    tab === t ? 'bg-gold-500 text-navy-500' : 'bg-neutral-200 text-navy-300',
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            )
-          })}
+      {/* Lista única — borrador postergado (si hay) primero, luego las
+          certificaciones ordenadas "lo activo primero". Sin tabs ni filtros:
+          el estado se lee en el badge + barra de cada card. */}
+      {requests.length === 0 && !postponedDraft ? (
+        <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center">
+          <p className="text-sm text-navy-300">
+            No encontramos certificaciones para «{query}».
+          </p>
         </div>
-
-        {/* Filter + sort */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setFilterPending((v) => !v)}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors',
-              filterPending
-                ? 'border-gold-500 bg-gold-100 text-gold-700'
-                : 'border-neutral-300 bg-white text-navy-500 hover:border-gold-300',
-            )}
-          >
-            <AlertCircle className="h-3.5 w-3.5" />
-            Con pendientes
-            {filterPending && <X className="h-3 w-3" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterUpcoming((v) => !v)}
-            // Fix SM5 (#POS-13): tooltip explica el rango temporal.
-            title="Reuniones agendadas en los próximos 7 días"
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors',
-              filterUpcoming
-                ? 'border-info-300 bg-info-100 text-info-400'
-                : 'border-neutral-300 bg-white text-navy-500 hover:border-info-300',
-            )}
-          >
-            <Calendar className="h-3.5 w-3.5" />
-            Con reunión esta semana
-            {filterUpcoming && <X className="h-3 w-3" />}
-          </button>
-
-          {/* Sort dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setSortOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              {sortOptions.find((s) => s.id === sortBy)?.label}
-              <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', sortOpen && 'rotate-180')} />
-            </button>
-            {sortOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setSortOpen(false)} />
-                <ul className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
-                  {sortOptions.map((o) => (
-                    <li key={o.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSortBy(o.id)
-                          setSortOpen(false)
-                        }}
-                        className={cn(
-                          'flex w-full items-center px-3 py-2 text-left text-xs font-semibold transition-colors',
-                          sortBy === o.id
-                            ? 'bg-gold-100 text-gold-700'
-                            : 'text-navy-500 hover:bg-neutral-100',
-                        )}
-                      >
-                        {o.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-
-          {activeFiltersCount > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setFilterPending(false)
-                setFilterUpcoming(false)
-              }}
-              className="text-xs font-semibold text-navy-300 hover:text-navy-500"
-            >
-              Limpiar
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* List — depende del tab activo */}
-      {tab === 'Postergadas' ? (
-        postponedDraft ? (
-          <ul className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+      ) : (
+        <ul data-tour="solicitudes-list" className="mt-6 space-y-4">
+          {postponedDraft && (
             <li className="rounded-3xl border-2 border-dashed border-gold-300 bg-gold-50/40 p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div className="min-w-0">
@@ -378,105 +221,137 @@ export default function MyCertifications() {
                 </Link>
               </div>
             </li>
-          </ul>
-        ) : (
-          <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center">
-            <PauseCircle className="mx-auto h-8 w-8 text-navy-300" />
-            <p className="mt-3 text-sm font-bold text-navy-500">
-              Sin borradores postergados
-            </p>
-            <p className="mt-1 text-xs text-navy-300">
-              Cuando dejes una postulación a medias, va a aparecer acá
-              durante 60 días.
-            </p>
-          </div>
-        )
-      ) : requests.length === 0 ? (
-        <div className="mt-10 rounded-3xl border border-dashed border-neutral-300 p-10 text-center">
-          {tab === 'Certificadas' ? (
-            <>
-              <Award className="mx-auto h-8 w-8 text-navy-300" />
-              <p className="mt-3 text-sm font-bold text-navy-500">
-                Todavía no tenés certificaciones emitidas
-              </p>
-              <p className="mt-1 text-xs text-navy-300">
-                Cuando se emita la primera, vas a poder bajar el sello
-                oficial y compartirlo desde acá.
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-navy-300">
-              No hay resultados para los filtros aplicados.
-            </p>
           )}
-        </div>
-      ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {requests.map((r) => (
-            <li
-              key={r.id}
-              className="flex flex-col rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
-              {/* Encabezado: nombre + estado (jerarquía clara) */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="text-base font-bold leading-tight text-navy-500">
-                    {r.productName}
-                  </h3>
-                  <p className="mt-1 text-xs text-navy-300">
-                    {r.number} · Creada {r.createdAt}
-                  </p>
-                </div>
-                <StageStatusBadge
-                  status={
-                    r.status === 'En emisión'
-                      ? 'En emisión'
-                      : r.status === 'Certificado'
-                        ? 'Vigente'
-                        : r.status === 'Denegada'
-                          ? 'Denegada'
-                          : STAGES[r.currentStage]?.label ?? 'En curso'
-                  }
-                />
-              </div>
+          {requests.map((r) => {
+            const total = r.stages.length
+            const currentIdx = (() => {
+              const ip = r.stages.findIndex((s) => s.status === 'in_progress')
+              if (ip >= 0) return ip
+              const pend = r.stages.findIndex((s) => s.status === 'pending')
+              return pend >= 0 ? pend : total - 1
+            })()
+            const currentLabel =
+              r.stages[currentIdx]?.label ??
+              STAGES[r.currentStage]?.label ??
+              'En curso'
+            const badgeStatus =
+              r.status === 'En emisión'
+                ? 'En emisión'
+                : r.status === 'Certificado'
+                  ? 'Vigente'
+                  : r.status === 'Denegada'
+                    ? 'Denegada'
+                    : STAGES[r.currentStage]?.label ?? 'En curso'
+            const isClosed =
+              r.status === 'Certificado' || r.status === 'Denegada'
+            const rawThumb = r.evidences?.find((e) => e.thumbUrl)?.thumbUrl
+            const thumb = rawThumb
+              ? rawThumb.startsWith('http')
+                ? rawThumb
+                : `${import.meta.env.BASE_URL}${rawThumb.replace(/^\//, '')}`
+              : undefined
+            const cta =
+              r.status === 'Certificado'
+                ? 'Ver certificado'
+                : r.status === 'Denegada'
+                  ? 'Ver y apelar'
+                  : r.pendingItems.length > 0
+                    ? 'Continuar'
+                    : 'Ver solicitud'
 
-              {/* Qué está pasando ahora */}
-              <p className="mt-3 text-sm leading-relaxed text-navy-400">
-                {r.progressLabel}
-              </p>
+            return (
+              <li
+                key={r.id}
+                className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm transition-all hover:border-navy-200 hover:shadow-md"
+              >
+                <div className="flex flex-col gap-5 p-5 sm:flex-row sm:gap-6 sm:p-6">
+                  {/* Miniatura de la pieza (fallback: patrón ancestral) */}
+                  <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-2xl bg-pattern-aztec sm:aspect-square sm:w-36 md:w-44">
+                    <span className="absolute inset-0 flex items-center justify-center text-white/50">
+                      <Award className="h-8 w-8" strokeWidth={1.5} />
+                    </span>
+                    {thumb && (
+                      <img
+                        src={thumb}
+                        alt={r.productName}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    )}
+                  </div>
 
-              {/* Lo que el usuario tiene que hacer — destacado */}
-              {r.pendingItems.length > 0 && (
-                <div className="mt-3 rounded-xl border border-error-200 bg-error-100/40 p-3">
-                  <p className="flex items-center gap-1.5 text-xs font-bold text-error-400">
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                    Te falta para avanzar
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {r.pendingItems.map((p) => (
-                      <span
-                        key={p}
-                        className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-error-400 ring-1 ring-error-200"
+                  {/* Contenido */}
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold leading-tight text-navy-500 md:text-xl">
+                          {r.productName}
+                        </h3>
+                        <p className="mt-1 text-xs text-navy-300">
+                          {r.number} · Creada {r.createdAt}
+                        </p>
+                      </div>
+                      <StageStatusBadge status={badgeStatus} />
+                    </div>
+
+                    {/* Progreso del camino (6 etapas) */}
+                    {!isClosed && (
+                      <div className="mt-4">
+                        <div className="flex items-center gap-1">
+                          {r.stages.map((s, i) => (
+                            <span
+                              key={s.stage}
+                              className={cn(
+                                'h-1.5 flex-1 rounded-full transition-colors',
+                                s.status === 'completed'
+                                  ? 'bg-gold-500'
+                                  : i === currentIdx
+                                    ? 'bg-navy-400'
+                                    : 'bg-neutral-200',
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <p className="mt-2 text-xs text-navy-300">
+                          Etapa {currentIdx + 1} de {total} ·{' '}
+                          <span className="font-semibold text-navy-500">
+                            {currentLabel}
+                          </span>
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Próximo paso + CTA */}
+                    <div className="mt-4 flex flex-col gap-3 sm:mt-auto sm:flex-row sm:items-end sm:justify-between sm:pt-4">
+                      <div className="min-w-0">
+                        {r.pendingItems.length > 0 ? (
+                          <p className="text-sm leading-relaxed text-navy-500">
+                            <span className="font-semibold">Para avanzar:</span>{' '}
+                            <span className="text-navy-400">
+                              {r.pendingItems.join(' · ')}
+                            </span>
+                          </p>
+                        ) : (
+                          <p className="text-sm leading-relaxed text-navy-400">
+                            {r.progressLabel}
+                          </p>
+                        )}
+                      </div>
+                      <Link
+                        to={`/mis-certificaciones/${r.id}`}
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-navy-500 px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400 sm:w-auto"
                       >
-                        {p}
-                      </span>
-                    ))}
+                        {cta}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              )}
-
-              {/* CTA primario — alineado al pie para cards parejas */}
-              <div className="mt-auto pt-5">
-                <Link
-                  to={`/mis-certificaciones/${r.id}`}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-navy-400"
-                >
-                  {r.pendingItems.length > 0 ? 'Continuar' : 'Ver solicitud'}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

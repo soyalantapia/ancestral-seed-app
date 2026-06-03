@@ -400,114 +400,8 @@ export const PLACEHOLDER_TOKEN = PLACEHOLDER
 // ─── Dashboard mocks ─────────────────────────────────────────────────────────
 
 export const mockCertificationRequests: CertificationRequest[] = [
-  // Certificación YA EMITIDA — cierra el ciclo de vida del postulante:
-  // habilita el estado "certificado" del panel, suma a Documentos
-  // (emitidos), y da punto de entrada real a Renovar / Plan de mejora.
-  {
-    id: 'req-000',
-    number: '#000',
-    productName: 'Collar en filigrana tradicional',
-    createdAt: '2025-06-10',
-    currentStage: 'certificacion',
-    status: 'Certificado',
-    progressLabel: 'Certificado emitido y vigente',
-    diagnosticCompleted: true,
-    pendingItems: [],
-    stages: [
-      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '10/06/2025' },
-      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '18/06/2025' },
-      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '05/07/2025' },
-      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '21/08/2025' },
-      { stage: 'evaluacion', label: 'Evaluación', status: 'completed', date: '12/09/2025' },
-      { stage: 'certificacion', label: 'Certificación', status: 'completed', date: '20/09/2025' },
-    ],
-    meetings: [
-      {
-        id: 'm-000',
-        auditorName: TUTOR_NAME,
-        type: 'Videollamada',
-        scheduledAt: '2025-08-21T11:00:00-03:00',
-        timezone: 'GMT-3',
-        message: 'Auditoría de cierre realizada.',
-        status: 'accepted',
-      },
-    ],
-    scheduledMeetings: [],
-    evidences: [
-      { id: 'e0-1', name: 'collar-frente.jpg', kind: 'image', sizeKb: 1320, uploadedAt: '2025-06-12T10:00:00-03:00', thumbUrl: '/cards/card-filigrana.webp' },
-      { id: 'e0-2', name: 'proceso-completo.mp4', kind: 'video', sizeKb: 21400, uploadedAt: '2025-06-12T10:05:00-03:00' },
-    ],
-    payments: [
-      { id: 'p0-1', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2025-06-30', paidAt: '2025-06-20' },
-      { id: 'p0-2', concept: 'Emisión del certificado en blockchain', amount: 15000, currency: 'ARS', status: 'paid', dueDate: '2025-09-15', paidAt: '2025-09-14' },
-    ],
-    history: [
-      { id: 'h0-1', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2025-06-10T18:00:00-03:00' },
-      { id: 'h0-2', kind: 'stage_changed', title: 'Auditoría aprobada', description: 'Puntaje 92%', actor: 'Auditor', at: '2025-09-12T12:00:00-03:00' },
-      { id: 'h0-3', kind: 'cert_published', title: 'Certificado emitido', description: 'Hash registrado en blockchain', actor: 'Sistema', at: '2025-09-20T09:00:00-03:00' },
-    ],
-    submittedData: {
-      applicantName: 'Camila Montes',
-      email: 'camila@ancestralseed.org',
-      phone: '+57 2345-6789',
-      country: 'Colombia',
-      region: 'Caribe colombiano',
-      community: 'Sierra Nevada de Santa Marta',
-      inspirationCommunity: 'Comunidad Kogi',
-      productType: 'Producto físico',
-      productSector: 'Joyería y orfebrería',
-      productSubcategory: 'Filigrana',
-      processDescription: 'Collar tejido a mano en filigrana de plata, técnica heredada de la comunidad.',
-      producerType: 'Yo misma · con apoyo familiar',
-    },
-  },
-  // Certificación DENEGADA — cierra la 3ª ruta del ciclo (Apelar). El
-  // postulante puede apelar al Comité dentro del plazo reglamentario.
-  {
-    id: 'req-003',
-    number: '#003',
-    productName: 'Aretes en mostacilla',
-    createdAt: '2026-01-15',
-    currentStage: 'evaluacion',
-    status: 'Denegada',
-    progressLabel: 'Denegada en evaluación · podés apelar',
-    diagnosticCompleted: true,
-    pendingItems: [],
-    stages: [
-      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '15/01/2026' },
-      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '22/01/2026' },
-      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '08/02/2026' },
-      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '01/03/2026' },
-      { stage: 'evaluacion', label: 'Evaluación', status: 'completed', date: '18/03/2026' },
-      { stage: 'certificacion', label: 'Certificación', status: 'pending' },
-    ],
-    meetings: [],
-    scheduledMeetings: [],
-    evidences: [
-      { id: 'e3-1', name: 'aretes.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-01-17T10:00:00-03:00' },
-    ],
-    payments: [
-      { id: 'p3-1', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2026-02-01', paidAt: '2026-01-25' },
-    ],
-    history: [
-      { id: 'h3-1', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2026-01-15T18:00:00-03:00' },
-      { id: 'h3-2', kind: 'stage_changed', title: 'Certificación denegada', description: 'Puntaje 64% — por debajo del mínimo (80%). Reglamento 1.5.', actor: 'Auditor', at: '2026-03-18T12:00:00-03:00' },
-    ],
-    submittedData: {
-      applicantName: 'Camila Montes',
-      email: 'camila@ancestralseed.org',
-      phone: '+57 2345-6789',
-      country: 'Colombia',
-      region: 'Caribe colombiano',
-      community: 'Sierra Nevada de Santa Marta',
-      inspirationCommunity: 'Comunidad Kogi',
-      productType: 'Producto físico',
-      productSector: 'Joyería y orfebrería',
-      productSubcategory: 'Mostacilla',
-      processDescription: 'Aretes tejidos en mostacilla con patrones tradicionales.',
-      producerType: 'Yo misma',
-    },
-  },
+  // Demo enfocado: UNA sola certificación, en curso (pendiente). Toda la
+  // experiencia —lista, pagos, seguimiento, tutorial— gira en torno a ésta.
   {
     id: 'req-001',
     number: '#001',
@@ -601,81 +495,6 @@ export const mockCertificationRequests: CertificationRequest[] = [
       producerType: 'Yo misma · con apoyo familiar',
     },
   },
-  {
-    id: 'req-002',
-    number: '#002',
-    productName: 'Tejido en telar ancestral',
-    createdAt: '2025-11-08',
-    currentStage: 'evaluacion',
-    status: 'En emisión',
-    progressLabel: 'Revisión final · firma del hash blockchain',
-    diagnosticDeadline: undefined,
-    diagnosticCompleted: true,
-    pendingItems: ['Firma del hash'],
-    stages: [
-      { stage: 'prediagnostico', label: 'Prediagnóstico', status: 'completed', date: '08/11/2025' },
-      { stage: 'inicio', label: 'Inicio del proceso', status: 'completed', date: '15/11/2025' },
-      { stage: 'diagnostico', label: 'Diagnóstico', status: 'completed', date: '02/12/2025' },
-      { stage: 'auditoria', label: 'Auditoría', status: 'completed', date: '18/01/2026' },
-      { stage: 'evaluacion', label: 'Evaluación', status: 'in_progress', date: 'En curso' },
-      { stage: 'certificacion', label: 'Certificación', status: 'pending' },
-    ],
-    meetings: [],
-    scheduledMeetings: [
-      {
-        id: 'm-002',
-        auditorName: 'Mtra. Sofía Quispe',
-        type: 'Videollamada',
-        scheduledAt: '2026-05-20T14:00:00-03:00',
-        timezone: 'GMT-3',
-        message: 'Cierre de evaluación y revisión final.',
-        status: 'accepted',
-      },
-    ],
-    evidences: [
-      { id: 'e-101', name: 'manto-completo.jpg', kind: 'image', sizeKb: 1500, uploadedAt: '2025-11-09T12:00:00-03:00', thumbUrl: '/cards/card-tejido.webp' },
-      { id: 'e-102', name: 'detalle-telar.jpg', kind: 'image', sizeKb: 1100, uploadedAt: '2025-11-09T12:05:00-03:00' },
-    ],
-    payments: [
-      { id: 'p-101', concept: 'Inicio de proceso de certificación', amount: 45000, currency: 'ARS', status: 'paid', dueDate: '2025-11-30', paidAt: '2025-11-15', invoiceUrl: '#' },
-      { id: 'p-102', concept: 'Auditoría en territorio', amount: 60000, currency: 'ARS', status: 'paid', dueDate: '2026-01-31', paidAt: '2026-01-12', invoiceUrl: '#' },
-      { id: 'p-103', concept: 'Emisión del certificado en blockchain', amount: 15000, currency: 'ARS', status: 'pending', dueDate: '2026-05-25' },
-    ],
-    history: [
-      { id: 'h-101', kind: 'request_created', title: 'Solicitud creada', actor: 'Tú', at: '2025-11-08T10:00:00-03:00' },
-      { id: 'h-102', kind: 'stage_changed', title: 'Inicio del proceso', actor: 'Sistema', at: '2025-11-15T09:00:00-03:00' },
-      { id: 'h-103', kind: 'payment_received', title: 'Pago confirmado', description: 'Inicio de proceso · $45.000', actor: 'Sistema', at: '2025-11-15T11:23:00-03:00' },
-      { id: 'h-104', kind: 'stage_changed', title: 'Diagnóstico completado', actor: 'Sistema', at: '2025-12-02T14:00:00-03:00' },
-      { id: 'h-105', kind: 'stage_changed', title: 'Auditoría completada', actor: 'Auditor', at: '2026-01-18T17:00:00-03:00' },
-      { id: 'h-106', kind: 'stage_changed', title: 'Evaluación en curso', actor: 'Sistema', at: '2026-04-28T09:15:00-03:00' },
-      { id: 'h-107', kind: 'audit_accepted', title: 'Reunión de cierre confirmada', description: '20/05 14:00 GMT-3 · Mtra. Sofía Quispe', actor: 'Tú', at: '2026-04-22T18:42:00-03:00' },
-      // Fix V3-POS-16 (auditoría v3): req-002 (Tejido en telar) no
-      // tenía eventos recientes — el postulante percibía esa
-      // certificación como "muerta" desde el RecentActivity comparado
-      // con req-001 que sí los tenía. Agregamos eventos relativos que
-      // mantienen actividad simétrica entre los dos requests del demo.
-      relativeEvent({ id: 'h-108', kind: 'message_sent', title: 'Mensaje de la auditora', description: 'Mtra. Sofía Quispe te avisa que firmó la evaluación', actor: 'Auditor' }, { days: 4 }),
-      relativeEvent({ id: 'h-109', kind: 'stage_changed', title: 'Cierre de evaluación', description: 'Listo para emisión del hash blockchain', actor: 'Sistema' }, { hours: 18 }),
-    ],
-    threads: {
-      'm-002': [
-        { id: 'msg-101', author: 'tutor', authorName: 'Mtra. Sofía Quispe', body: 'Hola Camila, te confirmo la reunión del cierre de evaluación para el 20/05.', at: '2026-04-22T18:42:00-03:00' },
-      ],
-    },
-    submittedData: {
-      applicantName: 'Camila Montes',
-      email: 'camila@ancestralseed.org',
-      phone: '+57 2345-6789',
-      country: 'Colombia',
-      region: 'Caribe colombiano',
-      community: 'Sierra Nevada de Santa Marta',
-      productType: 'Producto físico',
-      productSector: 'Tejidos y textiles',
-      productSubcategory: 'Tejido en telar',
-      processDescription: 'Tejido manual en telar vertical con lana hilada a mano, teñida con tintes naturales. Proceso completo desde el hilado hasta el acabado, sin intervención industrial.',
-      producerType: 'Mi familia',
-    },
-  },
 ]
 
 export const mockNotifications: Notification[] = [
@@ -696,24 +515,6 @@ export const mockNotifications: Notification[] = [
     createdAt: '2026-05-09T11:00:00-03:00',
     read: false,
     link: '/mis-certificaciones/req-001?tab=evidencias',
-  },
-  {
-    id: 'n-003',
-    kind: 'stage_changed',
-    title: 'Cambio de etapa',
-    body: 'Tejido en telar ancestral pasó a la etapa Evaluación.',
-    createdAt: '2026-04-28T09:15:00-03:00',
-    read: true,
-    link: '/mis-certificaciones/req-002',
-  },
-  {
-    id: 'n-004',
-    kind: 'message_received',
-    title: 'Mensaje de Mtra. Sofía Quispe',
-    body: 'Hola Camila, te confirmo la reunión del cierre de evaluación para el 20/05.',
-    createdAt: '2026-04-22T18:42:00-03:00',
-    read: true,
-    link: '/mis-certificaciones/req-002',
   },
   {
     id: 'n-005',

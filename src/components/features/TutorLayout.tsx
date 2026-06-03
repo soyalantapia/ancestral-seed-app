@@ -162,7 +162,7 @@ export function TutorLayout() {
 
       <div className="border-t border-white/10 p-4">
         <NavLink
-          to="/inicio"
+          to="/mis-certificaciones"
           onClick={closeOnNav}
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-neutral-300 transition-colors hover:bg-navy-400 hover:text-white"
         >
@@ -483,7 +483,7 @@ export function TutorLayout() {
                       </p>
                     </div>
                     <NavLink
-                      to="/inicio"
+                      to="/mis-certificaciones"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-navy-500 transition-colors hover:bg-neutral-100"
                     >

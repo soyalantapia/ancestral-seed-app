@@ -63,7 +63,7 @@ export default function Signup() {
       'demo-token',
     )
     toast.success('Cuenta creada · Bienvenida 👋')
-    navigate('/inicio')
+    navigate('/mis-certificaciones')
   }
 
   return (

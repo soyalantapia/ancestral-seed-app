@@ -18,7 +18,7 @@ export default function MisDatos() {
     <div className="mx-auto max-w-3xl px-4 py-8 md:py-12">
       <Breadcrumbs
         items={[
-          { label: 'Configuración', to: '/configuracion' },
+          { label: 'Perfil', to: '/mi-perfil' },
           { label: 'Mis datos personales' },
         ]}
       />
@@ -77,7 +77,7 @@ export default function MisDatos() {
           cta="Iniciar borrado"
           onClick={() =>
             toast.info(
-              'Te llevamos a Configuración → Eliminar cuenta · revisá las consecuencias',
+              'Pedido de borrado registrado · te enviamos un email con los pasos y las consecuencias antes de confirmar',
             )
           }
           danger

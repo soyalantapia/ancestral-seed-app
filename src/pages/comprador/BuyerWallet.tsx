@@ -265,12 +265,12 @@ export default function BuyerWallet() {
                 <p className="mt-1">
                   Te avisamos por email cuando uno de tus certs guardados
                   cambia de estado (vence, se suspende o se renueva).
-                  Configurá preferencias en{' '}
+                  Gestionalas en{' '}
                   <Link
-                    to="/configuracion"
+                    to="/notificaciones"
                     className="font-bold text-info-400 underline"
                   >
-                    Settings → Notificaciones
+                    Notificaciones
                   </Link>
                   .
                 </p>

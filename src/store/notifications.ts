@@ -27,7 +27,9 @@ export const useNotificationsStore = create<NotificationsState>()(
     }),
     {
       name: 'ancestral-seed-notifications',
-      version: 2,
+      // v3: se quitaron las notis que apuntaban a certs eliminadas (req-002)
+      // al pasar el demo a una sola certificación. Bump → reseed limpio.
+      version: 3,
       // If schema or mocks change, bump version and reseed
       migrate: () => ({ items: mockNotifications } as Partial<NotificationsState>),
     },

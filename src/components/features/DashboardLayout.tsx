@@ -3,22 +3,17 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Bell,
-  Calendar,
-  Compass,
   CreditCard,
-  FileCheck2,
   FileText,
   HelpCircle,
-  Home,
   LogOut,
   Menu,
-  Settings,
+  Sparkles,
   UserRound,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from './Header'
-import { DashboardFooter } from './DashboardFooter'
 import { HelpBubble } from './HelpBubble'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
@@ -27,30 +22,33 @@ import { GuidedTour } from './GuidedTour'
 import { PageMeta } from './PageMeta'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
-import { useNotificationsStore } from '@/store/notifications'
+import { useOnboardingStore } from '@/store/onboarding'
 import { resetDemoStores } from '@/store/resetDemo'
+import { deriveActionAlerts } from '@/lib/alerts'
+import { mockCertificationRequests } from '@/services/mocks/data'
 import { cn } from '@/lib/utils'
 
-// Fix SM3 (#POS-42, auditoría UX): Documentos antes vivía en "Mi
-// cuenta" pero NO son documentos personales — son derivados de las
-// solicitudes (certificados emitidos, facturas, evidencias). Movido
-// al grupo General junto a "Mis certificaciones" donde el user
-// espera encontrarlo.
-const generalItems = [
-  { to: '/inicio', icon: Home, label: 'Inicio' },
-  { to: '/notificaciones', icon: Bell, label: 'Notificaciones', badge: 'unread' as const },
-  { to: '/mis-certificaciones', icon: FileText, label: 'Mis certificaciones' },
-  { to: '/documentos', icon: FileCheck2, label: 'Documentos' },
-  { to: '/calendario', icon: Calendar, label: 'Calendario' },
-]
+// Cantidad de alertas accionables → badge de la pestaña Notificaciones.
+const ALERT_COUNT = deriveActionAlerts(mockCertificationRequests).length
 
-const financeItems = [
+// Navegación del postulante — demo enfocado. "Notificaciones" centraliza las
+// alertas accionables (antes vivían como banner dentro de cada detalle).
+// "Tutorial" no es una ruta: dispara el recorrido guiado (ver abajo).
+const navItems: Array<{
+  to: string
+  icon: typeof FileText
+  label: string
+  badge?: number
+}> = [
+  { to: '/mis-certificaciones', icon: FileText, label: 'Certificaciones' },
+  {
+    to: '/notificaciones',
+    icon: Bell,
+    label: 'Notificaciones',
+    badge: ALERT_COUNT,
+  },
   { to: '/pagos', icon: CreditCard, label: 'Pagos' },
-]
-
-const accountItems = [
-  { to: '/mi-perfil', icon: UserRound, label: 'Mi perfil' },
-  { to: '/configuracion', icon: Settings, label: 'Configuración' },
+  { to: '/mi-perfil', icon: UserRound, label: 'Perfil' },
   { to: '/ayuda', icon: HelpCircle, label: 'Ayuda' },
 ]
 
@@ -59,9 +57,8 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const clearSession = useAuthStore((s) => s.clearSession)
-  const unread = useNotificationsStore((s) =>
-    s.items.filter((n) => !n.read).length,
-  )
+  // "Tutorial" dispara el recorrido guiado (reset = arranca desde el paso 0).
+  const startTour = useOnboardingStore((s) => s.reset)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
 
@@ -114,75 +111,29 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6">
-        <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
-          General
-        </p>
-        {generalItems.map((item) => (
+        {navItems.map((item) => (
           <SidebarLink
             key={item.to}
             to={item.to}
             icon={item.icon}
             label={item.label}
-            badge={
-              'badge' in item && item.badge === 'unread' && unread > 0
-                ? unread
-                : undefined
-            }
+            badge={item.badge}
             onClose={closeOnNav}
           />
         ))}
-        <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
-          Finanzas
-        </p>
-        {financeItems.map((item) => (
-          <SidebarLink
-            key={item.to}
-            to={item.to}
-            icon={item.icon}
-            label={item.label}
-            onClose={closeOnNav}
-          />
-        ))}
-        {/* Fix SM4 (#TUT-33, auditoría UX): si el user tiene rol tutor,
-            link al panel de tutor desde el sidebar del solicitante.
-            Antes solo el TutorLayout tenía "Volver al panel
-            solicitante" — asimetría que dejaba al tutor atrapado si
-            entraba al panel solicitante por error.
 
-            Fix V2-POS-16 (auditoría v2): el copy "Otro rol" + "Panel
-            de tutor" hacía pensar a Camila (postulante del demo) que
-            ella misma era tutora. Para el demo aclaramos que es un
-            atajo para ver el otro lado del producto, no su segundo
-            empleo. */}
-        {(user?.role === 'tutor' || user?.roles?.includes('tutor')) && (
-          <>
-            <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
-              Demo · otro perfil
-            </p>
-            <SidebarLink
-              to="/tutor/dashboard"
-              icon={Compass}
-              label="Ver como tutor"
-              onClose={closeOnNav}
-            />
-          </>
-        )}
-        <p className="mt-6 px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-neutral-400">
-          Mi cuenta
-        </p>
-        {accountItems.map((item) => (
-          <div
-            key={item.to}
-            data-tour={item.to === '/ayuda' ? 'help-link' : undefined}
-          >
-            <SidebarLink
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              onClose={closeOnNav}
-            />
-          </div>
-        ))}
+        {/* Tutorial: no es una ruta — arranca el recorrido guiado. */}
+        <button
+          type="button"
+          onClick={() => {
+            closeOnNav()
+            startTour('solicitante')
+          }}
+          className="mt-1 inline-flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-neutral-300 transition-colors hover:bg-navy-400/60 hover:text-white"
+        >
+          <Sparkles className="h-5 w-5" strokeWidth={1.75} />
+          <span className="flex-1 text-left">Tutorial</span>
+        </button>
       </nav>
       <button
         type="button"
@@ -289,7 +240,6 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
               {children ?? <Outlet />}
             </ErrorBoundary>
           </div>
-          <DashboardFooter />
         </main>
       </div>
 
@@ -358,7 +308,7 @@ function SidebarLink({
   onClose,
 }: {
   to: string
-  icon: typeof Home
+  icon: typeof FileText
   label: string
   badge?: number
   onClose?: () => void
@@ -367,13 +317,8 @@ function SidebarLink({
     <NavLink
       to={to}
       onClick={onClose}
-      // Fix V2-POS-17 (auditoría v2): antes /mis-certificaciones
-      // tenía end=true → NO se marcaba activo al estar en
-      // /mis-certificaciones/req-001 (la subruta del detail).
-      // Solo /inicio justifica `end` (el index del dashboard).
-      // Las rutas con detail/hijo deben seguir marcadas activas
-      // en toda la rama.
-      end={to === '/inicio'}
+      // Sin `end`: "Certificaciones" (/mis-certificaciones) debe seguir
+      // activo en su subruta de detalle (/mis-certificaciones/:id).
       className={({ isActive }) =>
         cn(
           'inline-flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition-colors',

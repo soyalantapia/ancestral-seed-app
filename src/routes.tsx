@@ -58,16 +58,13 @@ const Login = lazyWithRetry(() => import('@/pages/Login'))
 const Signup = lazyWithRetry(() => import('@/pages/Signup'))
 const RecoverPassword = lazyWithRetry(() => import('@/pages/RecoverPassword'))
 const CertifyForm = lazyWithRetry(() => import('@/pages/CertifyForm'))
-const DashboardHome = lazyWithRetry(() => import('@/pages/DashboardHome'))
 const MyCertifications = lazyWithRetry(() => import('@/pages/MyCertifications'))
 const CertificationRequest = lazyWithRetry(() => import('@/pages/CertificationRequest'))
 const MyProfile = lazyWithRetry(() => import('@/pages/MyProfile'))
 const Notifications = lazyWithRetry(() => import('@/pages/Notifications'))
-const Settings = lazyWithRetry(() => import('@/pages/Settings'))
 const Help = lazyWithRetry(() => import('@/pages/Help'))
 const Nosotros = lazyWithRetry(() => import('@/pages/Nosotros'))
 const Pagos = lazyWithRetry(() => import('@/pages/Pagos'))
-const Documentos = lazyWithRetry(() => import('@/pages/Documentos'))
 const Calendario = lazyWithRetry(() => import('@/pages/Calendario'))
 const TutorDashboard = lazyWithRetry(() => import('@/pages/tutor/TutorDashboard'))
 const TutorCases = lazyWithRetry(() => import('@/pages/tutor/TutorCases'))
@@ -133,17 +130,23 @@ export const router = createBrowserRouter(
       path: '/',
       element: <RequireAuth />,
       children: [
-        { path: 'inicio', element: withSuspense(<DashboardHome />) },
+        // Inicio eliminado: la página principal del postulante es ahora
+        // "Mis certificaciones". /inicio redirige para no romper enlaces viejos.
+        { path: 'inicio', element: <Navigate to="/mis-certificaciones" replace /> },
         { path: 'mis-certificaciones', element: withSuspense(<MyCertifications />) },
         { path: 'mis-certificaciones/:id', element: withSuspense(<CertificationRequest />) },
         { path: 'mi-perfil', element: withSuspense(<MyProfile />) },
         { path: 'notificaciones', element: withSuspense(<Notifications />) },
         { path: 'calendario', element: withSuspense(<Calendario />) },
         { path: 'pagos', element: withSuspense(<Pagos />) },
-        { path: 'documentos', element: withSuspense(<Documentos />) },
-        { path: 'configuracion', element: withSuspense(<Settings />) },
+        // Documentos eliminado: certificados se ven en el detalle de la
+        // certificación y las facturas viven en Pagos.
+        { path: 'documentos', element: <Navigate to="/mis-certificaciones" replace /> },
+        // Configuración eliminada: métodos de pago viven en Pagos y "cambiar
+        // contraseña" en el menú de usuario. La ruta redirige por enlaces viejos.
+        { path: 'configuracion', element: <Navigate to="/pagos" replace /> },
         { path: 'ayuda', element: withSuspense(<Help />) },
-        { path: 'dashboard', element: <Navigate to="/inicio" replace /> },
+        { path: 'dashboard', element: <Navigate to="/mis-certificaciones" replace /> },
         // Fix #FEAT-02: renovación
         {
           path: 'mis-certificaciones/:id/renovar',

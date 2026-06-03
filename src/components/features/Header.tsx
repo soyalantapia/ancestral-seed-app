@@ -8,16 +8,17 @@ import {
   Eye,
   FileText,
   GraduationCap,
+  KeyRound,
   LogIn,
   LogOut,
   Menu,
-  Settings as SettingsIcon,
   UserRound,
   X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import { Logo } from './Logo'
+import { ChangePasswordModal } from './ChangePasswordModal'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useEscape } from '@/hooks/useEscape'
 import { useUiStore } from '@/store/ui'
@@ -57,6 +58,7 @@ export function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
+  const [pwOpen, setPwOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLDivElement>(null)
 
@@ -110,7 +112,7 @@ export function Header() {
     toast.success('Sesión cerrada')
   }
 
-  const homeLink = isAuthenticated ? '/inicio' : '/'
+  const homeLink = isAuthenticated ? '/mis-certificaciones' : '/'
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
@@ -343,9 +345,20 @@ export function Header() {
 
                     {/* Items */}
                     <div className="py-2">
-                      <MenuItem to="/inicio" icon={UserRound} label="Mi cuenta" />
+                      <MenuItem to="/mi-perfil" icon={UserRound} label="Mi perfil" />
                       <MenuItem to="/mis-certificaciones" icon={FileText} label="Mis certificaciones" />
-                      <MenuItem to="/configuracion" icon={SettingsIcon} label="Configuración" />
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenuOpen(false)
+                          setPwOpen(true)
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy-500 transition-colors hover:bg-neutral-100"
+                      >
+                        <KeyRound className="h-4 w-4 text-navy-300" />
+                        Cambiar contraseña
+                      </button>
                     </div>
 
                     <div className="border-t border-neutral-200 py-2">
@@ -432,10 +445,19 @@ export function Header() {
 
                 {isAuthenticated && (
                   <>
-                    <MobileNavLink to="/inicio" icon={UserRound} label="Inicio" onClose={closeMobileMenu} />
                     <MobileNavLink to="/mis-certificaciones" icon={FileText} label="Mis certificaciones" onClose={closeMobileMenu} />
                     <MobileNavLink to="/mi-perfil" icon={UserRound} label="Mi perfil" onClose={closeMobileMenu} />
-                    <MobileNavLink to="/configuracion" icon={SettingsIcon} label="Configuración" onClose={closeMobileMenu} />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMobileMenu()
+                        setPwOpen(true)
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-navy-300 transition-colors hover:bg-neutral-100"
+                    >
+                      <KeyRound className="h-5 w-5" />
+                      Cambiar contraseña
+                    </button>
                   </>
                 )}
 
@@ -488,6 +510,7 @@ export function Header() {
         )}
       </AnimatePresence>
 
+      {pwOpen && <ChangePasswordModal onClose={() => setPwOpen(false)} />}
     </header>
   )
 }

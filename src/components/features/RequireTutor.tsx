@@ -65,7 +65,7 @@ export function RequireTutor() {
           .
         </p>
         <Link
-          to="/inicio"
+          to="/mis-certificaciones"
           className="mt-6 inline-flex h-11 items-center rounded-full bg-navy-500 px-5 text-sm font-bold text-white shadow-sm hover:bg-navy-400"
         >
           Volver a mi panel
