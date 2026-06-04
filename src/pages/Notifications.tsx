@@ -152,10 +152,13 @@ export default function Notifications() {
                       : 'border-gold-300/60 bg-gradient-to-br from-gold-100/40 to-white',
                   )}
                 >
-                  <div className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
-                    <div
-                      className={cn(
-                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+                  <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
+                    {/* Ícono + texto agrupados: en mobile van juntos en una fila
+                        arriba, el botón cae full-width abajo. En ≥sm, todo en línea. */}
+                    <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center">
+                      <div
+                        className={cn(
+                          'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
                         a.urgent
                           ? 'bg-error-400 text-white shadow-sm'
                           : 'bg-gold-500 text-navy-500 shadow-sm',
@@ -179,10 +182,11 @@ export default function Notifications() {
                         {a.body}
                       </p>
                     </div>
+                    </div>
                     <Link
                       to={a.cta.to}
                       className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors',
+                        'inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors sm:w-auto sm:justify-start',
                         a.urgent
                           ? 'bg-error-400 hover:bg-error-300'
                           : 'bg-navy-500 hover:bg-navy-400',
