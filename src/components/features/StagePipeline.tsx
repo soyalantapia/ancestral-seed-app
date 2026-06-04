@@ -14,7 +14,7 @@ export function StagePipeline({ stages }: { stages: RequestStageItem[] }) {
   ].filter(Boolean)
 
   return (
-    <ol className="flex items-center gap-2 overflow-x-auto pb-1">
+    <ol className="flex items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {display.map((s, i) => {
         const isActive = s.status === 'in_progress'
         const isDone = s.status === 'completed'

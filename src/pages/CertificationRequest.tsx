@@ -204,7 +204,7 @@ export default function CertificationRequest() {
             </div>
 
             {/* Meta stats */}
-            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-3">
+            <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm lg:grid-cols-3">
               <Meta icon={CalendarIcon} label="Creación" value={request.createdAt} />
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
               <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
@@ -267,14 +267,14 @@ export default function CertificationRequest() {
           </div>
 
           {/* Right: decorative pattern */}
-          <div className="hidden bg-pattern-aztec md:block md:w-48 lg:w-56" aria-hidden />
+          <div className="hidden bg-pattern-aztec lg:block lg:w-56" aria-hidden />
         </div>
       </section>
 
       {/* Sticky tabs */}
       <div
         data-tour="seguimiento"
-        className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10"
+        className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10"
       >
         <div className="flex gap-1 py-3">
           {tabs.map((t) => {
