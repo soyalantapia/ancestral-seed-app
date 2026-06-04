@@ -384,19 +384,24 @@ export function Header() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={toggleMobileMenu}
-          className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
-          aria-label="Abrir menú"
-          aria-expanded={isMobileMenuOpen}
-        >
-          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {/* Hamburguesa del Header: solo en sitio público. Dentro de la cuenta
+            (dashboard/tutor) la navegación mobile la maneja la bottom nav +
+            el drawer "Más", así que acá sobra. */}
+        {!isDashboardRoute && (
+          <button
+            type="button"
+            onClick={toggleMobileMenu}
+            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
+            aria-label="Abrir menú"
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        )}
       </div>
 
       <AnimatePresence>
-        {isMobileMenuOpen && (
+        {isMobileMenuOpen && !isDashboardRoute && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
