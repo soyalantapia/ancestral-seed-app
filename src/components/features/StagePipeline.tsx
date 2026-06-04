@@ -36,8 +36,9 @@ export function StagePipeline({ stages }: { stages: RequestStageItem[] }) {
                 <Lock className="h-5 w-5 text-navy-300" strokeWidth={1.75} />
               )}
               <span
+                lang="es"
                 className={cn(
-                  'px-2 text-sm font-semibold leading-tight',
+                  'w-full hyphens-auto break-words px-1.5 text-xs font-semibold leading-tight sm:px-2 sm:text-sm',
                   isActive && 'text-navy-500',
                   isDone && 'text-white',
                   !isActive && !isDone && 'text-navy-300',
