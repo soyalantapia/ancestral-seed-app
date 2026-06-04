@@ -60,7 +60,7 @@ export function deriveActionAlerts(
         icon: CreditCard,
         title: overdue
           ? 'Regularizá tu arancel'
-          : 'Pagá el arancel para avanzar',
+          : 'Hacé tu primer pago para avanzar',
         body: `${r.productName} · ${p.concept} · ${money(p.amount, p.currency)}`,
         cta: { label: 'Pagar ahora', to: '/pagos' },
       })

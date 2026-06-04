@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle,
@@ -208,12 +207,13 @@ export default function Pagos() {
     .reduce((a, p) => a + p.amount, 0)
   const currency = allPayments[0]?.currency ?? 'ARS'
 
-  // Pago más urgente para banner highlight
-  const urgent = allPayments
+  // Próximo pago pendiente → hero "Primer pago para avanzar" (cálido; rojo solo
+  // si está realmente vencido). Tomamos el de fecha más próxima.
+  const nextPending = allPayments
     .filter((p) => p.status === 'pending' || p.status === 'overdue')
     .map((p) => ({ ...p, days: daysUntil(p.dueDate) }))
-    .filter((p) => p.days !== null && p.days <= 7)
-    .sort((a, b) => (a.days ?? 99) - (b.days ?? 99))[0]
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0]
+  const nothingPaidYet = !allPayments.some((p) => p.status === 'paid')
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
@@ -250,14 +250,25 @@ export default function Pagos() {
         />
       </section>
 
-      {/* Urgent banner (solo si hay pago en <=7 días) */}
-      {urgent && (
-        <UrgentBanner
-          concept={urgent.concept}
-          amount={urgent.amount}
-          currency={urgent.currency}
-          days={urgent.days ?? 0}
-          requestId={urgent.requestId}
+      {/* Hero del próximo pago — "primer pago para avanzar" en cálido (gold);
+          rojo solo si está vencido. Abre el checkout (tarjeta + pago) acá mismo. */}
+      {nextPending && (
+        <PaymentHero
+          concept={nextPending.concept}
+          amount={nextPending.amount}
+          currency={nextPending.currency}
+          days={nextPending.days ?? 0}
+          isFirst={nothingPaidYet}
+          onPay={() =>
+            setCheckoutItem({
+              id: nextPending.id,
+              concept: nextPending.concept,
+              amount: nextPending.amount,
+              currency: nextPending.currency,
+              requestLabel: `${nextPending.requestNumber} · ${nextPending.requestName}`,
+              dueDate: nextPending.dueDate,
+            })
+          }
         />
       )}
 
@@ -665,66 +676,75 @@ function InvoiceModal({
   )
 }
 
-function UrgentBanner({
+function PaymentHero({
   concept,
   amount,
   currency,
   days,
-  requestId,
+  isFirst,
+  onPay,
 }: {
   concept: string
   amount: number
   currency: string
   days: number
-  requestId: string
+  isFirst: boolean
+  onPay: () => void
 }) {
+  // Cálido por defecto (primer pago = avance, no deuda). Rojo SOLO si vencido.
   const isOverdue = days < 0
-  const tone = isOverdue || days <= 3 ? 'red' : 'yellow'
-  const when = isOverdue
-    ? `Vencido hace ${Math.abs(days)} día${Math.abs(days) === 1 ? '' : 's'}`
-    : days === 0
-      ? 'Vence hoy'
-      : `Vence en ${days} día${days === 1 ? '' : 's'}`
   return (
     <div
       className={cn(
         'mt-4 flex flex-col gap-3 rounded-2xl border-2 p-4 sm:flex-row sm:items-center sm:gap-4',
-        tone === 'red'
+        isOverdue
           ? 'border-error-300 bg-error-100'
-          : 'border-warning-300 bg-warning-100',
+          : 'border-gold-300 bg-gold-50',
       )}
     >
       <span
         className={cn(
           'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-          tone === 'red'
-            ? 'bg-error-300 text-white'
-            : 'bg-warning-300 text-white',
+          isOverdue ? 'bg-error-300 text-white' : 'bg-gold-500 text-navy-500',
         )}
       >
         <CreditCard className="h-5 w-5" />
       </span>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold uppercase tracking-widest text-error-400">
-          Pago {isOverdue ? 'vencido' : 'urgente'}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'text-xs font-bold uppercase tracking-widest',
+            isOverdue ? 'text-error-400' : 'text-gold-700',
+          )}
+        >
+          {isOverdue ? 'Pago vencido' : isFirst ? 'Primer pago' : 'Próximo pago'}
         </p>
         <p className="mt-1 text-sm font-bold text-navy-500">
-          {fmt(amount, currency)} · {concept}
+          {isOverdue
+            ? 'Regularizá tu arancel'
+            : isFirst
+              ? 'Primer pago para avanzar'
+              : 'Pagá tu arancel para avanzar'}
         </p>
-        <p className="mt-0.5 text-xs text-navy-500/80">{when}</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-navy-400">
+          {isOverdue
+            ? `${fmt(amount, currency)} · ${concept}`
+            : `Para pasar a la etapa "Inicio del proceso", agregá tu tarjeta y hacé el primer pago del arancel · ${fmt(amount, currency)}.`}
+        </p>
       </div>
-      <Link
-        to={`/mis-certificaciones/${requestId}?tab=pagos`}
+      <button
+        type="button"
+        onClick={onPay}
         className={cn(
-          'inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold shadow-sm transition-colors',
-          tone === 'red'
+          'inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold shadow-sm transition-colors',
+          isOverdue
             ? 'bg-error-400 text-white hover:bg-error-300'
             : 'bg-navy-500 text-white hover:bg-navy-400',
         )}
       >
-        Pagar ahora
+        {isFirst ? 'Pagar primer arancel' : 'Pagar ahora'}
         <ArrowRight className="h-4 w-4" />
-      </Link>
+      </button>
     </div>
   )
 }

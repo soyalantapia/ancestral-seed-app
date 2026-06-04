@@ -454,7 +454,9 @@ export const mockCertificationRequests: CertificationRequest[] = [
         amount: 45000,
         currency: 'ARS',
         status: 'pending',
-        dueDate: '2026-02-28',
+        // Primer arancel: pendiente pero NO vencido (no es una deuda, es el
+        // paso para arrancar). Fecha holgada a futuro para no alarmar.
+        dueDate: '2026-06-30',
       },
     ],
     history: [
