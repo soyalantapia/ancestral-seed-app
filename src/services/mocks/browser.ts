@@ -45,17 +45,31 @@ export async function startMockWorker() {
   if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
     const controller = navigator.serviceWorker.controller
     if (!controller) {
+      // El SW se registró pero NO controla ESTA carga (típico en el primer
+      // load: la página cargó antes de que el SW activara y reclamara el
+      // cliente). Sin control, los fetch a /api/* salen al dev server y
+      // reciben index.html → los perfiles/certificados/directorio públicos
+      // fallan con "no encontrado". Recargamos UNA vez (guard en sessionStorage
+      // para no loopear) para que el SW tome control y MSW intercepte.
+      if (!sessionStorage.getItem('msw-reload-once')) {
+        sessionStorage.setItem('msw-reload-once', '1')
+        window.location.reload()
+        // Frenar el render: la página se está recargando.
+        await new Promise<never>(() => {})
+      }
       // eslint-disable-next-line no-console
       console.warn(
-        '[MSW] El SW se registró pero no está controlando la página. ' +
-          'Las requests a /api/* podrían fallar con 404. ' +
-          'Si pasa esto en producción, revisar conflicto con Workbox.',
+        '[MSW] El SW sigue sin controlar la página tras recargar. ' +
+          'Las requests a /api/* podrían fallar.',
       )
-    } else if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.info(
-        `[MSW] Controlando la página · scope=${controller.scriptURL}`,
-      )
+    } else {
+      sessionStorage.removeItem('msw-reload-once')
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.info(
+          `[MSW] Controlando la página · scope=${controller.scriptURL}`,
+        )
+      }
     }
   }
 }
