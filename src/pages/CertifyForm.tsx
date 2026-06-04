@@ -334,7 +334,7 @@ export default function CertifyForm() {
           <div className="relative rounded-2xl bg-white px-6 py-8 text-center shadow-md md:px-12 md:py-10">
             {/* El autoguardado corre en segundo plano (sin badge visible).
                 Solo dejamos la acción de "Postergar". */}
-            <div className="absolute right-4 top-4 flex items-center gap-2 md:right-6 md:top-6">
+            <div className="mb-3 flex items-center justify-end gap-2 md:absolute md:right-6 md:top-6 md:mb-0">
               <button
                 type="button"
                 onClick={() => setPostponeOpen(true)}

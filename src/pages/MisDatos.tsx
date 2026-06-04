@@ -124,13 +124,13 @@ function ActionRow({
     <div
       className={`flex items-start justify-between gap-4 rounded-2xl border bg-white p-4 shadow-sm ${danger ? 'border-error-300/40' : 'border-neutral-200'}`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <span
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${danger ? 'bg-error-100 text-error-400' : 'bg-gold-100 text-gold-700'}`}
         >
           <Icon className="h-5 w-5" />
         </span>
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-bold text-navy-500">{title}</p>
           <p className="mt-0.5 text-xs leading-relaxed text-navy-300">
             {body}

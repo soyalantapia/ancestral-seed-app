@@ -14,15 +14,15 @@ export function StagePipeline({ stages }: { stages: RequestStageItem[] }) {
   ].filter(Boolean)
 
   return (
-    <ol className="flex items-center gap-2">
+    <ol className="flex items-center gap-2 overflow-x-auto pb-1">
       {display.map((s, i) => {
         const isActive = s.status === 'in_progress'
         const isDone = s.status === 'completed'
         return (
-          <li key={s.stage} className="flex flex-1 items-center gap-2">
+          <li key={s.stage} className="flex min-w-[84px] flex-1 items-center gap-2">
             <div
               className={cn(
-                'flex h-[88px] flex-1 flex-col items-center justify-center gap-2 rounded-2xl border text-center transition-colors',
+                'flex h-[88px] min-w-[76px] flex-1 flex-col items-center justify-center gap-2 rounded-2xl border text-center transition-colors',
                 isActive && 'border-navy-200 bg-info-100',
                 isDone && 'border-navy-500 bg-navy-500 text-white',
                 !isActive && !isDone && 'border-neutral-300 bg-white text-navy-300',
