@@ -223,7 +223,7 @@ export default function Notifications() {
               type="button"
               onClick={() => setTypeFilter(f.id)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors',
+                'inline-flex min-h-[44px] items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors',
                 active
                   ? 'border-navy-500 bg-navy-500 text-white'
                   : 'border-neutral-300 bg-white text-navy-400 hover:bg-neutral-100',

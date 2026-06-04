@@ -325,7 +325,7 @@ export default function Pagos() {
                 type="button"
                 onClick={() => setFilter(f.id)}
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold transition-colors',
+                  'inline-flex min-h-[44px] items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold transition-colors',
                   active
                     ? 'bg-navy-500 text-white'
                     : 'border border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100',

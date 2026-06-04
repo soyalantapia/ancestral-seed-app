@@ -140,7 +140,7 @@ export default function Directory() {
           <div className="mt-4 flex items-center gap-2 md:hidden">
             <Button
               variant="outlineNavy"
-              size="sm"
+              size="md"
               onClick={() => setShowFiltersSheet(true)}
               className="flex-1"
             >
@@ -162,7 +162,7 @@ export default function Directory() {
             </Button>
             <Button
               variant="outlineNavy"
-              size="sm"
+              size="md"
               onClick={() => setShowSortSheet(true)}
               className="flex-1"
             >

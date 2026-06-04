@@ -197,14 +197,14 @@ export default function Calendario() {
                 type="button"
                 onClick={goPrev}
                 aria-label="Mes anterior"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-100"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-100"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={goToday}
-                className="inline-flex h-9 items-center rounded-full px-3 text-xs font-bold text-navy-500 hover:bg-neutral-100"
+                className="inline-flex h-11 items-center rounded-full px-4 text-xs font-bold text-navy-500 hover:bg-neutral-100"
               >
                 Hoy
               </button>
@@ -212,7 +212,7 @@ export default function Calendario() {
                 type="button"
                 onClick={goNext}
                 aria-label="Mes siguiente"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-100"
+                className="flex h-11 w-11 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-100"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -243,7 +243,7 @@ export default function Calendario() {
           <div className="mt-2 grid grid-cols-7 gap-1">
             {grid.map((cell, i) => {
               if (!cell) {
-                return <div key={`pad-${i}`} className="aspect-square" />
+                return <div key={`pad-${i}`} className="min-h-[44px]" />
               }
               const isToday = sameDay(cell, today)
               const isSelected = selectedDate ? sameDay(cell, selectedDate) : false
@@ -254,7 +254,7 @@ export default function Calendario() {
                   type="button"
                   onClick={() => setSelectedDate(cell)}
                   className={cn(
-                    'flex aspect-square flex-col items-center justify-start gap-0.5 rounded-xl border p-1 text-xs transition-colors sm:p-1.5',
+                    'flex min-h-[44px] flex-col items-center justify-start gap-0.5 rounded-xl border p-1 text-xs transition-colors sm:p-1.5',
                     isSelected
                       ? 'border-gold-500 bg-gold-100 text-navy-500 ring-1 ring-gold-300'
                       : isToday
