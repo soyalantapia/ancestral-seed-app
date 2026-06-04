@@ -50,17 +50,17 @@ Se recorrió todo el producto. **Casi todo OK**; apareció **1 bug S1** importan
 
 ---
 
-## 4 · Notas / menores (no bloqueantes)
+## 4 · Notas / menores
 
-- **Velocidad de MSW**: `realisticDelay()` hace que los perfiles tarden ~1s en cargar (skeleton). Es a propósito (simular red), pero se puede bajar para la demo si se quiere más ágil.
-- **Data**: la usuaria de ejemplo es **"Mariana Quispe"** pero su `authorSlug` apunta al perfil de **"Camila Montes"** → la vista previa muestra a Camila. Inconsistencia del mock (no bloqueante; alinear si se quiere).
-- **Método de testeo**: el barrido automático con `pushState` manual da falsos "no encontrado" en rutas con `:slug` (el data-router no resuelve bien params así); se testearon con carga real/clicks. Las páginas tutor pesadas cuelgan el barrido SPA en lote → se testearon con nav dura.
+- **Velocidad de MSW** → **AJUSTADO**: `realisticDelay()` bajó de 300–800 ms a **120–300 ms** por request (`handlers.ts`). Sigue mostrando skeletons pero la demo se siente ~3× más ágil (los perfiles públicos cargaban en ~1 s).
+- **Identidad del usuario** → **VERIFICADO, sin bug**: la postulante logueada es **Camila Montes** (`mockUser`, `authorSlug: 'camila-montes'`) y existe el autor con `slug: 'camila-montes'` → "Ver vista previa" muestra **a la misma persona**. La mención a "Mariana Quispe" era texto viejo del prompt de testeo (ya corregido en `TESTEO-COMPLETO.md`), no un dato de la app.
+- **Método de testeo** (no afecta a la app): el barrido automático con `pushState` manual da falsos "no encontrado" en rutas con `:slug` (el data-router no resuelve bien params así); se testearon con carga real/clicks. Las páginas tutor pesadas cuelgan el barrido SPA en lote → se testearon con nav dura.
 
 ---
 
 ## 5 · Veredicto
 
 > ## ✅ ¿Listo para demo end-to-end? **SÍ.**
-> Los 3 roles recorren bien, sin overflow, sin error boundaries, consola limpia. El único bug S1 (perfiles públicos por MSW) **se arregló de raíz y se deployó**. Quedan 2 notas de data/velocidad, no bloqueantes.
+> Los 3 roles recorren bien, sin overflow, sin error boundaries, consola limpia. El único bug S1 (perfiles públicos por MSW) **se arregló de raíz y se deployó**. Las 2 notas menores (velocidad e identidad) quedaron **resueltas/verificadas** en esta pasada.
 
-**Top 3 a considerar después (opcional):** (1) alinear identidad Mariana/Camila; (2) bajar `realisticDelay` para que la demo cargue más rápido; (3) revisar el "Reintentar" residual del directorio (subsección).
+**Pendientes opcionales (S3, no bloquean la demo):** revisar el "Reintentar" residual del directorio si aparece con red muy lenta. Todo lo demás quedó cerrado.

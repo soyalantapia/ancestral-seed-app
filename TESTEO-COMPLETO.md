@@ -27,7 +27,7 @@ y comunidades de LATAM, muchos en Android de gama baja).
 
 - **Stack:** React 19 · Vite 8 · TS · Tailwind v4 · Zustand · **MSW** (mock API, sin backend real) · react-router 7.
 - **Levantar:** `npm run dev` → `http://localhost:5175` (desde `~/dev/ancestral-seed`). O usar el deploy: `https://soyalantapia.github.io/ancestral-seed-app/`.
-- **Datos:** todo es mock (MSW). El postulante de ejemplo es **Mariana Quispe**. El tutor es **Lic. Juan Pérez**.
+- **Datos:** todo es mock (MSW). La postulante de ejemplo es **Camila Montes** (multi-rol: también entra como tutor). El tutor de referencia es **Lic. Juan Pérez**.
 - **Anchos a probar (cada pantalla clave):** **320 · 375 · 768 · 1024 · 1280** + landscape de teléfono.
 - **Tools (si lo corre un agente):** `preview_start`/`preview_resize`/`preview_screenshot`/`preview_eval`/`preview_console_logs`.
 - **Chequeo global por pantalla:**
@@ -114,7 +114,7 @@ y comunidades de LATAM, muchos en Android de gama baja).
 
 | # | Pantalla | Esperado |
 |---|---|---|
-| 5.1 | `/tutor/dashboard` | "Buenos días, Mariana/…" + KPIs (casos en curso, atrasados, tareas) + charts. |
+| 5.1 | `/tutor/dashboard` | "Buenos días, Camila/…" + KPIs (casos en curso, atrasados, tareas) + charts. |
 | 5.2 | `/tutor/casos` | **Kanban** (columnas con scroll-x) + toggle "Lista" (tabla). Filtros. Abrir un caso. |
 | 5.3 | `/tutor/casos/:id` | Detalle del caso (scoring IA, evidencias, notas internas, firma). |
 | 5.4 | `/tutor/agenda` | Agenda de reuniones. |

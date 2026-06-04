@@ -7,7 +7,10 @@ import {
 } from './data'
 import type { Certification, DirectoryFilters } from '@/types'
 
-const realisticDelay = () => delay(300 + Math.random() * 500)
+// Latencia simulada para que se vean los skeletons sin que la demo se sienta
+// lenta. 120–300 ms: alcanza para un parpadeo de skeleton pero ~3× más ágil
+// que el 300–800 ms original (los perfiles públicos cargaban en ~1 s).
+const realisticDelay = () => delay(120 + Math.random() * 180)
 
 // Bug producción (mayo 2026): el SW de MSW se registra dentro del scope
 // `/ancestral-seed-app/`, así que los fetch del cliente van a
