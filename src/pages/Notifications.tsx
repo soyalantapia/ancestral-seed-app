@@ -364,7 +364,7 @@ export default function Notifications() {
                     mobile tiene opacity-60 base y opacity-100 al
                     active/focus para reducir taps fantasma.
                   */
-                  className="rounded-full p-1.5 text-navy-300 opacity-60 transition-all hover:bg-error-100 hover:text-error-400 hover:opacity-100 focus-visible:bg-error-100 focus-visible:text-error-400 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300 active:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-navy-300 opacity-60 transition-all hover:bg-error-100 hover:text-error-400 hover:opacity-100 focus-visible:bg-error-100 focus-visible:text-error-400 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300 active:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                   aria-label="Eliminar notificación"
                 >
                   <Trash2 className="h-4 w-4" />

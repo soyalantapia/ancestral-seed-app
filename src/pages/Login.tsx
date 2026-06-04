@@ -93,7 +93,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-200"
+                    className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-200"
                     aria-label={
                       showPassword
                         ? 'Ocultar contraseña'

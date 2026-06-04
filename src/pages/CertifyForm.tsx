@@ -476,10 +476,11 @@ export default function CertifyForm() {
           accesible sin importar el scroll del formulario. */}
       <a
         href="mailto:soporte@ancestralseed.org?subject=Necesito%20ayuda%20con%20el%20formulario%20de%20certificación"
-        className="fixed right-5 bottom-5 z-40 inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white shadow-xl ring-1 ring-white/10 transition-all hover:bg-navy-400 md:right-8 md:bottom-8"
+        aria-label="Necesito ayuda"
+        className="fixed right-5 bottom-5 z-40 inline-flex items-center gap-2 rounded-full bg-navy-500 p-4 text-sm font-semibold text-white shadow-xl ring-1 ring-white/10 transition-all hover:bg-navy-400 sm:px-5 sm:py-3 md:right-8 md:bottom-8"
       >
-        Necesito ayuda
-        <Headphones className="h-4 w-4" />
+        <Headphones className="h-5 w-5 sm:h-4 sm:w-4" />
+        <span className="hidden sm:inline">Necesito ayuda</span>
       </a>
 
       {/* Tour de 4 pasos al primer ingreso al form. Se monta acá para que

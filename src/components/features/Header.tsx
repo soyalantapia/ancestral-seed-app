@@ -130,7 +130,7 @@ export function Header() {
             active simultáneamente en `/`. Solución: usar <Link> normal
             y calcular el active manualmente comparando hash. */}
         {showLandingNav && (
-          <nav className="hidden flex-1 items-center gap-5 md:flex md:gap-4 lg:gap-6 xl:gap-7">
+          <nav className="hidden flex-1 items-center gap-5 lg:flex lg:gap-6 xl:gap-7">
             {navItems.map((item) => {
               // El active state se calcula así:
               // - Si el link tiene hash (#beneficios), solo es active si
