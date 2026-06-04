@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useEscape } from '@/hooks/useEscape'
 import {
   ArrowRight,
@@ -92,7 +91,6 @@ export default function MyProfile() {
   // Fix V2-POS-12: parking del destino de tab mientras esperamos la
   // confirmación del ConfirmDialog (reemplazo del window.confirm).
   const [pendingTab, setPendingTab] = useState<Tab | null>(null)
-  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [data, setData] = useState<ProfileData>({
     ...INITIAL,
@@ -395,7 +393,14 @@ export default function MyProfile() {
           type="button"
           onClick={() => {
             const slug = user?.authorSlug ?? slugify(data.name || 'mi-perfil')
-            navigate(`/perfil/${slug}`)
+            // Vista previa = abrir el perfil público en otra pestaña: no perdés
+            // el editor y carga fresca (confiable). BASE_URL cubre el basename
+            // del deploy (/ancestral-seed-app/ en producción).
+            window.open(
+              `${import.meta.env.BASE_URL}perfil/${slug}`,
+              '_blank',
+              'noopener',
+            )
           }}
           className="inline-flex items-center gap-2 rounded-full bg-neutral-200 px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-300"
         >
