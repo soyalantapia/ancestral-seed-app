@@ -122,11 +122,13 @@ export default function Notifications() {
             }}
             aria-label="Marcar todas como leídas"
             title="Marcar todas como leídas"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-neutral-300 bg-white p-2.5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100 sm:px-4 sm:py-2"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-neutral-300 bg-white p-2.5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100 lg:px-4 lg:py-2"
           >
             <CheckCheck className="h-4 w-4" />
-            {/* En el celular queda solo el ícono a la derecha del título; el texto vuelve en ≥sm */}
-            <span className="hidden sm:inline">Marcar todas como leídas</span>
+            {/* Icon-only hasta lg: en mobile y en tablet (donde el sidebar aprieta
+                el contenido) queda solo el ✓✓ a la derecha del título para no
+                pisarse; el texto completo vuelve en ≥lg, donde hay lugar. */}
+            <span className="hidden lg:inline">Marcar todas como leídas</span>
           </button>
         )}
       </div>
