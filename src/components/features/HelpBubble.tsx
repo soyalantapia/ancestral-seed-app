@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, BookOpen, Headphones, HelpCircle, Mail, MessageSquare, X } from 'lucide-react'
 import { useEscape } from '@/hooks/useEscape'
+import { cn } from '@/lib/utils'
 
-export function HelpBubble() {
+export function HelpBubble({
+  liftForBottomNav = false,
+}: {
+  liftForBottomNav?: boolean
+} = {}) {
   const [open, setOpen] = useState(false)
   useEscape(open, () => setOpen(false))
 
@@ -15,7 +20,11 @@ export function HelpBubble() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         data-tour="help-fab"
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy-500 text-white shadow-lg shadow-navy-500/30 transition-all hover:scale-105 hover:bg-navy-400"
+        className={cn(
+          'fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy-500 text-white shadow-lg shadow-navy-500/30 transition-all hover:scale-105 hover:bg-navy-400',
+          // En mobile el dashboard tiene bottom nav → subimos el FAB para no taparla.
+          liftForBottomNav && 'bottom-24 md:bottom-6',
+        )}
         aria-label="Ayuda"
       >
         {open ? <X className="h-5 w-5" /> : <HelpCircle className="h-5 w-5" />}
@@ -28,7 +37,10 @@ export function HelpBubble() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-40 w-80 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl"
+            className={cn(
+              'fixed bottom-24 right-6 z-40 w-80 max-w-[calc(100vw-3rem)] overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-2xl',
+              liftForBottomNav && 'bottom-44 md:bottom-24',
+            )}
           >
             <div className="bg-pattern-aztec px-5 py-5 text-white">
               <p className="text-xs font-bold uppercase tracking-widest text-gold-400">

@@ -7,7 +7,6 @@ import {
   FileText,
   HelpCircle,
   LogOut,
-  Menu,
   Sparkles,
   UserRound,
   X,
@@ -15,6 +14,7 @@ import {
 import { toast } from 'sonner'
 import { Header } from './Header'
 import { HelpBubble } from './HelpBubble'
+import { BottomNav } from './BottomNav'
 import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
@@ -166,20 +166,6 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
       <SkipToContent />
       <Header />
 
-      {/* Mobile toolbar */}
-      <div className="flex items-center gap-3 border-b border-neutral-200 bg-white px-4 py-3 md:hidden">
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          className="inline-flex items-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-neutral-100"
-          aria-label="Abrir menú lateral"
-        >
-          <Menu className="h-4 w-4" />
-          Menú
-        </button>
-        <span className="text-xs text-navy-300">Tu panel</span>
-      </div>
-
       <div className="flex flex-1">
         {/* Desktop sidebar */}
         <aside
@@ -233,9 +219,9 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
           tabIndex={-1}
           className="flex min-w-0 flex-1 flex-col bg-white focus:outline-none"
         >
-          {/* pb-24: deja aire al pie para que el botón flotante de Ayuda
-              (HelpBubble, fixed bottom-right) no tape el último CTA. */}
-          <div className="flex-1 pb-24">
+          {/* pb-28 en mobile: deja aire para la bottom nav (md:hidden) + el
+              FAB de Ayuda; pb-24 en desktop solo para el FAB. */}
+          <div className="flex-1 pb-28 md:pb-24">
             <ErrorBoundary key={location.pathname}>
               {children ?? <Outlet />}
             </ErrorBoundary>
@@ -243,7 +229,8 @@ export function DashboardLayout({ children }: { children?: ReactNode }) {
         </main>
       </div>
 
-      <HelpBubble />
+      <BottomNav onMore={() => setDrawerOpen(true)} alertCount={ALERT_COUNT} />
+      <HelpBubble liftForBottomNav />
       <CommandPalette />
       <GuidedTour />
 
