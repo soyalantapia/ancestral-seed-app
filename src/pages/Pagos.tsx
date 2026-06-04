@@ -28,7 +28,7 @@ import {
 } from '@/components/features/AddPaymentModal'
 import { useEscape } from '@/hooks/useEscape'
 import { useAuthStore } from '@/store/auth'
-import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 // Fix V2-POS-10 (auditoría v2): buildPaymentReceipt() generaba un
 // .txt plano con separadores ASCII. Migrado a buildPaymentReceiptPdf
@@ -227,32 +227,6 @@ export default function Pagos() {
             cualquier comprobante desde acá.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            const rows = filtered.map((p) => ({
-              id: p.id,
-              concepto: p.concept,
-              certificacion: p.requestName,
-              numero: p.requestNumber,
-              monto: p.amount,
-              moneda: p.currency,
-              estado: p.status,
-              vencimiento: p.dueDate,
-              pagado_el: p.paidAt ?? '',
-            }))
-            downloadBlob(
-              `pagos-${new Date().toISOString().slice(0, 10)}.csv`,
-              objectsToCsv(rows),
-              'text/csv;charset=utf-8',
-            )
-            toast.success(`${rows.length} pagos exportados a CSV`)
-          }}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-xs font-bold text-navy-500 transition-colors hover:bg-neutral-100"
-        >
-          <Download className="h-3.5 w-3.5" />
-          Exportar
-        </button>
       </header>
 
       {/* KPIs (2 nada más) */}
