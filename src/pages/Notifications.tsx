@@ -102,8 +102,8 @@ export default function Notifications() {
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 md:px-10 md:py-10">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-navy-500 md:text-[28px]">
             Notificaciones
           </h1>
@@ -120,10 +120,13 @@ export default function Notifications() {
               markAllRead()
               toast.success('Notificaciones marcadas como leídas')
             }}
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+            aria-label="Marcar todas como leídas"
+            title="Marcar todas como leídas"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-neutral-300 bg-white p-2.5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100 sm:px-4 sm:py-2"
           >
             <CheckCheck className="h-4 w-4" />
-            Marcar todas como leídas
+            {/* En el celular queda solo el ícono a la derecha del título; el texto vuelve en ≥sm */}
+            <span className="hidden sm:inline">Marcar todas como leídas</span>
           </button>
         )}
       </div>
