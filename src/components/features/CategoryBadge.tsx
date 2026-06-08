@@ -16,12 +16,12 @@ import type { OfficialCategory } from '@/types'
  * reformular labels sin coordinar con Ancestral Seed.
  */
 const TONE_CLASSES = {
-  gold:
-    'bg-gold-100 text-gold-800 ring-gold-300/50',
-  navy:
-    'bg-navy-100 text-navy-500 ring-navy-200',
-  cream:
-    'bg-cream-100 text-navy-400 ring-cream-300',
+  // Ancestral Auténtico — dorado cálido
+  gold: 'bg-gold-100 text-gold-800 ring-gold-300/50',
+  // Tradicional con raíces — azul pizarra neutro (neutral, legible)
+  navy: 'bg-neutral-200 text-navy-400 ring-neutral-300',
+  // Inspiración Cultural — ámbar cálido (antes usaba cream-*, que no existe en el tema)
+  cream: 'bg-warning-100 text-warning-400 ring-warning-300/50',
 } as const
 
 const CATEGORY_ICON = {

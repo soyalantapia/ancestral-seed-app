@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MapPin, Star, User } from 'lucide-react'
+import { MapPin, Star, User, Briefcase } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Certification, CertificationStatus } from '@/types'
 import { Badge } from '@/components/ui/badge'
@@ -74,15 +74,20 @@ export function CertificationCard({
         >
           {placeholderText ? 'Estado' : status.label}
         </Badge>
-        {/* Categoría oficial del Reglamento 2.1.1 — solo si está definida
-            (compat con certs viejos). Va a la izquierda en compact mode. */}
-        {!placeholderText && c.officialCategory && (
+        {/* Badge izquierdo: "Servicio" cuando entityType='servicio',
+            si no, categoría oficial del Reglamento 2.1.1. */}
+        {!placeholderText && c.entityType === 'servicio' ? (
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-info-100 px-2.5 py-1 text-xs font-bold shadow-sm ring-1 ring-info-300/50 text-info-400">
+            <Briefcase className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+            Servicio
+          </span>
+        ) : !placeholderText && c.officialCategory ? (
           <CategoryBadge
             category={c.officialCategory}
             compact
             className="absolute left-3 top-3 shadow-sm"
           />
-        )}
+        ) : null}
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <Link to={`/certificado/${c.slug}`}>

@@ -83,6 +83,11 @@ export interface Certification {
    */
   officialCategory?: OfficialCategory
   /**
+   * Tipo de entidad certificada. Por defecto 'producto'.
+   * 'servicio' muestra "Servicio" en lugar del shortLabel de categoría.
+   */
+  entityType?: 'producto' | 'servicio'
+  /**
    * Estado de la licencia de uso del Sello (Reglamento cap. 5).
    * Opcional por compat. Si falta, asumir 'vigente'.
    */

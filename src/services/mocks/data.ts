@@ -269,6 +269,7 @@ export const mockCertifications: Certification[] = [
     coverUrl: '/cards/card-ecodestinos.webp',
     hash: '0xD9E4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1',
     officialCategory: 'tradicional',
+    entityType: 'servicio',
     licenseStatus: 'vigente',
     licenseValidUntil: '2028-03-12',
     licenseNumber: 'AS-2026-004',
