@@ -203,7 +203,7 @@ export default function CertifyForm() {
    * cuando quería postular otra cosa.
    *
    * Ahora si hay datos persistidos al montar, mostramos un dialog
-   * obligatorio que pide elegir: "Continuar la postulación a medias"
+   * obligatorio que pide elegir: "Continuar la postulación a completar"
    * o "Empezar de cero". El initializer lazy se evalúa una sola vez
    * al montar — navegar entre pasos no re-dispara el dialog.
    *
@@ -1963,7 +1963,7 @@ function ResumeOrFreshDialog({
       <strong className="text-navy-500">{applicantName}</strong>
     </>
   ) : (
-    <strong className="text-navy-500">una postulación a medias</strong>
+    <strong className="text-navy-500">una postulación a completar</strong>
   )
   const stepLabel = currentStep > 0 ? ` (paso ${currentStep + 1} de 7)` : ''
 
@@ -2003,7 +2003,7 @@ function ResumeOrFreshDialog({
               id="resume-title"
               className="mt-5 text-xl font-bold text-navy-500 md:text-2xl"
             >
-              Tenés una postulación a medias
+              Tenés una postulación a completar
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-navy-300">
               Guardamos tus avances de {subjectNode}
