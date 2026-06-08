@@ -38,9 +38,9 @@ const topics: Topic[] = [
         'Una vez enviada la postulación, un coordinador verifica los datos y te asigna un tutor cultural en un plazo aproximado de 3 a 5 días hábiles. El tutor se encarga de guiarte durante todo el proceso.',
       ],
       bullets: [
-        'Tiempo estimado total: 30–45 días desde postulación a certificación.',
+        'Tiempo estimado total: 90 días desde postulación a certificación (dependiendo de la disposición del postulante).',
         'Etapas: Postulado → Revisión inicial → Elegible → Diagnóstico → Auditoría → Evaluación → Certificación.',
-        'Costo: gratuito para postulantes de pueblos originarios y comunidades reconocidas.',
+        'Costo: gratuito para postularse de pueblos originarios y comunidades reconocidas.',
       ],
     },
   },
