@@ -32,10 +32,10 @@
          Importante: SVG NO es soportado por WhatsApp en og:image.
          Usamos PNG 1200×630 generado por scripts/generate-og.mjs.
 
-         og:image debe ser URL ABSOLUTA. En producción
-         (gh-pages) queda https://soyalantapia.github.io/ancestral-seed-app/og-image.png
-         En dev queda http://localhost:5175/og-image.png — los crawlers
-         igual leen las absolutas de prod. -->
+         og:image debe ser URL ABSOLUTA. El host sale de VITE_SITE_URL
+         (.env = gh-pages por default; build:domain la pisa con
+         https://ancestralseed.com). Vite reemplaza https://soyalantapia.github.io/ancestral-seed-app
+         en este HTML en build time. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ancestral Seed" />
     <meta property="og:locale" content="es_AR" />
@@ -45,9 +45,11 @@
       property="og:description"
       content="Validamos saberes ancestrales con auditoría cultural y blockchain inmutable. Conocé los 18+ certificados emitidos en LATAM."
     />
+    <!-- ?v=2 = cache-bust: WhatsApp/Meta cachean el preview por URL;
+         al cambiar el banner hay que bumpear la versión. -->
     <meta
       property="og:image"
-      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png"
+      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png?v=2"
     />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
@@ -67,7 +69,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png"
+      content="https://soyalantapia.github.io/ancestral-seed-app/og-image.png?v=2"
     />
 
     <!-- ─── Schema.org JSON-LD (Google / buscadores) ────────────────
@@ -119,7 +121,7 @@
         }
       })(window.location)
     </script>
-    <script type="module" crossorigin src="/ancestral-seed-app/assets/index-BNvFxYXc.js"></script>
+    <script type="module" crossorigin src="/ancestral-seed-app/assets/index-DsWTYJ-M.js"></script>
     <link rel="modulepreload" crossorigin href="/ancestral-seed-app/assets/chunk-BNv3lrIs.js">
     <link rel="modulepreload" crossorigin href="/ancestral-seed-app/assets/preload-helper-BAv2aOyI.js">
     <link rel="modulepreload" crossorigin href="/ancestral-seed-app/assets/utils-C9-ZVMyC.js">

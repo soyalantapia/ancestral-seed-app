@@ -42,4 +42,6 @@ Disallow: /ancestral-seed-app/settings
 Disallow: /ancestral-seed-app/notificaciones
 Disallow: /ancestral-seed-app/tutor
 
-Sitemap: https://soyalantapia.github.io/ancestral-seed-app/sitemap.xml
+# robots.txt solo tiene efecto servido desde la raíz del host —
+# o sea, en ancestralseed.com (en GH Pages se ignora, ver arriba).
+Sitemap: https://ancestralseed.com/sitemap.xml

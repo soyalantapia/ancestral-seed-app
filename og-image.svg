@@ -3,13 +3,13 @@
     Open Graph card de Ancestral Seed — 1200×630 para WhatsApp / X /
     Facebook / LinkedIn.
 
-    Diseño:
-    - Fondo navy-500 (#001c38) con pattern aztec sutil
-    - Halo dorado a la derecha que ancla la atención
-    - Wordmark grande "ANCESTRAL SEED" + tagline "CERTIFICACIÓN DIGITAL"
-    - Headline conversacional principal
-    - Chip dorado con propuesta de valor concreta
-    - Decoraciones de marca (chevron pattern, dot dorado)
+    Rediseño 2026-06 (optimizado para el thumbnail chico de WhatsApp):
+    - Menos micro-texto: en el chat la imagen se ve a ~330px de ancho,
+      así que todo lo que no se lea a ese tamaño es ruido. Fuera la
+      tarjeta-mockup con hash y la lista de categorías.
+    - Tres anclas legibles en chico: wordmark, headline 60px, sello
+      dorado grande con check.
+    - Dominio en pill dorada (alto contraste) abajo a la izquierda.
   -->
 
   <defs>
@@ -21,10 +21,10 @@
       </g>
     </pattern>
 
-    <!-- Glow dorado decorativo a la derecha -->
+    <!-- Glow dorado detrás del sello -->
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.45"/>
-      <stop offset="60%" stop-color="#D4AF37" stop-opacity="0.08"/>
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#D4AF37" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
     </radialGradient>
 
@@ -32,6 +32,12 @@
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#001c38"/>
       <stop offset="100%" stop-color="#062B4D"/>
+    </linearGradient>
+
+    <!-- Gradiente del sello para darle volumen -->
+    <linearGradient id="seal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8C654"/>
+      <stop offset="100%" stop-color="#C7A800"/>
     </linearGradient>
   </defs>
 
@@ -41,142 +47,76 @@
   <!-- Pattern overlay -->
   <rect width="1200" height="630" fill="url(#aztec)"/>
 
-  <!-- Halo dorado en la esquina superior derecha -->
-  <ellipse cx="980" cy="180" rx="380" ry="380" fill="url(#glow)"/>
-
   <!-- Banda inferior dorada para anclaje visual -->
   <rect x="0" y="610" width="1200" height="20" fill="#D4AF37"/>
 
   <!-- Wordmark — top-left -->
-  <g transform="translate(80, 80)">
+  <g transform="translate(80, 72)">
     <!-- Icono "semilla" simplificado -->
-    <g transform="translate(0, 0)">
-      <circle cx="32" cy="32" r="32" fill="#D4AF37"/>
-      <path d="M32 12 C 22 22, 22 42, 32 52 C 42 42, 42 22, 32 12 Z" fill="#001c38"/>
-      <circle cx="32" cy="32" r="3" fill="#D4AF37"/>
+    <g>
+      <circle cx="34" cy="34" r="34" fill="#D4AF37"/>
+      <path d="M34 13 C 23 24, 23 45, 34 56 C 45 45, 45 24, 34 13 Z" fill="#001c38"/>
+      <circle cx="34" cy="34" r="3.5" fill="#D4AF37"/>
     </g>
 
     <!-- Texto wordmark -->
-    <text x="80" y="32" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
-          font-size="28" letter-spacing="5" fill="#FFFFFF">ANCESTRAL SEED</text>
-    <text x="80" y="58" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="600"
-          font-size="13" letter-spacing="7" fill="#D4AF37">CERTIFICACIÓN DIGITAL</text>
+    <text x="88" y="34" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
+          font-size="31" letter-spacing="5" fill="#FFFFFF">ANCESTRAL SEED</text>
+    <text x="88" y="62" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="600"
+          font-size="14" letter-spacing="7" fill="#D4AF37">CERTIFICACIÓN DIGITAL</text>
   </g>
 
-  <!-- Chip "Verificado en blockchain" — top right -->
-  <g transform="translate(870, 90)">
-    <rect x="0" y="0" width="250" height="42" rx="21" fill="#D4AF37"/>
-    <circle cx="22" cy="21" r="6" fill="#001c38"/>
-    <text x="38" y="27" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="700"
-          font-size="13" letter-spacing="2" fill="#001c38">VERIFICADO EN BLOCKCHAIN</text>
-  </g>
-
-  <!-- Headline principal — izquierda -->
-  <g transform="translate(80, 240)">
+  <!-- Headline principal — izquierda, 60px legible en thumbnail -->
+  <g transform="translate(80, 282)">
     <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="800"
-          font-size="56" fill="#FFFFFF">
+          font-size="60" fill="#FFFFFF">
       <tspan x="0" y="0">Saberes ancestrales,</tspan>
-      <tspan x="0" y="72" fill="#D4AF37">certificados con</tspan>
-      <tspan x="0" y="144" fill="#D4AF37">tecnología.</tspan>
+      <tspan x="0" y="78" fill="#D4AF37">certificados con</tspan>
+      <tspan x="0" y="156" fill="#D4AF37">tecnología.</tspan>
     </text>
   </g>
 
-  <!--
-    Fix V2-PUB-04 (auditoría v2): antes la card OG era 100% tipografía
-    + halo dorado. Faltaba algo visual concreto que mostrara EL PRODUCTO
-    de la plataforma. Agregamos un mockup de tarjeta de certificado
-    flotando a la derecha: sello dorado con check + nombre de producto
-    + hash blockchain + estado "VIGENTE". Es SVG-only así que sigue
-    siendo liviano (~5KB extra) y se renderiza idéntico en todos los
-    crawlers de WhatsApp/X/LinkedIn.
-  -->
-  <g transform="translate(720, 230) rotate(-3)">
-    <!-- Sombra debajo del mockup -->
-    <rect x="6" y="8" width="380" height="220" rx="20" fill="#000000" opacity="0.25"/>
+  <!-- Sello dorado grande — derecha. Ancla visual única que se lee
+       perfecto incluso a 330px de ancho total. -->
+  <g>
+    <ellipse cx="960" cy="320" rx="320" ry="320" fill="url(#glow)"/>
 
-    <!-- Body de la tarjeta -->
-    <rect x="0" y="0" width="380" height="220" rx="20" fill="#FFFFFF"/>
+    <!-- Cuerpo del sello -->
+    <circle cx="960" cy="320" r="148" fill="url(#seal)"/>
+    <!-- Doble anillo interior -->
+    <circle cx="960" cy="320" r="126" fill="none" stroke="#001c38" stroke-width="3"/>
+    <circle cx="960" cy="320" r="116" fill="none" stroke="#001c38" stroke-width="1.5" opacity="0.5"/>
 
-    <!-- Header con eyebrow + badge VIGENTE -->
-    <text x="24" y="34" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="700" font-size="10" letter-spacing="3" fill="#7A6418">CERTIFICADO ANCESTRAL SEED</text>
-    <rect x="280" y="20" width="78" height="20" rx="10" fill="#3B7B5C"/>
-    <text x="319" y="34" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="700" font-size="10" letter-spacing="2" text-anchor="middle" fill="#FFFFFF">VIGENTE</text>
+    <!-- Check grande -->
+    <path d="M895 320 L945 372 L1030 268" stroke="#001c38" stroke-width="18" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!--
-      Fix V3-PUB-15 + V3-PUB-16 (auditoría v3): antes el mockup tenía
-      datos hardcoded del demo ("Filigrana ancestral", "Camila Montes
-      · Sierra Nevada"). Cuando este link circulara por WhatsApp /
-      LinkedIn como preview, daba la impresión engañosa de que ese
-      certificado específico era la propuesta institucional. Ahora
-      usamos labels genéricos representativos de la categoría 1 del
-      Reglamento sin atribuir a una persona real.
-    -->
-    <!--
-      Fix V4-PUB-08 (auditoría v4): font-size del nombre bajado a 20px
-      y subtítulo a 12px para dar más margen al sello (que ocupa
-      desde x=290 hasta x=366). Antes con font-size=22, "Saber ancestral
-      certificado" llegaba a ~295px y dejaba apenas 16px de margen
-      contra el sello en y=130. Ahora dejamos ~28px.
-    -->
-    <text x="24" y="74" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="800" font-size="20" fill="#001c38">Saber ancestral certificado</text>
-    <text x="24" y="96" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="500" font-size="12" fill="#5C6878">Auditoría cultural + Reglamento de Marca</text>
-
-    <!--
-      Hash blockchain — placeholder claramente decorativo (fix
-      V4-PUB-07 auditoría v4). Antes era `0xAS-CERT-XXXXXXXXXX…`
-      que podía leerse como template no-resuelto. Ahora `DEMOPREVIEW`
-      es semánticamente "no es un hash real" sin parecer un bug.
-    -->
-    <text x="24" y="138" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="700" font-size="9" letter-spacing="2" fill="#7A6418">HASH BLOCKCHAIN</text>
-    <text x="24" y="156" font-family="ui-monospace, SF Mono, Menlo, monospace"
-          font-weight="600" font-size="12" fill="#001c38">0xAS-CERT-DEMOPREVIEW…</text>
-
-    <!-- Sello con check (right side) -->
-    <g transform="translate(290, 130)">
-      <circle cx="38" cy="38" r="38" fill="#D4AF37"/>
-      <circle cx="38" cy="38" r="32" fill="none" stroke="#001c38" stroke-width="2"/>
-      <path d="M22 38 L34 50 L54 28" stroke="#001c38" stroke-width="4" fill="none"
-            stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-
-    <!-- Footer separator + leyenda -->
-    <line x1="24" y1="186" x2="356" y2="186" stroke="#E7E5DE" stroke-width="1"/>
-    <text x="24" y="206" font-family="Montserrat, Helvetica, Arial, sans-serif"
-          font-weight="500" font-size="11" fill="#5C6878">Auditoría cultural firmada · Categoría 1</text>
+    <!-- Puntos cardinales decorativos del sello -->
+    <circle cx="960" cy="186" r="5" fill="#001c38"/>
+    <circle cx="960" cy="454" r="5" fill="#001c38"/>
+    <circle cx="826" cy="320" r="5" fill="#001c38"/>
+    <circle cx="1094" cy="320" r="5" fill="#001c38"/>
   </g>
 
-  <!-- Tagline / propuesta de valor — bottom-left -->
-  <g transform="translate(80, 510)">
+  <!-- Chip "VERIFICADO EN BLOCKCHAIN" centrado bajo el sello -->
+  <g transform="translate(810, 506)">
+    <rect x="0" y="0" width="300" height="46" rx="23" fill="none" stroke="#D4AF37" stroke-width="2"/>
+    <circle cx="26" cy="23" r="6" fill="#D4AF37"/>
+    <text x="44" y="29" font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="700"
+          font-size="14" letter-spacing="2" fill="#D4AF37">VERIFICADO EN BLOCKCHAIN</text>
+  </g>
+
+  <!-- Tagline + dominio — bottom-left -->
+  <g transform="translate(80, 500)">
     <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="500"
-          font-size="22" fill="#FFFFFF" opacity="0.85">
+          font-size="23" fill="#FFFFFF" opacity="0.88">
       Auditoría cultural + blockchain inmutable
     </text>
-    <text font-family="Montserrat, Helvetica, Arial, sans-serif" font-weight="700"
-          font-size="18" fill="#D4AF37" y="34" letter-spacing="2">
-      ancestralseed.com
-    </text>
-  </g>
-
-  <!-- 3 categorías oficiales del Reglamento — bottom-right -->
-  <g transform="translate(870, 480)" font-family="Montserrat, Helvetica, Arial, sans-serif">
-    <text font-weight="700" font-size="10" letter-spacing="3" fill="#D4AF37" y="0">3 CATEGORÍAS OFICIALES</text>
-
-    <g transform="translate(0, 20)">
-      <circle cx="6" cy="6" r="4" fill="#D4AF37"/>
-      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Ancestral Auténtico</text>
-    </g>
-    <g transform="translate(0, 42)">
-      <circle cx="6" cy="6" r="4" fill="#D4AF37" opacity="0.65"/>
-      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Tradicional con raíces</text>
-    </g>
-    <g transform="translate(0, 64)">
-      <circle cx="6" cy="6" r="4" fill="#D4AF37" opacity="0.35"/>
-      <text x="18" y="10" font-weight="600" font-size="13" fill="#FFFFFF">Inspiración cultural</text>
+    <!-- Pill dorada con el dominio: el elemento más accionable del banner -->
+    <g transform="translate(0, 22)">
+      <rect x="0" y="0" width="304" height="48" rx="24" fill="#D4AF37"/>
+      <text x="152" y="31" text-anchor="middle" font-family="Montserrat, Helvetica, Arial, sans-serif"
+            font-weight="800" font-size="21" letter-spacing="1" fill="#001c38">ancestralseed.com</text>
     </g>
   </g>
 </svg>
