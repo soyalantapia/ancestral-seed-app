@@ -10,6 +10,7 @@
     "verify-assets": "node scripts/verify-assets.mjs",
     "prebuild": "npm run og && npm run sitemap && npm run verify-assets",
     "build": "tsc -b && vite build",
+    "build:domain": "DEPLOY_BASE=/ VITE_SITE_URL=https://ancestralseed.com npm run build",
     "build:no-msw": "VITE_USE_MSW=false npm run build",
     "lint": "eslint .",
     "preview": "vite preview",

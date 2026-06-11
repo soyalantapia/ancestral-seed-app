@@ -1,0 +1,42 @@
+# .htaccess para ancestralseed.com (hosting Ferozo/Dattaweb)
+# Subir como `.htaccess` al docroot junto con el contenido de dist/.
+#
+# Convive con el WordPress preexistente (modo coming-soon):
+#  - index.html (SPA) gana sobre index.php (WP) vía DirectoryIndex.
+#  - /wp-admin y /wp-login.php siguen accesibles (son archivos/dirs
+#    reales → las RewriteCond !-f/!-d los dejan pasar).
+#  - Cualquier ruta del SPA (/directorio, /certificado/x, /tutor/...)
+#    cae a /index.html para que react-router resuelva.
+
+DirectoryIndex index.html index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Forzar HTTPS (Cloudflare Origin SSL ya activo en el panel)
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # SPA fallback: todo lo que no sea archivo o directorio real → index.html
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# MIME correctos para PWA/manifest
+AddType application/manifest+json .webmanifest
+AddType application/json .json
+
+# Cache: assets hasheados de Vite pueden cachearse fuerte;
+# index.html y el service worker NO (deben revalidarse siempre).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2?|webp|png|jpg|svg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^(index\.html|mockServiceWorker\.js|sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

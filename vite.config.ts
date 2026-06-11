@@ -4,7 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
-const BASE = '/ancestral-seed-app/'
+/**
+ * Base path del deploy. Default = GitHub Pages (subdirectorio).
+ * Para el dominio propio (ancestralseed.com, docroot raíz) se buildea
+ * con `npm run build:domain`, que setea DEPLOY_BASE=/ y
+ * VITE_SITE_URL=https://ancestralseed.com.
+ */
+const BASE = process.env.DEPLOY_BASE ?? '/ancestral-seed-app/'
 
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? BASE : '/',

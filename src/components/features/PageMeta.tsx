@@ -37,7 +37,9 @@ const DEFAULT_DESCRIPTION =
  * canonical funcionen sin importar dónde se renderice el HTML — los
  * crawlers de WhatsApp/X/etc no ejecutan JS y necesitan absolutas.
  */
-const SITE_URL = 'https://soyalantapia.github.io/ancestral-seed-app'
+const SITE_URL =
+  import.meta.env.VITE_SITE_URL ??
+  'https://soyalantapia.github.io/ancestral-seed-app'
 
 /**
  * Imagen OG default — 1200×630 PNG en /public/og-image.png. Generada

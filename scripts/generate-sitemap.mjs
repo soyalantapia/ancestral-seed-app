@@ -19,7 +19,11 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
 const SITEMAP_PATH = join(ROOT, 'public', 'sitemap.xml')
-const BASE_URL = 'https://soyalantapia.github.io/ancestral-seed-app'
+// Configurable por env para el build del dominio propio
+// (build:domain → https://ancestralseed.com). Default: GitHub Pages.
+const BASE_URL =
+  process.env.VITE_SITE_URL ??
+  'https://soyalantapia.github.io/ancestral-seed-app'
 const DATA_TS = join(ROOT, 'src', 'services', 'mocks', 'data.ts')
 
 // Parseo barato: extraemos los slugs con regex en lugar de importar
