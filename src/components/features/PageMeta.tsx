@@ -45,7 +45,8 @@ const SITE_URL =
  * Imagen OG default — 1200×630 PNG en /public/og-image.png. Generada
  * por `scripts/generate-og.mjs` a partir del SVG fuente.
  */
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`
+// ?v=2 sincronizado con index.html — bumpear ambos al cambiar el banner.
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png?v=2`
 
 /**
  * Si la URL pasada es relativa, la prefijamos con SITE_URL. Si ya es
