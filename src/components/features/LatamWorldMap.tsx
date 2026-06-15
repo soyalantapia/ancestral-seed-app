@@ -62,11 +62,14 @@ export default function LatamWorldMap() {
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
-          scale: 380,
-          center: [-72, -16],
+          // Centrado en el punto medio de LATAM (México -118 ↔ Brasil -34;
+          // y México 23N ↔ Tierra del Fuego -54S) para que entren TODOS
+          // los países sin recortar el oeste de México ni el Caribe.
+          scale: 350,
+          center: [-79, -9],
         }}
         width={600}
-        height={800}
+        height={820}
         style={{ width: '100%', height: '100%' }}
       >
         <defs>

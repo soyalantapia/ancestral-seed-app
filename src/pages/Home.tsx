@@ -161,7 +161,7 @@ function Hero() {
               <span className="block">Autenticidad Ancestral</span>
               <span className="block">Certificada Digitalmente</span>
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
+            <p className="mt-4 max-w-xl text-justify text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
               Validamos la autenticidad de productos, servicios y saberes
               ancestrales, mediante un sistema de certificación cultural,
               auditoría y tecnología blockchain.
@@ -560,14 +560,14 @@ function LatamAlMundo() {
               <span className="text-gold-700">Latinoamérica</span>{' '}
               al mundo
             </h2>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-300">
+            <p className="mt-6 max-w-xl text-justify text-base leading-relaxed text-navy-300">
               Cada certificación es un puente: nace en una comunidad originaria
               de Latinoamérica y viaja —con su historia, su técnica y su
               territorio— hacia mercados, museos y consumidores del mundo
               entero. Acompañamos esa proyección sin desconectar el producto
               de su origen.
             </p>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-navy-300">
+            <p className="mt-4 max-w-xl text-justify text-base leading-relaxed text-navy-300">
               La trazabilidad blockchain permite que un comprador en Tokio,
               Madrid o Berlín pueda verificar, en segundos, que lo que llevó
               a casa fue tejido, sahumado o tallado por las manos correctas,
@@ -880,7 +880,7 @@ function BlockchainSection() {
           <h2 className="mt-2 text-2xl font-bold text-navy-500 md:text-[32px] md:leading-tight">
             Cómo protegemos lo que es tuyo, para que nadie pueda copiarlo
           </h2>
-          <p className="mx-auto mt-4 text-sm leading-relaxed text-navy-300 md:text-base">
+          <p className="mx-auto mt-4 max-w-2xl text-justify text-sm leading-relaxed text-navy-300 md:text-base">
             Usamos una tecnología llamada <strong>blockchain</strong> para que
             tu certificado quede registrado de forma pública y permanente. Te
             la explicamos sin tecnicismos.
