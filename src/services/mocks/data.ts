@@ -100,7 +100,7 @@ export const mockAuthors: Author[] = [
     slug: 'camila-montes',
     name: 'Camila Montes',
     title: 'Artesana · San Juan de Pasto - Nariño',
-    bio: 'Trabajo la filigrana ancestral, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
+    bio: 'Trabajo la filigrana ancestral, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con los Andes de Nariño, en San Juan de Pasto, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     avatarUrl: 'https://i.pravatar.cc/300?img=47',
     location: 'Colombia',
     email: 'camila.montes@ancestralseed.com',
@@ -108,8 +108,8 @@ export const mockAuthors: Author[] = [
     joinedAt: '2024-03-12',
     // Trabaja "en diálogo con" — referencia ancestral, no constituida.
     // En el formulario marcaría categoría "tradicional", pero no se
-    // autoidentifica como miembro de los pueblos de la Sierra Nevada.
-    community: 'En diálogo con pueblos Kogi · Arhuaco · Wiwa',
+    // autoidentifica como miembro de los pueblos de Nariño.
+    community: 'En diálogo con pueblos Pastos · Quillasingas',
     languages: ['Español'],
   },
   {
@@ -175,19 +175,19 @@ export const mockCertifications: Certification[] = [
     issuedAt: '2026-02-14',
     expiresAt: '2028-02-14',
     status: 'verified',
-    category: 'Caribe colombiano',
+    category: 'Nariño',
     description:
-      'Filigrana, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
+      'Filigrana, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con los Andes de Nariño, en San Juan de Pasto, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     coverUrl: '/cards/card-filigrana.webp',
     hash: '0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6',
     officialCategory: 'tradicional',
     licenseStatus: 'vigente',
     licenseValidUntil: '2028-02-14',
     licenseNumber: 'AS-2026-001',
-    location: 'Colombia · Caribe colombiano',
-    mapQuery: 'Sierra Nevada de Santa Marta, Colombia',
+    location: 'Colombia · Nariño',
+    mapQuery: 'San Juan de Pasto, Nariño, Colombia',
     contextParagraphs: [
-      'Esta técnica mantiene un vínculo ancestral con la Sierra Nevada de Santa Marta, transmitido a través de herencias familiares de comunidades indígenas del territorio.',
+      'Esta técnica mantiene un vínculo ancestral con los Andes de Nariño, transmitido a través de herencias familiares de comunidades del territorio en torno a San Juan de Pasto.',
       'Tiene raíces milenarias, con hallazgos en civilizaciones antiguas como Egipto y Grecia, y se desarrolló ampliamente en distintas regiones de América Latina —como Colombia, México y Perú— y Europa, especialmente en Portugal y España.',
     ],
     techniqueParagraphs: [
