@@ -419,8 +419,17 @@ export default function TutorCertifications() {
           return (
             <li
               key={c.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ver certificación ${c.id}`}
               onClick={() => navigate(`/tutor/certificaciones/${c.id}`)}
-              className="cursor-pointer rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition-colors hover:bg-neutral-100"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  navigate(`/tutor/certificaciones/${c.id}`)
+                }
+              }}
+              className="cursor-pointer rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">

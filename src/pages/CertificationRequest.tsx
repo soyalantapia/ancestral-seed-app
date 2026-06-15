@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Download,
   File as FileIcon,
   Film,
   Image as ImageIcon,
@@ -30,11 +29,6 @@ import {
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
 import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
-import {
-  CheckoutModal,
-  type CheckoutPaymentInput,
-  type CheckoutResult,
-} from '@/components/features/CheckoutModal'
 import type {
   AuditMeeting,
   AuditMeetingStatus,
@@ -42,14 +36,12 @@ import type {
   EvidenceFile,
   HistoryEvent,
   HistoryEventKind,
-  PaymentItem,
-  PaymentStatus,
   RequestStageItem,
   TutorMessage,
 } from '@/types'
 import { REGLAMENTO_DEADLINES, STAGES } from '@/lib/copy'
 import { useCoverByRequestStore } from '@/store/coverByRequest'
-import { cn, downloadBlob } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 // Fix UX (revisión postulante): la barra tenía 6 tabs que se cortaban en
 // mobile y mezclaban acción con referencia. Dejamos 4 tabs accionables;
@@ -58,16 +50,16 @@ import { cn, downloadBlob } from '@/lib/utils'
 const tabs = [
   'Seguimiento',
   'Evaluación',
+  'Auditoría',
   'Evidencias',
-  'Pagos',
 ] as const
 
 type Tab = (typeof tabs)[number]
 
 function tabFromParam(p: string | null): Tab {
   if (p === 'evaluacion') return 'Evaluación'
+  if (p === 'auditoria') return 'Auditoría'
   if (p === 'evidencias') return 'Evidencias'
-  if (p === 'pagos') return 'Pagos'
   return 'Seguimiento'
 }
 
@@ -78,8 +70,8 @@ export default function CertificationRequest() {
   const setTab = (t: Tab) => {
     const slug =
       t === 'Evaluación' ? 'evaluacion'
+      : t === 'Auditoría' ? 'auditoria'
       : t === 'Evidencias' ? 'evidencias'
-      : t === 'Pagos' ? 'pagos'
       : ''
     if (slug) setParams({ tab: slug }, { replace: true })
     else setParams({}, { replace: true })
@@ -300,8 +292,10 @@ export default function CertificationRequest() {
       <div className="mt-8">
         {tab === 'Seguimiento' && <SeguimientoTab request={request} />}
         {tab === 'Evaluación' && (
-          <EvaluacionTab
-            deadline={request.diagnosticDeadline ?? '15/03'}
+          <EvaluacionTab onOpenDiagnostic={() => setDiagnosticOpen(true)} />
+        )}
+        {tab === 'Auditoría' && (
+          <AuditoriaTab
             meetings={meetings}
             onAccept={(id) => {
               updateMeeting(id, 'accepted')
@@ -309,14 +303,12 @@ export default function CertificationRequest() {
             }}
             onReject={(m) => setConfirmReject(m)}
             onReschedule={(m) => setReschedule(m)}
-            onOpenDiagnostic={() => setDiagnosticOpen(true)}
             onOpenThread={(m) => setThreadFor(m)}
             onOpenTutor={(name) => setTutorFor(name)}
             threads={request.threads ?? {}}
           />
         )}
         {tab === 'Evidencias' && <EvidenciasTab request={request} />}
-        {tab === 'Pagos' && <PagosTab request={request} />}
       </div>
 
       {/* Referencia (no flujo de acción) — colapsadas por defecto para no
@@ -365,7 +357,6 @@ export default function CertificationRequest() {
       <DiagnosticDialog
         open={diagnosticOpen}
         onClose={() => setDiagnosticOpen(false)}
-        deadline={request.diagnosticDeadline ?? '15/03'}
       />
 
       <MessageThreadSheet
@@ -559,22 +550,59 @@ function Timeline({ stages }: { stages: RequestStageItem[] }) {
 // ─── Tab: Evaluación ─────────────────────────────────────────────────────────
 
 function EvaluacionTab({
-  deadline,
+  onOpenDiagnostic,
+}: {
+  onOpenDiagnostic: () => void
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-navy-500">Evaluación</h2>
+        <p className="mt-1 text-sm text-navy-300">
+          El diagnóstico inicial lo completa tu tutor a partir de tus evidencias
+          y la auditoría cultural. Acá podés ver lo que registró.
+        </p>
+      </div>
+
+      {/* Diagnóstico — lo completa el tutor; el postulante solo lo ve */}
+      <section>
+        <header className="flex flex-wrap items-center gap-2 rounded-t-2xl bg-neutral-200 px-5 py-3 text-base font-bold text-navy-500">
+          Diagnóstico
+          <span className="inline-flex items-center gap-1 rounded-full bg-success-100 px-2.5 py-0.5 text-xs font-bold text-success-700 ring-1 ring-success-300/40">
+            <Check className="h-3 w-3" /> Completado por tu tutor
+          </span>
+        </header>
+        <div className="rounded-b-2xl border border-t-0 border-neutral-200 bg-white p-5">
+          <p className="text-sm text-navy-500">
+            Tu tutor revisó tu caso y registró el diagnóstico inicial. Lo completa
+            el equipo de certificación; vos podés leerlo cuando quieras.
+          </p>
+          <button
+            type="button"
+            onClick={onOpenDiagnostic}
+            className="mt-4 inline-flex items-center rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+          >
+            Ver diagnóstico del tutor
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function AuditoriaTab({
   meetings,
   onAccept,
   onReject,
   onReschedule,
-  onOpenDiagnostic,
   onOpenThread,
   onOpenTutor,
   threads,
 }: {
-  deadline: string
   meetings: AuditMeeting[]
   onAccept: (id: string) => void
   onReject: (m: AuditMeeting) => void
   onReschedule: (m: AuditMeeting) => void
-  onOpenDiagnostic: () => void
   onOpenThread: (m: AuditMeeting) => void
   onOpenTutor: (name: string) => void
   threads: Record<string, TutorMessage[]>
@@ -582,37 +610,12 @@ function EvaluacionTab({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-navy-500">Evaluación</h2>
+        <h2 className="text-xl font-bold text-navy-500">Auditoría</h2>
         <p className="mt-1 text-sm text-navy-300">
-          Gestioná las instancias necesarias para avanzar hacia la emisión de tu certificación.
+          Coordiná las instancias de auditoría cultural con tu tutor para avanzar
+          hacia la emisión de tu certificación.
         </p>
       </div>
-
-      {/* Diagnóstico */}
-      <section>
-        <header className="rounded-t-2xl bg-neutral-200 px-5 py-3 text-base font-bold text-navy-500">
-          Diagnóstico
-        </header>
-        <div className="rounded-b-2xl border border-t-0 border-neutral-200 bg-white p-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning-300" />
-            <p className="text-sm text-navy-500">
-              Respondé el diagnóstico solicitado por el tutor para continuar con
-              el proceso
-            </p>
-          </div>
-          <p className="mt-3 text-sm font-bold text-navy-500">
-            Fecha límite: <span className="font-medium">{deadline}</span>
-          </p>
-          <button
-            type="button"
-            onClick={onOpenDiagnostic}
-            className="mt-4 inline-flex items-center rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
-          >
-            Completar diagnóstico
-          </button>
-        </div>
-      </section>
 
       {/* Auditorías pendientes */}
       <section>
@@ -1214,185 +1217,6 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
   )
 }
 
-// ─── Tab: Pagos ──────────────────────────────────────────────────────────────
-
-function PagosTab({ request }: { request: CertificationRequestType }) {
-  const rawPayments = request.payments ?? []
-  /**
-   * Fix SA4 (#POS-20): el botón "Pagar" desde esta tab navegaba a
-   * /pagos sin checkout. Ahora abrimos el CheckoutModal localmente
-   * (igual UX que en /pagos) y mantenemos override de paidOverrides
-   * para reflejar el cambio en esta misma vista.
-   */
-  const [checkoutItem, setCheckoutItem] =
-    useState<CheckoutPaymentInput | null>(null)
-  const [paidOverrides, setPaidOverrides] = useState<
-    Record<string, { paidAt: string; method: 'card' | 'transfer' }>
-  >({})
-
-  const payments = rawPayments.map((p) => {
-    const override = paidOverrides[p.id]
-    return override
-      ? {
-          ...p,
-          status: 'paid' as PaymentStatus,
-          paidAt: override.paidAt,
-        }
-      : p
-  })
-
-  const totalPaid = payments.filter((p) => p.status === 'paid').reduce((a, p) => a + p.amount, 0)
-  const totalPending = payments.filter((p) => p.status === 'pending' || p.status === 'overdue').reduce((a, p) => a + p.amount, 0)
-
-  const fmt = (amount: number, currency: string) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency }).format(amount)
-
-  function handlePay(p: PaymentItem) {
-    setCheckoutItem({
-      id: p.id,
-      concept: p.concept,
-      amount: p.amount,
-      currency: p.currency,
-      requestLabel: `${request.number} · ${request.productName}`,
-      dueDate: p.dueDate,
-    })
-  }
-
-  function handlePaid(result: CheckoutResult) {
-    setPaidOverrides((prev) => ({
-      ...prev,
-      [result.itemId]: {
-        paidAt: result.paidAt,
-        method: result.method,
-      },
-    }))
-    // Fix V2-POS-15 (auditoría v2): doble feedback removido (idem
-    // Pagos.tsx). El modal de éxito + el listado actualizado son
-    // suficientes; el toast era ruido encima de la animación.
-  }
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-bold text-navy-500">Pagos</h2>
-        <p className="mt-1 text-sm text-navy-300">
-          Historial de pagos y comprobantes asociados a esta solicitud.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-          <p className="text-xs font-medium text-navy-300">Total abonado</p>
-          <p className="mt-1 text-2xl font-bold text-success-300">
-            {payments.length > 0 ? fmt(totalPaid, payments[0].currency) : '—'}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-          <p className="text-xs font-medium text-navy-300">Saldo pendiente</p>
-          <p className={cn('mt-1 text-2xl font-bold', totalPending > 0 ? 'text-warning-400' : 'text-navy-500')}>
-            {payments.length > 0 ? fmt(totalPending, payments[0].currency) : '—'}
-          </p>
-        </div>
-      </div>
-
-      <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h3 className="text-sm font-bold text-navy-500">Detalle de pagos</h3>
-        {payments.length === 0 ? (
-          <p className="mt-4 text-sm text-navy-300">No hay pagos asociados.</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-neutral-200">
-            {payments.map((p) => (
-              <PaymentRow key={p.id} payment={p} onPay={handlePay} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* CheckoutModal local — abre desde click "Pagar" en cualquier
-          fila pendiente. Override marca paid en este componente. */}
-      <CheckoutModal
-        open={checkoutItem !== null}
-        item={checkoutItem}
-        onClose={() => setCheckoutItem(null)}
-        onPaid={handlePaid}
-      />
-    </div>
-  )
-}
-
-function PaymentRow({
-  payment,
-  onPay,
-}: {
-  payment: PaymentItem
-  onPay: (p: PaymentItem) => void
-}) {
-  const tone = paymentToneMap[payment.status]
-  const isPay = payment.status === 'pending' || payment.status === 'overdue'
-  return (
-    <li className="flex flex-wrap items-center gap-4 py-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-navy-500">
-        <Receipt className="h-4 w-4" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-navy-500">{payment.concept}</p>
-        <p className="mt-0.5 text-xs text-navy-300">
-          {payment.status === 'paid'
-            ? `Pagado el ${formatDate(payment.paidAt ?? '')}`
-            : `Vence el ${formatDate(payment.dueDate)}`}
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-bold text-navy-500">
-          {new Intl.NumberFormat('es-AR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
-        </span>
-        <span className={cn('rounded-full px-3 py-1 text-xs font-bold', tone)}>
-          {payment.status === 'paid' && 'Pagado'}
-          {payment.status === 'pending' && 'Pendiente'}
-          {payment.status === 'overdue' && 'Vencido'}
-          {payment.status === 'refunded' && 'Reintegrado'}
-        </span>
-        {isPay && (
-          <button
-            type="button"
-            onClick={() => onPay(payment)}
-            className="inline-flex items-center rounded-full bg-gold-500 px-4 py-1.5 text-xs font-bold text-navy-500 transition-colors hover:bg-gold-400"
-          >
-            Pagar
-          </button>
-        )}
-        {payment.invoiceUrl && (
-          <a
-            href={payment.invoiceUrl}
-            onClick={(e) => {
-              e.preventDefault()
-              const content = `COMPROBANTE DE PAGO\n\nConcepto: ${payment.concept}\nMonto: ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: payment.currency }).format(payment.amount)}\nEstado: ${payment.status}\nVencimiento: ${formatDate(payment.dueDate)}${payment.paidAt ? `\nPagado: ${formatDate(payment.paidAt)}` : ''}\n\n(Demo — en producción este link descarga el PDF oficial)`
-              downloadBlob(`comprobante-${payment.id}.txt`, content)
-              toast.success('Comprobante descargado')
-            }}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Comprobante
-          </a>
-        )}
-      </div>
-    </li>
-  )
-}
-
-const paymentToneMap: Record<PaymentStatus, string> = {
-  paid: 'bg-success-100 text-success-300 ring-1 ring-success-300/30',
-  pending: 'bg-warning-100 text-warning-400 ring-1 ring-warning-300/30',
-  overdue: 'bg-error-100 text-error-400 ring-1 ring-error-300/30',
-  refunded: 'bg-neutral-200 text-navy-500',
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
 // ─── Tab: Historial ──────────────────────────────────────────────────────────
 
 const historyIconMap: Record<HistoryEventKind, { icon: typeof Plus; tone: string }> = {
@@ -1624,37 +1448,28 @@ const diagnosticQuestions = [
   },
 ] as const
 
+/**
+ * Diagnóstico cargado por el TUTOR (mock). El postulante solo lo lee
+ * — antes este formulario lo respondía el postulante; ahora la carga
+ * es responsabilidad del equipo de certificación.
+ */
+const tutorDiagnosis: Record<string, string> = {
+  q1: 'Alrededor de 14 años dedicada a la filigrana en plata.',
+  q2: 'Aprendió la técnica de su abuela y la perfeccionó junto a orfebres de San Juan de Pasto.',
+  q3: 'Mixto: produce por encargo y arma pequeños lotes para ferias.',
+  q4: 'Sí — reconocimiento de la Cámara de Artesanías de Nariño (2023).',
+  q5: 'El saber se transmite de forma intergeneracional en el taller familiar: las nuevas generaciones aprenden observando y practicando junto a las personas mayores.',
+}
+
 function DiagnosticDialog({
   open,
   onClose,
-  deadline,
 }: {
   open: boolean
   onClose: () => void
-  deadline: string
 }) {
-  const [step, setStep] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
-
   useEscape(open, onClose)
   if (!open) return null
-
-  const q = diagnosticQuestions[step]
-  const isLast = step === diagnosticQuestions.length - 1
-  const value = answers[q.id] ?? ''
-  const canContinue = value.trim().length > 0
-
-  const handleNext = () => {
-    if (!canContinue) return
-    if (isLast) {
-      toast.success('Diagnóstico enviado · El tutor te responderá en breve')
-      setStep(0)
-      setAnswers({})
-      onClose()
-    } else {
-      setStep((s) => s + 1)
-    }
-  }
 
   return (
     <div
@@ -1662,101 +1477,50 @@ function DiagnosticDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl"
+        className="flex max-h-[88vh] w-full max-w-2xl flex-col rounded-3xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <div>
-            <h3 className="text-lg font-bold text-navy-500">Diagnóstico inicial</h3>
-            <p className="mt-0.5 text-xs text-navy-300">
-              Pregunta {step + 1} de {diagnosticQuestions.length} · Vence {deadline}
+            <h3 className="text-lg font-bold text-navy-500">Diagnóstico del tutor</h3>
+            <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-success-700">
+              <Check className="h-3.5 w-3.5" /> Completado por Lic. Juan Pérez
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-navy-500 hover:bg-neutral-200"
             aria-label="Cerrar"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Progress bar */}
-        <div className="h-1 w-full bg-neutral-200">
-          <div
-            className="h-full bg-gold-500 transition-all"
-            style={{ width: `${((step + 1) / diagnosticQuestions.length) * 100}%` }}
-          />
+        <div className="space-y-4 overflow-y-auto px-6 py-6">
+          <p className="rounded-2xl bg-info-100 px-4 py-3 text-xs text-navy-500 ring-1 ring-info-200">
+            Este diagnóstico lo completa tu tutor a partir de tus evidencias y la
+            auditoría cultural. Es de lectura.
+          </p>
+          {diagnosticQuestions.map((q) => (
+            <div key={q.id}>
+              <p className="text-xs font-bold uppercase tracking-wide text-navy-300">
+                {q.label}
+              </p>
+              <p className="mt-1 rounded-2xl border border-neutral-200 bg-neutral-100/60 px-4 py-3 text-sm text-navy-500">
+                {tutorDiagnosis[q.id]}
+              </p>
+            </div>
+          ))}
         </div>
 
-        <div className="px-6 py-6">
-          <p className="text-base font-bold text-navy-500">{q.label}</p>
-
-          <div className="mt-4">
-            {q.type === 'text' && (
-              <input
-                type="text"
-                value={value}
-                placeholder={q.placeholder}
-                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                className="h-12 w-full rounded-lg border border-neutral-300 bg-white px-4 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
-              />
-            )}
-            {q.type === 'textarea' && (
-              <textarea
-                rows={5}
-                value={value}
-                placeholder={q.placeholder}
-                onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 text-sm text-navy-500 focus:border-gold-500 focus:outline-none"
-              />
-            )}
-            {q.type === 'choice' && (
-              <div className="space-y-2">
-                {q.options.map((opt) => (
-                  <label
-                    key={opt}
-                    className={cn(
-                      'flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition-colors',
-                      value === opt
-                        ? 'border-gold-500 bg-gold-100/40'
-                        : 'border-neutral-300 bg-white hover:border-gold-300',
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name={q.id}
-                      checked={value === opt}
-                      onChange={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                      className="h-4 w-4 accent-gold-500"
-                    />
-                    <span className="text-sm font-semibold text-navy-500">{opt}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4">
+        <div className="flex justify-end border-t border-neutral-200 px-6 py-4">
           <button
             type="button"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            disabled={step === 0}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-navy-500 disabled:opacity-40"
+            onClick={onClose}
+            className="inline-flex items-center rounded-full bg-navy-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Anterior
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={!canContinue}
-            className="inline-flex items-center gap-2 rounded-full bg-navy-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-navy-400 disabled:opacity-60"
-          >
-            {isLast ? 'Enviar diagnóstico' : 'Continuar'}
-            {!isLast && <ChevronRight className="h-4 w-4" />}
+            Entendido
           </button>
         </div>
       </div>

@@ -449,6 +449,7 @@ export function TutorLayout() {
                 onClick={() => setMenuOpen((v) => !v)}
                 className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white py-1 pl-1 pr-3 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
                 aria-expanded={menuOpen}
+                aria-label={`Menú de ${tutorName}`}
               >
                 <img
                   src={tutorAvatar}

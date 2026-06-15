@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useEscape } from '@/hooks/useEscape'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface SheetProps {
   open: boolean
@@ -22,18 +24,15 @@ export function Sheet({
   children,
   className,
 }: SheetProps) {
+  const trapRef = useFocusTrap<HTMLDivElement>(open)
+  useEscape(open, onClose)
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
     document.body.style.overflow = 'hidden'
-    document.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = ''
-      document.removeEventListener('keydown', onKey)
     }
-  }, [open, onClose])
+  }, [open])
 
   const isBottom = side === 'bottom'
   return (
@@ -47,6 +46,10 @@ export function Sheet({
           onClick={onClose}
         >
           <motion.div
+            ref={trapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title ?? 'Panel'}
             initial={isBottom ? { y: '100%' } : { x: '100%' }}
             animate={isBottom ? { y: 0 } : { x: 0 }}
             exit={isBottom ? { y: '100%' } : { x: '100%' }}
@@ -79,9 +82,9 @@ export function Sheet({
                   type="button"
                   onClick={onClose}
                   aria-label="Cerrar"
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-100 hover:text-navy-500"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-navy-300 hover:bg-neutral-100 hover:text-navy-500"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
             )}

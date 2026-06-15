@@ -8,9 +8,11 @@ import {
   CheckCircle2,
   Circle,
   Eye,
+  FileText,
   Filter,
   MapPin,
   MoreVertical,
+  Paperclip,
   Pencil,
   Plus,
   Save,
@@ -724,6 +726,8 @@ interface HighlightItem {
   status: HighlightStatus
   date: string
   imageUrl: string
+  /** Nombre del PDF adjunto (ej. ficha técnica, catálogo). Opcional. */
+  pdfName?: string
 }
 
 const highlightTabs = ['Todas', 'Publicadas', 'Borradores'] as const
@@ -933,6 +937,14 @@ function Highlights() {
                   {it.status}
                 </span>
                 <span className="text-navy-300">{it.date}</span>
+                {it.pdfName && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-info-100 px-2 py-0.5 font-semibold text-info-400 ring-1 ring-info-200"
+                    title={it.pdfName}
+                  >
+                    <FileText className="h-3 w-3" /> PDF
+                  </span>
+                )}
               </div>
             </div>
             <div className="relative">
@@ -1010,6 +1022,7 @@ function EditHighlightModal({
   const [title, setTitle] = useState(item.title)
   const [subtitle, setSubtitle] = useState(item.subtitle)
   const [status, setStatus] = useState<HighlightStatus>(item.status)
+  const [pdfName, setPdfName] = useState(item.pdfName ?? '')
 
   const canSave = title.trim().length > 0
 
@@ -1071,6 +1084,43 @@ function EditHighlightModal({
               <option value="Borrador">Borrador</option>
             </select>
           </label>
+          <div>
+            <span className="text-xs font-bold text-navy-500">
+              Documento adjunto (PDF)
+            </span>
+            {pdfName ? (
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-neutral-300 bg-neutral-100/60 px-3 py-2">
+                <FileText className="h-4 w-4 shrink-0 text-gold-700" />
+                <span className="min-w-0 flex-1 truncate text-sm text-navy-500">
+                  {pdfName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPdfName('')}
+                  className="shrink-0 text-xs font-semibold text-error-400 hover:underline"
+                >
+                  Quitar
+                </button>
+              </div>
+            ) : (
+              <label className="mt-1 flex min-h-[44px] cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-navy-500 transition-colors hover:border-gold-400 hover:bg-gold-50">
+                <Paperclip className="h-4 w-4" />
+                Colgar un PDF
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) setPdfName(f.name)
+                  }}
+                />
+              </label>
+            )}
+            <p className="mt-1 text-[11px] text-navy-300">
+              Ej. ficha técnica, catálogo o certificado de origen.
+            </p>
+          </div>
         </div>
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -1090,6 +1140,7 @@ function EditHighlightModal({
                 title: title.trim(),
                 subtitle: subtitle.trim(),
                 status,
+                pdfName: pdfName || undefined,
               })
             }
             className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-40"

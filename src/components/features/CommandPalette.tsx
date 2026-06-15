@@ -146,6 +146,9 @@ export function CommandPalette() {
       { id: 'cal', label: 'Calendario', group: 'Cuenta', icon: Calendar, action: go('/calendario'), requiresAuth: true, keywords: ['agenda', 'reuniones', 'meetings'] },
       { id: 'notifs', label: 'Notificaciones', group: 'Cuenta', icon: Bell, action: go('/notificaciones'), requiresAuth: true, keywords: ['avisos', 'alertas'] },
       { id: 'profile', label: 'Mi perfil', group: 'Cuenta', icon: Users, action: go('/mi-perfil'), requiresAuth: true, keywords: ['cuenta', 'datos', 'usuario'] },
+      { id: 'mis-datos', label: 'Mis datos personales', group: 'Cuenta', icon: ShieldCheck, action: go('/mis-datos'), requiresAuth: true, keywords: ['privacidad', 'datos', 'derechos', 'arco', 'gdpr', 'exportar', 'eliminar', 'titular'] },
+      { id: 'comprador', label: 'Cartera del comprador', group: 'Cuenta', icon: CreditCard, action: go('/comprador/wallet'), requiresAuth: true, keywords: ['comprador', 'wallet', 'cartera', 'b2b'] },
+      { id: 'coordinador', label: 'Equipo del coordinador', group: 'Cuenta', icon: Users, action: go('/coordinador/equipo'), requiresAuth: true, keywords: ['coordinador', 'equipo', 'team'] },
       { id: 'help', label: 'Ayuda', group: 'Cuenta', icon: HelpCircle, action: go('/ayuda'), requiresAuth: true, keywords: ['soporte', 'faq', 'preguntas'] },
 
       // Tutor
@@ -258,6 +261,7 @@ export function CommandPalette() {
               setActiveIdx(0)
             }}
             onKeyDown={onKeyDown}
+            aria-label="Buscar acciones, páginas, comandos"
             placeholder="Buscar acciones, páginas, comandos…"
             className="flex-1 bg-transparent text-sm text-navy-500 placeholder:text-navy-300 focus:outline-none"
           />
