@@ -30,6 +30,7 @@
   --color-ring: var(--ring);
 
   /* Brand scale — extracted from Figma Design System */
+  --color-gold-50: #faf6e6;
   --color-gold-100: #f4eccc;
   --color-gold-200: #ead999;
   --color-gold-300: #dfc666;
@@ -40,6 +41,10 @@
   --color-gold-800: #514000;
   --color-gold-900: #282000;
 
+  /* Cream — tinte cálido off-white para fondos suaves (bg-cream-50) */
+  --color-cream-50: #fbf8ef;
+
+  --color-navy-50: #eef2f7;
   --color-navy-100: #66773a;
   --color-navy-200: #4c6074;
   --color-navy-300: #334060;
@@ -62,19 +67,22 @@
   --color-success-200: #ecf5fb;
   --color-success-300: #0f9918;
   --color-success-400: #0ab011;
+  --color-success-700: #0a6b12;
 
   --color-warning-100: #fff5ec;
-  --color-warning-200: #f03697;
+  --color-warning-200: #f5d28e;
   --color-warning-300: #edb445;
   --color-warning-400: #a47611;
+  --color-warning-500: #7a5600;
 
   --color-error-100: #fefefb;
   --color-error-200: #f0cfce;
   --color-error-300: #e54545;
   --color-error-400: #b82828;
 
+  --color-info-50: #fafcff;
   --color-info-100: #f5f9ff;
-  --color-info-200: #ce3def0;
+  --color-info-200: #bcdde6;
   --color-info-300: #3f9cad;
   --color-info-400: #2a5e75;
 

@@ -21,7 +21,8 @@ const TONE_CLASSES = {
   // Tradicional con raíces — azul pizarra neutro (neutral, legible)
   navy: 'bg-neutral-200 text-navy-400 ring-neutral-300',
   // Inspiración Cultural — ámbar cálido (antes usaba cream-*, que no existe en el tema)
-  cream: 'bg-warning-100 text-warning-400 ring-warning-300/50',
+  // text-warning-500 (#7a5600) para contraste AA ≥4.5:1 sobre warning-100
+  cream: 'bg-warning-100 text-warning-500 ring-warning-300/50',
 } as const
 
 const CATEGORY_ICON = {

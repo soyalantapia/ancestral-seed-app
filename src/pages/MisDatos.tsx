@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Download, Mail, Trash2, Eye, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { Breadcrumbs } from '@/components/features/Breadcrumbs'
@@ -90,14 +91,14 @@ export default function MisDatos() {
           Escribinos a{' '}
           <a
             className="font-bold text-gold-700 underline"
-            href="mailto:privacidad@ancestralseed.io"
+            href="mailto:privacidad@ancestralseed.com"
           >
-            privacidad@ancestralseed.io
+            privacidad@ancestralseed.com
           </a>{' '}
           o consultá la{' '}
-          <a className="font-bold text-gold-700 underline" href="/legal">
+          <Link className="font-bold text-gold-700 underline" to="/legal/privacidad">
             política completa
-          </a>
+          </Link>
           .
         </p>
       </div>
