@@ -35,14 +35,17 @@ import { cn } from '@/lib/utils'
 const stepSchemas = [
   // Step 1 — Identidad
   z.object({
-    applicantName: z.string().min(2, 'Tu nombre completo'),
-    email: z.string().email('Email inválido'),
+    applicantName: z.string().min(2, 'Ingresá tu nombre completo'),
+    email: z
+      .string()
+      .min(1, 'Ingresá tu email')
+      .email('Revisá el email (ej. nombre@correo.com)'),
     country: z.string().min(2, 'Seleccioná un país'),
     phonePrefix: z.string().min(1, 'Prefijo'),
-    phoneNumber: z.string().min(6, 'Teléfono inválido'),
+    phoneNumber: z.string().min(6, 'Ingresá un teléfono válido'),
     department: z.string().min(2, 'Seleccioná departamento o provincia'),
     documentType: z.string().min(2, 'Elegí un tipo'),
-    documentNumber: z.string().min(5, 'Documento inválido'),
+    documentNumber: z.string().min(5, 'Ingresá tu número de documento'),
     address: z.string().min(3, 'Indicá una dirección'),
     region: z.string().optional().or(z.literal('')),
   }),
@@ -1770,7 +1773,7 @@ function SuccessState({
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />
-                Un auditor te contacta para coordinar la auditoría cultural.
+                Un tutor te contacta para coordinar la auditoría cultural.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-700" />

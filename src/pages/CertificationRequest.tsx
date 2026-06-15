@@ -207,7 +207,7 @@ export default function CertificationRequest() {
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm lg:grid-cols-3">
               <Meta icon={CalendarIcon} label="Creación" value={request.createdAt} />
               <Meta icon={Clock} label="Última actividad" value={formatLastActivity(request)} />
-              <Meta icon={Award} label="Auditor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
+              <Meta icon={Award} label="Tutor" value={request.meetings[0]?.auditorName ?? request.scheduledMeetings[0]?.auditorName ?? 'Por asignar'} />
             </dl>
             {/* Aviso de inactividad — solo si la solicitud está activa
                 (no aplica a una emitida ni a una denegada). Colapsable
@@ -629,7 +629,7 @@ function EvaluacionTab({
             <article key={m.id} className="rounded-2xl border border-neutral-200 bg-white p-5">
               <dl className="space-y-1.5 text-sm">
                 <div>
-                  <span className="font-bold text-navy-500">Auditor:</span>{' '}
+                  <span className="font-bold text-navy-500">Tutor:</span>{' '}
                   <button
                     type="button"
                     onClick={() => onOpenTutor(m.auditorName)}
@@ -1778,7 +1778,7 @@ const tutorProfiles: Record<string, {
 }> = {
   'Lic. Juan Pérez': {
     name: 'Lic. Juan Pérez',
-    role: 'Auditor cultural · Orfebrería andina',
+    role: 'Tutor cultural · Orfebrería andina',
     bio: 'Especialista en técnicas ancestrales de orfebrería con foco en filigrana y trabajo en plata. Ha auditado más de 200 piezas en la región andina colombiana y peruana.',
     avatarUrl: 'https://i.pravatar.cc/200?img=33',
     signedCount: 212,
@@ -1788,7 +1788,7 @@ const tutorProfiles: Record<string, {
   },
   'Mtra. Sofía Quispe': {
     name: 'Mtra. Sofía Quispe',
-    role: 'Auditora cultural · Textiles ancestrales',
+    role: 'Tutora cultural · Textiles ancestrales',
     bio: 'Investigadora en tejidos en telar y técnicas ancestrales de hilado. Trabaja con comunidades del altiplano y el Caribe colombiano.',
     avatarUrl: 'https://i.pravatar.cc/200?img=44',
     signedCount: 156,
@@ -1813,8 +1813,8 @@ function TutorSheet({
     tutorProfiles[name] ??
     {
       name,
-      role: 'Auditor cultural',
-      bio: 'Perfil de auditor próximamente disponible.',
+      role: 'Tutor cultural',
+      bio: 'Perfil de tutor próximamente disponible.',
       avatarUrl: 'https://i.pravatar.cc/200?img=12',
       signedCount: 0,
       yearsExperience: 0,
@@ -1840,7 +1840,7 @@ function TutorSheet({
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <p className="text-sm font-bold text-navy-500">Perfil del auditor</p>
+          <p className="text-sm font-bold text-navy-500">Perfil del tutor</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6">

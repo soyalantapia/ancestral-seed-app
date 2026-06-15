@@ -73,7 +73,7 @@ export function deriveActionAlerts(
         id: `meet-${m.id}`,
         urgent: true,
         icon: CalendarClock,
-        title: 'Respondé la propuesta del auditor',
+        title: 'Respondé la propuesta del tutor',
         body: `${m.auditorName} propuso una reunión para ${r.productName}. Confirmá o reprogramá.`,
         cta: {
           label: 'Ver propuesta',

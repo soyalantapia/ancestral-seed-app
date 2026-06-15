@@ -200,7 +200,7 @@ export default function Apelar() {
             </code>
           </p>
           <p className="mt-2 max-w-md text-sm text-navy-500">
-            El Comité de Certificación (auditor cultural + antropólogo +
+            El Comité de Certificación (tutor cultural + antropólogo +
             coordinador) revisa la apelación. Plazo máximo de
             resolución: 15 días corridos. Te notificamos por email +
             in-app.
@@ -228,7 +228,7 @@ export default function Apelar() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-info-400" />
           <p className="text-[11px] leading-relaxed text-navy-500">
             <strong>Antes de apelar:</strong> revisá el dictamen
-            completo y los criterios que el auditor marcó como no
+            completo y los criterios que el tutor marcó como no
             cumplidos. Si entendés el motivo pero querés trabajar en él
             antes de re-postular, mejor abrir un caso de
             re-consideración con tu tutor.

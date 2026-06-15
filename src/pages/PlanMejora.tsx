@@ -96,7 +96,7 @@ export default function PlanMejora() {
         </h1>
         <p className="mt-2 max-w-xl text-sm text-navy-300">
           Tu certificación está en <strong>Categoría 2 · Tradicional
-          con raíces ancestrales</strong>. El equipo (tutor + auditor +
+          con raíces ancestrales</strong>. El equipo (tutor +
           antropólogo) propuso este plan para que en la próxima
           renovación puedas postularte a <strong>Categoría 1 ·
           Ancestral Auténtico</strong>.

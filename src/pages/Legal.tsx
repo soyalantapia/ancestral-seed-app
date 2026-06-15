@@ -177,7 +177,7 @@ function PrivacidadBody() {
 
       <h2 className="mt-4 text-lg font-bold text-navy-500">3. Con quién los compartimos</h2>
       <p>
-        Compartimos los datos necesarios con los auditores asignados a tu
+        Compartimos los datos necesarios con los tutores asignados a tu
         caso. La certificación emitida se publica en la red blockchain con la
         información que vos autorizaste hacer pública.
       </p>

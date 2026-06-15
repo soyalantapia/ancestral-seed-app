@@ -99,11 +99,11 @@ export const mockAuthors: Author[] = [
     id: 'a-camila',
     slug: 'camila-montes',
     name: 'Camila Montes',
-    title: 'Artesana · Sierra Nevada de Santa Marta',
+    title: 'Artesana · San Juan de Pasto - Nariño',
     bio: 'Trabajo la filigrana ancestral, una técnica de orfebrería que aprendí y desarrollé a partir de una herencia cultural transmitida en mi familia. Mi obra es el fruto de un vínculo ancestral con la Sierra Nevada de Santa Marta, reinterpretando saberes tradicionales en piezas de joyería contemporánea.',
     avatarUrl: 'https://i.pravatar.cc/300?img=47',
-    location: 'Colombia · Caribe colombiano',
-    email: 'camila.montes@ancestralseed.io',
+    location: 'Colombia',
+    email: 'camila.montes@ancestralseed.com',
     certificationsCount: 12,
     joinedAt: '2024-03-12',
     // Trabaja "en diálogo con" — referencia ancestral, no constituida.
@@ -410,7 +410,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
     createdAt: '2026-02-01',
     currentStage: 'prediagnostico',
     status: 'En curso',
-    progressLabel: 'Revisión inicial por auditor',
+    progressLabel: 'Revisión inicial por tutor',
     diagnosticDeadline: '15/03',
     diagnosticCompleted: false,
     pendingItems: ['Diagnóstico inicial', 'Auditoría pendiente'],
@@ -465,7 +465,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
       { id: 'h-002', kind: 'evidence_uploaded', title: 'Evidencias iniciales', description: '4 fotos + 1 video', actor: 'Tú', at: '2026-02-02T10:18:00-03:00' },
       { id: 'h-003', kind: 'document_uploaded', title: 'Aval de la comunidad', description: 'aval-comunidad.pdf', actor: 'Tú', at: '2026-02-03T16:42:00-03:00' },
       { id: 'h-004', kind: 'stage_changed', title: 'Etapa Prediagnóstico iniciada', description: `Auditoría asignada a ${TUTOR_NAME}`, actor: 'Sistema', at: '2026-02-05T09:00:00-03:00' },
-      { id: 'h-005', kind: 'audit_proposed', title: 'Propuesta de reunión', description: '12/02 a las 10:00 GMT-3', actor: 'Auditor', at: '2026-02-06T11:30:00-03:00' },
+      { id: 'h-005', kind: 'audit_proposed', title: 'Propuesta de reunión', description: '12/02 a las 10:00 GMT-3', actor: 'Tutor', at: '2026-02-06T11:30:00-03:00' },
       // Fix V2-POS-01: eventos relativos a "hoy" para que el bloque
       // "Lo nuevo desde tu última visita" del DashboardHome SIEMPRE
       // tenga algo que mostrar en demo, sin importar la fecha.
@@ -474,9 +474,9 @@ export const mockCertificationRequests: CertificationRequest[] = [
       // getter — el `at` se recalcula en cada lectura contra el
       // `Date.now()` actual, no contra el momento de carga del módulo.
       // Soporta sesiones largas del demo sin reload.
-      relativeEvent({ id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: `${TUTOR_NAME} te respondió sobre los hilos de plata`, actor: 'Auditor' }, { days: 3 }),
+      relativeEvent({ id: 'h-006', kind: 'message_sent', title: 'Mensaje del tutor', description: `${TUTOR_NAME} te respondió sobre los hilos de plata`, actor: 'Tutor' }, { days: 3 }),
       relativeEvent({ id: 'h-007', kind: 'evidence_uploaded', title: 'Foto adicional del proceso', description: 'detalle-soldadura.jpg', actor: 'Tú' }, { days: 1 }),
-      relativeEvent({ id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Auditor' }, { hours: 8 }),
+      relativeEvent({ id: 'h-008', kind: 'message_sent', title: 'Recordatorio del tutor', description: 'Quedan 2 evidencias pendientes para cerrar el slot', actor: 'Tutor' }, { hours: 8 }),
     ],
     threads: {
       'm-001': [

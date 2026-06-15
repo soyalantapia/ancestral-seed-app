@@ -118,10 +118,10 @@ export const solicitanteTour: TourDefinition = {
     {
       id: 'launch',
       title: '¿Arrancamos?',
-      body: 'Ya conocés el camino. Cuando quieras, empezá tu primera certificación: te guiamos en cada paso.',
+      body: 'Ya conocés el camino. Desde tu panel podés empezar tu primera certificación cuando quieras: te guiamos en cada paso.',
       placement: 'center',
-      nextLabel: 'Empezar mi certificación',
-      ctaTo: '/certificar',
+      nextLabel: 'Ir a mi panel',
+      ctaTo: '/mis-certificaciones',
     },
   ],
 }

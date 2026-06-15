@@ -238,7 +238,7 @@ export interface HistoryEvent {
   kind: HistoryEventKind
   title: string
   description?: string
-  actor: 'Tú' | 'Auditor' | 'Sistema'
+  actor: 'Tú' | 'Tutor' | 'Sistema'
   at: string // ISO
 }
 

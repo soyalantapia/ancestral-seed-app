@@ -68,12 +68,14 @@ export function CertificationCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        <Badge
-          variant={placeholderText ? 'success' : status.variant}
-          className="absolute right-3 top-3 shadow-sm"
-        >
-          {placeholderText ? 'Estado' : status.label}
-        </Badge>
+        {!placeholderText && (
+          <Badge
+            variant={status.variant}
+            className="absolute right-3 top-3 shadow-sm"
+          >
+            {status.label}
+          </Badge>
+        )}
         {/* Badge izquierdo: "Servicio" cuando entityType='servicio',
             si no, categoría oficial del Reglamento 2.1.1. */}
         {!placeholderText && c.entityType === 'servicio' ? (

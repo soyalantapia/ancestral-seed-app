@@ -495,7 +495,7 @@ function Pillars() {
     {
       icon: CheckCircle2,
       title: 'Auditoría cultural',
-      copy: 'Validamos con auditores expertos en cada territorio.',
+      copy: 'Validamos con tutores expertos en cada territorio.',
     },
     {
       icon: Eye,
@@ -949,7 +949,7 @@ function ProcessSection() {
       num: '2',
       icon: Eye,
       title: 'Auditoría cultural',
-      copy: 'Auditores y referentes territoriales validan el origen, la técnica y el vínculo con la comunidad.',
+      copy: 'Tutores y referentes territoriales validan el origen, la técnica y el vínculo con la comunidad.',
     },
     {
       num: '3',
