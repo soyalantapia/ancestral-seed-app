@@ -1,4 +1,4 @@
-import { create } from 'qrcode'
+import { toCanvas } from 'qrcode'
 
 /**
  * URL pública canónica del sitio (mismo criterio que PageMeta). En el
@@ -65,51 +65,12 @@ function roundedRectPath(
   ctx.closePath()
 }
 
-/** Colores por estilo. El de marca usa navy (alto contraste = escaneable). */
-const QR_COLORS: Record<QrStyle, { dark: string; light: string }> = {
-  simple: { dark: '#000000', light: '#ffffff' },
-  marca: { dark: '#001c38', light: '#ffffff' },
-}
-
-/** Los tres "ojos" (finder patterns) ocupan 7×7 módulos en las esquinas. */
-function isFinderModule(row: number, col: number, count: number): boolean {
-  const top = row < 7
-  const bottom = row >= count - 7
-  const left = col < 7
-  const right = col >= count - 7
-  return (top && left) || (top && right) || (bottom && left)
-}
-
 /**
- * Dibuja un "ojo" redondeado (anillo + punto central) en coords de píxel.
- * Sólo se redondean las esquinas: las líneas que cruzan el centro mantienen
- * la proporción 1:1:3:1:1 que el lector usa para detectarlo.
- */
-function drawFinderEye(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  cell: number,
-  color: string,
-): void {
-  const s = cell * 7
-  ctx.fillStyle = color
-  roundedRectPath(ctx, x, y, s, s, cell * 2)
-  ctx.fill()
-  ctx.fillStyle = '#ffffff'
-  roundedRectPath(ctx, x + cell, y + cell, cell * 5, cell * 5, cell * 1.4)
-  ctx.fill()
-  ctx.fillStyle = color
-  roundedRectPath(ctx, x + cell * 2, y + cell * 2, cell * 3, cell * 3, cell * 0.9)
-  ctx.fill()
-}
-
-/**
- * Renderiza el QR desde su matriz de bits con módulos de esquinas
- * redondeadas y ojos estilados → menos ruido visual y más identidad de
- * marca, sin tocar los datos. La variante "marca" usa navy + logo al
- * centro (EC 'Q' tolera taparlo). Si el logo no carga, degrada a un QR
- * válido sin marca. Reusa el canvas que le pasés (preview) o crea uno.
+ * Dibuja el QR (módulos cuadrados) en un canvas: reusa el que le pasés
+ * para el preview, o crea uno para la descarga. La variante "marca" embebe
+ * el logo chico al centro con corrección de error 'Q' (~25% de oclusión
+ * tolerada → sigue escaneando; verificado por decodificación). Si el logo
+ * no carga, degrada a un QR válido sin marca.
  */
 export async function renderQrCanvas(opts: {
   text: string
@@ -119,59 +80,40 @@ export async function renderQrCanvas(opts: {
 }): Promise<HTMLCanvasElement> {
   const { text, size, style } = opts
   const canvas = opts.canvas ?? document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return canvas
-
   const withLogo = style === 'marca'
-  const { dark, light } = QR_COLORS[style]
 
-  // 'L' en la pelada (menos módulos = más prolijo); 'H' (30% de tolerancia)
-  // en la de marca para que el logo central NO rompa el escaneo. Verificado
-  // por decodificación: con 'Q' no decodificaba, con 'H' sí.
-  const qr = create(text, { errorCorrectionLevel: withLogo ? 'H' : 'L' })
-  const count = qr.modules.size
-  const margin = 4
-  const cell = size / (count + margin * 2)
-  const off = margin * cell
+  await toCanvas(canvas, text, {
+    width: size,
+    margin: 2,
+    // Corrección de error baja = menos módulos = más legible y prolijo.
+    // 'L' para el pelado; 'Q' (25% de tolerancia) para el de marca, que
+    // alcanza de sobra para el logo chico del centro.
+    errorCorrectionLevel: withLogo ? 'Q' : 'L',
+    color: { dark: withLogo ? '#001C38' : '#000000', light: '#ffffff' },
+  })
 
-  ctx.fillStyle = light
-  ctx.fillRect(0, 0, size, size)
-
-  // Módulos de datos con esquinas redondeadas.
-  ctx.fillStyle = dark
-  const radius = cell * 0.36
-  for (let row = 0; row < count; row++) {
-    for (let col = 0; col < count; col++) {
-      if (!qr.modules.get(row, col)) continue
-      if (isFinderModule(row, col, count)) continue // los ojos van aparte
-      roundedRectPath(ctx, off + col * cell, off + row * cell, cell, cell, radius)
-      ctx.fill()
-    }
-  }
-
-  // Ojos redondeados en las tres esquinas.
-  drawFinderEye(ctx, off, off, cell, dark)
-  drawFinderEye(ctx, off + (count - 7) * cell, off, cell, dark)
-  drawFinderEye(ctx, off, off + (count - 7) * cell, cell, dark)
-
-  // Logo de marca al centro (con caja blanca + borde de marca).
   if (withLogo) {
-    try {
-      const logo = await loadImage(LOGO_SRC)
-      const box = Math.round(size * 0.24)
-      const pos = Math.round((size - box) / 2)
-      const pad = Math.round(box * 0.14)
-      const r = Math.round(box * 0.24)
-      // Caja blanca que despeja los módulos bajo el logo (EC 'H' los
-      // recupera). Sin borde: un trazo encima corrompía módulos vecinos.
-      ctx.fillStyle = '#ffffff'
-      roundedRectPath(ctx, pos - pad, pos - pad, box + pad * 2, box + pad * 2, r)
-      ctx.fill()
-      ctx.drawImage(logo, pos, pos, box, box)
-    } catch {
-      // Logo opcional: si falla, el QR ya quedó dibujado y es válido.
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      try {
+        const logo = await loadImage(LOGO_SRC)
+        const box = Math.round(size * 0.2)
+        const pos = Math.round((size - box) / 2)
+        const pad = Math.round(box * 0.14)
+        ctx.fillStyle = '#ffffff'
+        roundedRectPath(
+          ctx,
+          pos - pad,
+          pos - pad,
+          box + pad * 2,
+          box + pad * 2,
+          Math.round(box * 0.2),
+        )
+        ctx.fill()
+        ctx.drawImage(logo, pos, pos, box, box)
+      } catch {
+        // Logo opcional: si falla, el QR pelado ya quedó dibujado y es válido.
+      }
     }
   }
 
