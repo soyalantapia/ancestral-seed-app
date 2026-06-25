@@ -19,6 +19,7 @@
 | [`02-DEPLOY.md`](./02-DEPLOY.md) | **Cómo se publica**: runbook GH Pages + dominio (FTP), htaccess, env vars. Las credenciales FTP NO están en el repo (ver doc). |
 | [`03-PENDIENTES.md`](./03-PENDIENTES.md) | **Qué falta**: backlog priorizado (backend, a11y tail, consistencia de datos, features). |
 | [`04-GOTCHAS.md`](./04-GOTCHAS.md) | **Trampas del entorno**: iCloud/symlink, flakiness del preview, MSW/Service Worker, cuentas demo, decisiones tomadas. |
+| [`PROMPT-SENIOR-DEV.md`](./PROMPT-SENIOR-DEV.md) | **Prompt copy-paste** para arrancar un chat nuevo con un agente en rol de senior dev (full contexto + primera tarea de relevamiento). |
 
 ---
 
