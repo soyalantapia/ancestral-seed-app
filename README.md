@@ -1,6 +1,10 @@
 # Ancestral Seed — Frontend Prototype
 
-Prototipo navegable del producto **Ancestral Seed**, una plataforma para certificar digitalmente saberes y productos ancestrales. Construido fiel al diseño de Figma del equipo Xnod.
+Prototipo navegable (PWA) del producto **Ancestral Seed**: una plataforma para **certificar digitalmente** saberes, productos y servicios ancestrales de Latinoamérica, con verificación pública por QR/hash ("blockchain") y un proceso de **auditoría cultural** guiado por un **tutor**.
+
+Construido fiel al Design System de Figma (equipo **Xnod**). **Es un frontend completo con datos mockeados (MSW); todavía no hay backend real.**
+
+> **📂 ¿Venís a continuar el proyecto / arrancás un chat nuevo?** Leé primero **[`work-agent/`](./work-agent/)** — ahí está el estado actual, la arquitectura, el runbook de deploy, lo pendiente y los gotchas del entorno. El handoff completo está en [`work-agent/README.md`](./work-agent/README.md).
 
 ---
 
@@ -8,10 +12,30 @@ Prototipo navegable del producto **Ancestral Seed**, una plataforma para certifi
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:5175  (MSW intercepta /api/* automáticamente)
 ```
 
-App en [http://localhost:5175](http://localhost:5175). MSW intercepta automáticamente las llamadas a `/api/*`.
+- **Node 22** recomendado.
+- El proyecto vive en `~/dev/ancestral-seed` con un **symlink** en `~/Desktop/Programacion/` (Desktop = iCloud, que rompe esbuild/rollup — **editá siempre en `~/dev`**).
+
+### Cuenta demo
+
+El login es **mock**: cualquier email + cualquier contraseña entra. La sesión es siempre **Camila Montes** (`camila@ancestralseed.org`), que tiene **doble rol** `['postulante', 'tutor']`, así que con una sola cuenta ves los dos paneles.
+
+- Para entrar como **tutor**: logueate y andá a `/tutor/dashboard` (o cambiá de panel desde el menú de usuario).
+- Para volver: link "Volver al panel de solicitante".
+
+---
+
+## Qué es (producto en 30 segundos)
+
+Tres actores sobre un mismo flujo de certificación:
+
+1. **Postulante** (artesano/autor): completa un formulario de 7 pasos, sube evidencias, paga el arancel, coordina la **auditoría cultural** y recibe su **certificado** verificable.
+2. **Tutor** (revisor cultural — antes "auditor"): evalúa casos en un kanban, completa el **diagnóstico**, coordina reuniones, firma y emite certificados.
+3. **Público / Comprador**: explora el **directorio**, ve la **ficha pública** de cada certificado, y **verifica** autenticidad por hash o código.
+
+Las marcas/categorías oficiales del Reglamento: **Auténtico**, **Tradicional**, **Inspiración cultural** (+ tipo `producto` / `servicio`).
 
 ---
 
@@ -19,157 +43,105 @@ App en [http://localhost:5175](http://localhost:5175). MSW intercepta automátic
 
 | Capa | Lib |
 |---|---|
-| Framework | React 19 + TypeScript |
+| Framework | React 19 + TypeScript (strict) |
 | Build | Vite 8 |
-| Estilos | Tailwind CSS v4 |
+| Estilos | Tailwind CSS v4 (theme inline en `src/index.css`) |
 | UI primitives | shadcn/ui (extendidos) |
-| Routing | React Router v6 |
-| Estado | Zustand (con persist) |
+| Routing | React Router v7 |
+| Estado | Zustand (con `persist`) — ~15 stores |
 | Mocks | MSW (Mock Service Worker) |
+| PWA | vite-plugin-pwa (Workbox, con fix de convivencia con MSW) |
 | Animaciones | Framer Motion |
-| Iconos | Lucide React |
-| Toasts | sonner |
+| Mapa | react-simple-maps + world-atlas (topojson) |
+| PDF | jsPDF |
 | Formularios | react-hook-form + zod |
+| Iconos | Lucide React · Toasts: sonner |
+| Tests | Vitest + Testing Library (jsdom) |
 
 ---
 
-## Estructura
+## Estructura (resumen)
 
 ```
 src/
 ├── components/
-│   ├── ui/              # primitives (Button, Card, Input, Badge, Skeleton, Label)
-│   └── features/        # negocio (Header, Footer, Layout, Logo, Pattern, CertificationCard)
-├── pages/               # 1 pantalla = 1 archivo
-│   ├── Home.tsx
-│   ├── Directory.tsx
-│   ├── CertificationDetail.tsx
-│   ├── AuthorProfile.tsx
-│   ├── Verify.tsx
-│   ├── Login.tsx
-│   └── NotFound.tsx
+│   ├── ui/            # primitivas (button, card, input, badge, modal, sheet, combobox, accordion…)
+│   └── features/      # negocio + layouts (Header, Footer, *Layout, CommandPalette, GuidedTour,
+│                      #   CertificationCard, StagePipeline, LatamWorldMap, CategoryBadge…)
+├── pages/             # 1 pantalla = 1 archivo
+│   ├── tutor/         # panel tutor (dashboard, casos/kanban, agenda, tareas, certificaciones)
+│   ├── comprador/     # BuyerWallet (B2B)
+│   └── coordinador/   # CoordinadorEquipo
+├── store/             # Zustand (auth, ui, onboarding, certifyForm, tutorCases, notifications…)
+├── hooks/             # useFocusTrap, useEscape, useThemeEffect, useCertifications…
 ├── services/
-│   ├── api.ts           # contrato público de la API ⚠️ esto es lo que el equipo de backend tiene que implementar
-│   └── mocks/
-│       ├── data.ts      # mock data realista
-│       ├── handlers.ts  # MSW handlers (con delays 300–800ms)
-│       └── browser.ts   # bootstrap del worker
-├── store/               # zustand (auth, ui)
-├── hooks/               # useCertifications, useAuthor, useCategories, etc.
-├── types/               # contrato de tipos compartido
-├── lib/utils.ts         # cn(), formatDate(), sleep()
-├── routes.tsx           # rutas (todas usan <Layout/>)
-└── main.tsx             # bootstrap MSW + Router + Toaster
+│   ├── api.ts         # ⚠️ CONTRATO de API — lo que el backend tiene que implementar
+│   └── mocks/         # data.ts (datos), handlers.ts (MSW), browser.ts (worker)
+├── lib/               # utils, alerts, copy, tours, pdf, caseValidation, env…
+├── data/latam.ts      # países/regiones LATAM (forms + mapa)
+├── types/index.ts     # contrato de tipos compartido
+├── index.css          # design tokens (@theme) + patterns
+└── routes.tsx         # rutas (guards: RequireAuth / RequireTutor)
 ```
 
----
-
-## Rutas implementadas
-
-| Ruta | Pantalla |
-|---|---|
-| `/` | Home / Landing |
-| `/directorio` | Directorio con búsqueda + filtros (categoría, estado, sort) |
-| `/certificado/:slug` | Ficha pública del certificado |
-| `/autor/:slug` o `/perfil/:slug` | Perfil de autor (3 tabs: Certificaciones / Información / Destacados) |
-| `/verificar` | Verificar certificado por hash o código |
-| `/login` | Iniciar sesión |
-| `*` | 404 |
+Detalle completo (todas las rutas, stores, tipos, tokens) en **[`work-agent/01-ARQUITECTURA.md`](./work-agent/01-ARQUITECTURA.md)**.
 
 ---
 
-## Flujo demo end-to-end
+## Rutas (mapa rápido)
 
-1. **Home** → click en "Ver certificaciones"
-2. **Directorio** → filtrá por categoría, ordená, click en cualquier card
-3. **Ficha pública** → ver detalle, copiar hash (toast), ir al autor
-4. **Perfil de autor** → cambiar tab, ver Certificaciones / Info / Destacados
-5. **Verificar** → escribir un hash (probá `0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6` → válido) o slug (`quinoa-real-tilcara-2025`)
-6. **Login** → cualquier email + password ≥6 → entrás como María Paz
+**Público:** `/` `· /directorio · /certificado/:slug · /autor/:slug (o /perfil/:slug) · /verificar · /nosotros · /login · /registro · /recuperar · /certificar · /denuncias · /legal/:section`
 
----
+**Postulante** (`RequireAuth` + `DashboardLayout`): `/mis-certificaciones · /mis-certificaciones/:id (+ /renovar /apelar /plan-mejora) · /mi-perfil · /notificaciones · /calendario · /pagos · /ayuda · /mis-datos`
 
-## Cómo conectar al backend real
+**Tutor** (`RequireTutor` + `TutorLayout`): `/tutor/dashboard · /tutor/casos (+ /:id) · /tutor/agenda · /tutor/tareas · /tutor/certificaciones (+ /:id)`
 
-Por defecto MSW está activo. Para apagarlo:
+**Roles especiales:** `/comprador/wallet · /coordinador/equipo`
 
-```bash
-# .env
-VITE_USE_MSW=false
-```
+> ⚠️ `/legal` sin sección da 404 — usar `/legal/terminos | /legal/privacidad | /legal/cookies`.
 
-Cuando MSW está apagado, todas las llamadas `fetch('/api/...')` van al backend real. El equipo de backend solo necesita implementar los endpoints definidos en [`src/services/api.ts`](./src/services/api.ts), respetando los tipos de [`src/types/index.ts`](./src/types/index.ts).
-
-### Contrato de API
-
-El módulo `api` en `services/api.ts` expone:
-
-```ts
-api.getCertifications(filters?)        // GET /api/certifications?q=&category=&status=&sortBy=
-api.getCertificationBySlug(slug)       // GET /api/certifications/:slug
-api.getFeaturedCertifications()        // GET /api/certifications/featured
-api.verifyCertificate(hashOrCode)      // POST /api/certifications/verify { hashOrCode }
-api.getAuthors()                       // GET /api/authors
-api.getAuthorBySlug(slug)              // GET /api/authors/:slug
-api.getAuthorCertifications(slug)      // GET /api/authors/:slug/certifications
-api.getCategories()                    // GET /api/categories
-api.login({ email, password })         // POST /api/auth/login
-api.logout()                           // POST /api/auth/logout
-api.reportIncident({...})              // POST /api/incidents
-```
-
-Las shapes de respuesta están en `src/types/index.ts` (Author, Certification, DirectoryFilters, PaginatedResult, User).
-
-### Tip para producción
-
-En `vite.config.ts` agregar un proxy para que `/api` golpee el backend en dev:
-
-```ts
-server: {
-  proxy: {
-    '/api': 'http://localhost:3000', // o donde corra el backend
-  },
-}
-```
+### IDs útiles para demos
+- Solicitud de demo: **`req-001`** ("Filigrana ancestral", en prediagnóstico).
+- Autores: `camila-montes`, `maria-belen-baulo`, `flor-imbacuan-pantoja`, `ecodestinos`.
+- Certificados (slug): `tecnica-ancestral-filigrana`, `tejido-textil-tradicional`, `libro-sabores-cosmicos`, `ecodestinos-turismo-ancestral`.
+- Hash de verificación válido: `0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6`.
 
 ---
 
-## Design tokens
+## Deploy
 
-Los tokens están definidos en `src/index.css` (Tailwind v4 inline theme). Extraídos del Design System del Figma:
+Se publica en **dos** destinos. Runbook completo (con el detalle del FTP) en **[`work-agent/02-DEPLOY.md`](./work-agent/02-DEPLOY.md)**.
 
-- **Primary**: `gold-500 #C7A800`, `navy-500 #001C38`
-- **Escalas**: `gold-100…900`, `navy-100…800`, `neutral-0…700`
-- **Status**: `success`, `warning`, `error`, `info` (4 niveles cada una)
-- **Radius**: `--radius: 0.75rem` (botones full-rounded, cards 24px)
-- **Tipografía**: Montserrat 300–800 (cargada desde Google Fonts)
-- **Patterns**: `.bg-pattern-gold`, `.bg-pattern-navy`, `.bg-pattern-aztec` (geometric inspired)
+| Destino | Comando | Base | URL |
+|---|---|---|---|
+| **GitHub Pages** (demo) | `npm run deploy` | `/ancestral-seed-app/` | https://soyalantapia.github.io/ancestral-seed-app/ |
+| **ancestralseed.com** (prod) | `npm run build:domain` + subir `dist/` por FTP | `/` | https://ancestralseed.com |
+
+- GH Pages: `gh-pages -d dist` (rama `gh-pages`).
+- Dominio: hosting Ferozo/Apache (convive con un WordPress); el SPA-fallback lo da [`deploy/htaccess-ancestralseed`](./deploy/htaccess-ancestralseed). El upload es por FTP con un script auxiliar (efímero, **sin credenciales en el repo** — ver runbook).
 
 ---
 
-## Polish incluido
+## Conectar al backend real
 
-- ✅ Skeleton loaders en cada vista (no spinners genéricos)
-- ✅ Toasts con sonner (success / error)
-- ✅ Empty states con icono y CTA
-- ✅ Validación inline con react-hook-form + zod
-- ✅ Hover y focus states en todo lo interactivo
-- ✅ Animaciones con framer-motion (whileHover en cards, whileInView en secciones)
-- ✅ Mobile-first y responsive (375 → 1440)
-- ✅ Estado persistente vía Zustand `persist` middleware
-- ✅ Modo demo / reset: `useUiStore.getState().resetDemoState()` desde la consola limpia localStorage y vuelve a `/`
+MSW está activo por default. Para apagarlo: `VITE_USE_MSW=false` (o `npm run build:no-msw`). Con MSW apagado, todo `fetch('/api/...')` va al backend real. El backend solo necesita implementar los endpoints de **[`src/services/api.ts`](./src/services/api.ts)** respetando los tipos de **[`src/types/index.ts`](./src/types/index.ts)**. Contrato detallado en [`work-agent/01-ARQUITECTURA.md`](./work-agent/01-ARQUITECTURA.md).
 
 ---
 
 ## Scripts
 
-- `npm run dev` — dev server (puerto 5175 por config)
-- `npm run build` — build de producción
-- `npm run preview` — preview del build
-- `npm run lint` — ESLint
+| Script | Qué hace |
+|---|---|
+| `npm run dev` | Dev server (puerto 5175) |
+| `npm run build` | `tsc -b && vite build` (corre `prebuild`: og + sitemap + verify-assets) |
+| `npm run build:domain` | Build con `base=/` + `VITE_SITE_URL=ancestralseed.com` |
+| `npm run build:no-msw` | Build sin mocks (backend real) |
+| `npm run deploy` | Publica a GitHub Pages |
+| `npm run test` / `test:watch` | Vitest |
+| `npm run lint` | ESLint |
 
 ---
 
-## Reglas de contribución
+## Reglas del proyecto
 
-Ver [`CLAUDE.md`](./CLAUDE.md) para las reglas no negociables del proyecto (capa de servicios, tipos primero, estados completos, mobile-first, etc.).
+Ver **[`CLAUDE.md`](./CLAUDE.md)** — reglas no negociables (capa de servicios, tipos primero, estados completos loading/error/empty/success, skeletons no spinners, mobile-first 375→1440, español rioplatense directo). TypeScript es **strict + noUnusedLocals** → el build falla con imports/variables sin usar.
