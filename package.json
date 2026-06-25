@@ -28,7 +28,7 @@
     "framer-motion": "^12.38.0",
     "jspdf": "^4.2.1",
     "lightningcss": "^1.32.0",
-    "lucide-react": "^0.471.2",
+    "lucide-react": "^1.21.0",
     "prop-types": "^15.8.1",
     "qrcode": "^1.5.4",
     "react": "^19.2.5",
