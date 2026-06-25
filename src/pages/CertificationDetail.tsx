@@ -14,6 +14,7 @@ import {
   Flag,
   Mail,
   Network,
+  QrCode,
   Search as SearchIcon,
   Send,
   Share2,
@@ -36,6 +37,7 @@ import { Label } from '@/components/ui/label'
 import { PageMeta } from '@/components/features/PageMeta'
 import { CategoryBadge } from '@/components/features/CategoryBadge'
 import { LicenseStatusBadge } from '@/components/features/LicenseStatusBadge'
+import { QrDownloadModal } from '@/components/features/QrDownloadModal'
 import { api } from '@/services/api'
 import { cn, formatDate } from '@/lib/utils'
 import { OFFICIAL_DOCS } from '@/lib/copy'
@@ -60,6 +62,7 @@ export default function CertificationDetail() {
   const { data: cert, isLoading, error } = useCertification(slug)
   const [showReport, setShowReport] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [showQr, setShowQr] = useState(false)
   const [showBlockchain, setShowBlockchain] = useState(false)
   const [showVerified, setShowVerified] = useState(false)
   const [showContact, setShowContact] = useState(false)
@@ -230,6 +233,14 @@ export default function CertificationDetail() {
                   <Download className="h-4 w-4" />
                   Descargar
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQr(true)}
+                  className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                >
+                  <QrCode className="h-4 w-4" />
+                  Código QR
+                </button>
               </div>
 
               <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6 md:p-7">
@@ -392,6 +403,13 @@ export default function CertificationDetail() {
         author={authorName}
         url={typeof window !== 'undefined' ? window.location.href : ''}
         hash={cert.hash}
+      />
+
+      <QrDownloadModal
+        open={showQr}
+        onClose={() => setShowQr(false)}
+        slug={cert.slug}
+        title={cert.title}
       />
 
       <BlockchainModal
