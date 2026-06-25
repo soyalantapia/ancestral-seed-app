@@ -185,7 +185,7 @@ function PrivacidadBody() {
       <h2 className="mt-4 text-lg font-bold text-navy-500">4. Tus derechos</h2>
       <p>
         Podés acceder, rectificar o eliminar tus datos personales en cualquier
-        momento desde Configuración o escribiéndonos a{' '}
+        momento desde la sección «Mis datos» de tu cuenta o escribiéndonos a{' '}
         <a
           href="mailto:soporte@ancestralseed.org"
           className="font-bold text-gold-700 hover:underline"

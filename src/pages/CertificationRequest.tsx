@@ -2132,6 +2132,10 @@ function RescheduleSheet({
             type="button"
             onClick={() => {
               if (!selectedDay) return toast.error('Elegí una fecha')
+              if (slotStatus(selectedDay, hour) !== 'available')
+                return toast.error(
+                  'Ese horario no está disponible. Elegí un día hábil y un slot libre.',
+                )
               if (!reason) return toast.error('Elegí un motivo')
               onSubmit(meeting, summary)
             }}

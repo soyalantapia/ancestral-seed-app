@@ -391,8 +391,11 @@ export default function CertifyForm() {
         onContinue={() => setShowResumeDialog(false)}
         onStartFresh={() => {
           reset()
-          // El form reanuda en step 0 con defaults — el useEffect que
-          // sincroniza store↔form lo maneja automáticamente.
+          // Volcamos explícitamente los defaults al formulario: el useEffect
+          // de sync está keyeado en [step] y si ya estábamos en el paso 0 no
+          // se dispara (step 0→0), dejando los campos del postulante anterior
+          // visibles. Leemos el data ya reseteado del store y limpiamos rhf.
+          methods.reset({ ...useCertifyFormStore.getState().data })
           setShowResumeDialog(false)
           toast.success('Empezaste una postulación nueva')
         }}

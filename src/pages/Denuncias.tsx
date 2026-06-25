@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Shield, Search, Send, CheckCircle2, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
-import { Footer } from '@/components/features/Footer'
-import { Header } from '@/components/features/Header'
 
 /**
  * Fix #FEAT-06 (análisis proyecto): página pública de DENUNCIAS de
@@ -38,12 +36,9 @@ export default function Denuncias() {
     description.length >= 30 && contactEmail.includes('@') && !trackingId
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <Header />
-
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 md:px-8 md:py-16">
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 md:px-8 md:py-16">
         <header>
-          <div className="inline-flex items-center gap-2 rounded-full bg-warning-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-warning-400">
+          <div className="inline-flex items-center gap-2 rounded-full bg-warning-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-warning-500">
             <Shield className="h-3 w-3" />
             Canal abierto
           </div>
@@ -244,9 +239,6 @@ export default function Denuncias() {
             </div>
           </section>
         )}
-      </main>
-
-      <Footer />
     </div>
   )
 }
