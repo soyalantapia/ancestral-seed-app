@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   Award,
@@ -41,6 +41,7 @@ import { QrDownloadModal } from '@/components/features/QrDownloadModal'
 import { api } from '@/services/api'
 import { cn, formatDate } from '@/lib/utils'
 import { OFFICIAL_DOCS } from '@/lib/copy'
+import { certPublicUrl, renderQrCanvas } from '@/lib/qr'
 
 const PLACEHOLDER = '__placeholder__'
 const isPlaceholder = (v: string) => v === PLACEHOLDER || !v
@@ -401,7 +402,7 @@ export default function CertificationDetail() {
         onClose={() => setShowShare(false)}
         title={cert.title}
         author={authorName}
-        url={typeof window !== 'undefined' ? window.location.href : ''}
+        url={certPublicUrl(cert.slug)}
         hash={cert.hash}
       />
 
@@ -811,6 +812,16 @@ function ShareModal({
   hash: string
 }) {
   useEscape(open, onClose)
+  const qrRef = useRef<HTMLCanvasElement>(null)
+
+  // QR generado localmente (sin servicio externo): se redibuja al abrir.
+  useEffect(() => {
+    if (!open) return
+    const canvas = qrRef.current
+    if (!canvas) return
+    renderQrCanvas({ text: url, size: 200, style: 'simple', canvas }).catch(() => {})
+  }, [open, url])
+
   if (!open) return null
 
   const text = `Conocé "${title}" — certificación cultural ancestral por ${author}. Ficha verificable en Ancestral Seed.`
@@ -867,19 +878,15 @@ function ShareModal({
         </div>
 
         <div className="px-6 py-6">
-          {/* QR */}
+          {/* QR — generado localmente (sin servicio externo) */}
           <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-2xl border-2 border-neutral-200 bg-white p-3">
-            <img
-              alt={`QR code para ${title}`}
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}&margin=4`}
+            <canvas
+              ref={qrRef}
+              width={200}
+              height={200}
+              role="img"
+              aria-label={`Código QR para ${title}`}
               className="h-full w-full"
-              onError={(e) => {
-                ;(e.target as HTMLImageElement).style.display = 'none'
-                ;(e.target as HTMLImageElement).insertAdjacentHTML(
-                  'afterend',
-                  '<div class="text-xs text-navy-300 text-center">QR no disponible</div>',
-                )
-              }}
             />
           </div>
 
