@@ -66,8 +66,8 @@ export default function CoordinadorEquipo() {
           <Kpi label="Aprobación promedio" value={`${avgApproval}%`} tone="success" />
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <section className="mt-8 overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[680px] text-sm">
             <thead className="bg-neutral-100">
               <tr className="text-left text-[11px] font-bold uppercase tracking-widest text-navy-300">
                 <th className="px-4 py-3">Tutor</th>

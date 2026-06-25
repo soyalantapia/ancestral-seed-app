@@ -68,7 +68,7 @@ export default function MisDatos() {
           body="Si alguno de tus datos personales está mal, abrimos un ticket con el equipo Legal."
           cta="Abrir solicitud"
           onClick={() =>
-            toast.info('Te redirigimos a tu perfil · ahí podés editar la mayoría')
+            toast.success('Solicitud enviada · el equipo Legal revisará tus datos')
           }
         />
         <ActionRow

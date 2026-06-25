@@ -169,8 +169,8 @@ export default function BuyerWallet() {
             </button>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-neutral-200">
-            <table className="w-full text-sm">
+          <div className="mt-5 overflow-x-auto rounded-2xl border border-neutral-200">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-neutral-100 text-navy-300">
                 <tr>
                   <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">
