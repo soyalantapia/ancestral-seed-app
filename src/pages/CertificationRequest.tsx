@@ -1692,10 +1692,15 @@ function MessageThreadSheet({
   const [messages, setMessages] = useState<TutorMessage[]>(thread)
   const [draft, setDraft] = useState('')
 
-  // Reset when meeting changes
+  // Reset al cambiar de meeting — NO en cada render. Antes `thread` estaba en
+  // las deps, pero el padre puede pasar un `[]` nuevo por render, lo que
+  // re-disparaba el effect y borraba los mensajes recién enviados con
+  // handleSend. Con solo `meeting?.id` el reset ocurre al abrir otro meeting;
+  // el seed inicial ya viene de useState(thread).
   useEffect(() => {
     setMessages(thread)
-  }, [thread, meeting?.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset solo al cambiar el meeting abierto, no al recrearse `thread`
+  }, [meeting?.id])
 
   useEscape(Boolean(meeting), onClose)
   if (!meeting) return null

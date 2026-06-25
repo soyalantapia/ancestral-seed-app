@@ -11,7 +11,9 @@ pre-commit:
   commands:
     lint-staged:
       glob: '*.{ts,tsx,mjs,js}'
-      run: npx eslint --max-warnings 0 {staged_files}
+      # Bloquea por ERRORES, igual que el CI (`eslint .`). Las warnings
+      # (reglas de compiler-readiness bajadas a warn) no bloquean el commit.
+      run: npx eslint {staged_files}
     typecheck:
       glob: '*.{ts,tsx}'
       run: npx tsc -b --noEmit

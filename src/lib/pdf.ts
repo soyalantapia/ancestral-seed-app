@@ -242,7 +242,6 @@ export function buildPaymentReceiptPdf(input: PaymentReceiptPdfInput): Blob {
       new Date(input.paidAt).toLocaleString('es-AR'),
     )
   }
-  y += 18
 
   drawFooter(doc)
   return doc.output('blob')

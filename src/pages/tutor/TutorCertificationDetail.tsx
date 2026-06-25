@@ -127,6 +127,23 @@ export default function TutorCertificationDetail() {
   const [tab, setTab] = useState<Tab>('info')
   const [drawer, setDrawer] = useState<Drawer>(null)
 
+  // Hooks SIEMPRE antes del early return (rules-of-hooks): si se llaman
+  // después del `if (!cert) return`, React renderiza distinta cantidad de
+  // hooks cuando cert es undefined → crash "Rendered fewer hooks than
+  // expected". Se usa `cert?.id ?? ''` porque acá cert puede ser undefined;
+  // el resultado solo se consume después del return, así que el
+  // comportamiento se preserva.
+  const checklistFromStore = useCertChecklistStore(
+    (s) => s.byCert[cert?.id ?? ''],
+  )
+  // COUNT (primitivo estable) en vez de notesFor(...), que devolvería un
+  // array nuevo por render y dispararía el loop de useSyncExternalStore.
+  const notesCountFromStore = useInternalNotesStore(
+    (s) =>
+      s.notes.filter((n) => n.entityKey === certEntityKey(cert?.id ?? ''))
+        .length,
+  )
+
   if (!cert) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">
@@ -158,9 +175,6 @@ export default function TutorCertificationDetail() {
    * tiene datos para ese cert; fallback al mock para la primera
    * carga (cuando todavía no se hidrató).
    */
-  const checklistFromStore = useCertChecklistStore(
-    (s) => s.byCert[cert.id],
-  )
   const checklistData = checklistFromStore ?? getChecklistByCert(cert.id)
   const checklistTotal = checklistData.reduce((a, c) => a + c.items.length, 0)
   const checklistDone = checklistData.reduce(
@@ -173,13 +187,6 @@ export default function TutorCertificationDetail() {
    * hidratado (el sentinel `seeded` garantiza que después de la
    * primera apertura del drawer el store tiene la verdad).
    */
-  // Seleccionamos el COUNT (primitivo estable) en vez de notesFor(...),
-  // que devolvería un array nuevo en cada render y dispararía el loop de
-  // useSyncExternalStore ("Maximum update depth exceeded").
-  const notesCountFromStore = useInternalNotesStore(
-    (s) =>
-      s.notes.filter((n) => n.entityKey === certEntityKey(cert.id)).length,
-  )
   const notesCount =
     notesCountFromStore > 0
       ? notesCountFromStore
