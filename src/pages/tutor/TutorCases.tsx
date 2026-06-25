@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEscape } from '@/hooks/useEscape'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -812,6 +813,7 @@ function CreateCaseModal({
     pending?: string
   }) => void
 }) {
+  useEscape(true, onClose)
   const [productName, setProductName] = useState('')
   const [applicantName, setApplicantName] = useState('')
   const [country, setCountry] = useState('Argentina')

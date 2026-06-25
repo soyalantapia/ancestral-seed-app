@@ -379,7 +379,6 @@ export const mockCertifications: Certification[] = [
 ]
 
 export const mockCategories = [
-  'Caribe colombiano',
   'Córdoba',
   'Nariño',
   'Colombia',

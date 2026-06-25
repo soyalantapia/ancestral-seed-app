@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { useEscape } from '@/hooks/useEscape'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -1768,6 +1769,7 @@ function StageAdvanceModal({
   onConfirm: (reason: string) => void
   checklist: { ok: boolean; requirements: Array<{ label: string; done: boolean }> }
 }) {
+  useEscape(true, onClose)
   const [reason, setReason] = useState('')
   const idx = STAGE_ORDER.indexOf(currentStage)
   const nextStage = STAGE_ORDER[idx + 1]
@@ -1852,6 +1854,7 @@ function TemplateModal({
   caseData: TutorCase
   onClose: () => void
 }) {
+  useEscape(true, onClose)
   const [selected, setSelected] = useState(MESSAGE_TEMPLATES[0])
   const [body, setBody] = useState(
     selected.body.replace('{nombre}', caseData.applicantName.split(' ')[0]),
@@ -1958,6 +1961,7 @@ function MeetingModal({
   caseData: TutorCase
   onClose: () => void
 }) {
+  useEscape(true, onClose)
   const [kind, setKind] = useState<'kickoff' | 'auditoria' | 'evaluacion' | 'cierre'>('kickoff')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('10:00')
@@ -2103,6 +2107,7 @@ function EvidenceRequestModal({
   caseData: TutorCase
   onClose: () => void
 }) {
+  useEscape(true, onClose)
   const [selected, setSelected] = useState<Record<string, boolean>>({
     fotos: true,
   })
@@ -2287,6 +2292,7 @@ function AISummaryModal({
   daysInStage: number
   onClose: () => void
 }) {
+  useEscape(true, onClose)
   const riskLevel =
     caseData.scoringIA >= 80
       ? 'bajo'
@@ -2582,6 +2588,7 @@ function SignEvaluationModal({
   onClose: () => void
   onConfirm: () => void
 }) {
+  useEscape(true, onClose)
   const [confirmText, setConfirmText] = useState('')
   const canSign = confirmText.trim().toLowerCase() === 'firmar'
 

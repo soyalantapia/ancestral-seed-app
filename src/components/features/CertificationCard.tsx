@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MapPin, Star, User, Briefcase } from 'lucide-react'
+import { MapPin, User, Briefcase } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { Certification, CertificationStatus } from '@/types'
 import { Badge } from '@/components/ui/badge'
@@ -43,7 +43,6 @@ export function CertificationCard({
     : isPlaceholder(c.authorName)
       ? 'Autor'
       : c.authorName
-  const score = placeholderText ? 'Puntaje' : '100/100'
   const title = placeholderText ? 'Título producto/servicio' : c.title
   const status = STATUS_MAP[c.status] ?? STATUS_MAP.verified
 
@@ -105,10 +104,6 @@ export function CertificationCard({
           <li className="flex items-center gap-2">
             <User className="h-3.5 w-3.5 text-navy-300" />
             <span>{author}</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <Star className="h-3.5 w-3.5 text-navy-300" />
-            <span>{score}</span>
           </li>
         </ul>
         <Link
