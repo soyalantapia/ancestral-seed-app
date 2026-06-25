@@ -62,7 +62,7 @@ export default function Signup() {
       },
       'demo-token',
     )
-    toast.success('Cuenta creada · Bienvenida 👋')
+    toast.success('Cuenta creada · ¡Te damos la bienvenida! 👋')
     navigate('/mis-certificaciones')
   }
 
@@ -177,11 +177,11 @@ export default function Signup() {
                 />
                 <span>
                   Acepto los{' '}
-                  <Link to="/" className="font-semibold text-gold-700 hover:underline">
+                  <Link to="/legal/terminos" className="font-semibold text-gold-700 hover:underline">
                     términos y condiciones
                   </Link>
                   {' '}y la{' '}
-                  <Link to="/" className="font-semibold text-gold-700 hover:underline">
+                  <Link to="/legal/privacidad" className="font-semibold text-gold-700 hover:underline">
                     política de privacidad
                   </Link>.
                 </span>

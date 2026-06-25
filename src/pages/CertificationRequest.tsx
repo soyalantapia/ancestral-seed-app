@@ -1201,7 +1201,7 @@ function EvidenciasTab({ request }: { request: CertificationRequestType }) {
                           },
                         })
                       }}
-                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-error-400 opacity-0 shadow transition-opacity hover:bg-white group-hover:opacity-100"
+                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-error-400 shadow transition-opacity hover:bg-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100"
                       aria-label={`Eliminar ${it.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

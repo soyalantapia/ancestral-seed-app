@@ -1238,7 +1238,7 @@ function CaseCard({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
-              className="text-navy-300 transition-colors hover:text-navy-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
+              className="-mr-1 -mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-navy-300 transition-colors hover:bg-neutral-100 hover:text-navy-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
             >
               <MoreHorizontal className="h-4 w-4" />
             </button>

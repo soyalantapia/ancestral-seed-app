@@ -61,7 +61,7 @@ const RESPONSABLE_META: Record<
 > = {
   solicitante: { label: 'Tu acción', color: 'bg-gold-100 text-gold-700' },
   tutor: { label: 'Acción del tutor', color: 'bg-info-100 text-info-400' },
-  comunidad: { label: 'Acción comunitaria', color: 'bg-success-100 text-success-300' },
+  comunidad: { label: 'Acción comunitaria', color: 'bg-success-100 text-success-700' },
 }
 
 export default function PlanMejora() {

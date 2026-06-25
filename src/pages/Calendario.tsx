@@ -39,9 +39,15 @@ function buildEvents(requests: CertificationRequest[]): CalEvent[] {
     // Pagos pendientes
     for (const p of r.payments ?? []) {
       if (p.status !== 'pending' && p.status !== 'overdue') continue
+      // dueDate viene como 'YYYY-MM-DD' (date-only): `new Date(str)` lo parsea
+      // como UTC y en GMT-3 cae al día anterior. Parseamos a medianoche LOCAL
+      // para que la fecha coincida con la que muestra /pagos.
+      const [py, pm, pd] = p.dueDate.split('-').map(Number)
+      const dueLocal =
+        py && pm && pd ? new Date(py, pm - 1, pd) : new Date(p.dueDate)
       out.push({
         id: `p-${p.id}`,
-        date: new Date(p.dueDate),
+        date: dueLocal,
         kind: 'payment',
         title: p.concept,
         sub: `${r.number} · ${r.productName}`,

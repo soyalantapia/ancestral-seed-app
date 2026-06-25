@@ -47,7 +47,12 @@ function applyFilters(
       (c) =>
         c.title.toLowerCase().includes(q) ||
         c.authorName.toLowerCase().includes(q) ||
-        c.category.toLowerCase().includes(q),
+        c.category.toLowerCase().includes(q) ||
+        // El placeholder del buscador promete "región" y "hash": antes solo
+        // matcheaba category, así que buscar por país/ubicación o por hash
+        // del certificado devolvía vacío.
+        (c.location?.toLowerCase().includes(q) ?? false) ||
+        c.hash.toLowerCase().includes(q),
     )
   }
 

@@ -241,7 +241,11 @@ export default function BuyerWallet() {
                         <button
                           type="button"
                           onClick={() => {
-                            if (store.certs.length > 0) store.remove(c.hash)
+                            if (store.certs.length === 0) {
+                              toast.info('Ejemplo de demo — agregá un cert real para gestionarlo')
+                              return
+                            }
+                            store.remove(c.hash)
                             toast.success('Cert removido de tu wallet')
                           }}
                           aria-label="Remover"

@@ -1095,7 +1095,7 @@ function StepProducto() {
           </div>
         </FieldRow>
 
-        <div className="max-w-[calc(50%-0.5rem)]">
+        <div className="md:max-w-[calc(50%-0.5rem)]">
           <Label htmlFor="productSubcategory">Subcategoría</Label>
           <Select
             id="productSubcategory"

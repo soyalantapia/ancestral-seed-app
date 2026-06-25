@@ -257,13 +257,15 @@ export default function CertificationDetail() {
                       <p className="text-base font-bold text-navy-500">
                         {authorName}
                       </p>
-                      <Link
-                        to={`/perfil/${authorSlug}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
-                      >
-                        <span>Ver Perfil</span>
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
+                      {!isPlaceholder(cert.authorName) && (
+                        <Link
+                          to={`/perfil/${authorSlug}`}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-gold-700 hover:underline"
+                        >
+                          <span>Ver Perfil</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

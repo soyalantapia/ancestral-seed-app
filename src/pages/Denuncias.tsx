@@ -182,7 +182,7 @@ export default function Denuncias() {
           </section>
         )}
 
-        {trackingId && (
+        {trackingId && mode === 'submit' && (
           <section className="mt-6 rounded-3xl border border-success-300 bg-success-100/30 p-8 text-center shadow-sm">
             <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-300 text-white">
               <CheckCircle2 className="h-8 w-8" />
