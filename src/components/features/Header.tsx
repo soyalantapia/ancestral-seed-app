@@ -23,6 +23,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { useEscape } from '@/hooks/useEscape'
 import { useUiStore } from '@/store/ui'
 import { useAuthStore } from '@/store/auth'
+import { resetDemoStores } from '@/store/resetDemo'
 import { useNotificationsStore } from '@/store/notifications'
 import { cn } from '@/lib/utils'
 
@@ -108,6 +109,10 @@ export function Header() {
     setMenuOpen(false)
     setBellOpen(false)
     navigate('/login', { replace: true })
+    // Limpiar TODOS los stores del demo antes del clearSession: evita
+    // cross-account leaks de PII (draft del wizard, notas, firmas) en
+    // navegadores compartidos. Mismo patrón que DashboardLayout/TutorLayout.
+    resetDemoStores({ forLogout: true })
     clearSession()
     toast.success('Sesión cerrada')
   }
@@ -499,6 +504,7 @@ export function Header() {
                       onClick={() => {
                         closeMobileMenu()
                         navigate('/login', { replace: true })
+                        resetDemoStores({ forLogout: true })
                         clearSession()
                         toast.success('Sesión cerrada')
                       }}

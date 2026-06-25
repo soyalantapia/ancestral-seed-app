@@ -200,7 +200,7 @@ export default function PlanMejora() {
           <strong className="text-navy-500">Acción comunitaria</strong>{' '}
           dependen de la disponibilidad del referente. Coordiná con tu{' '}
           <Link
-            to={`/mis-certificaciones/${id}?tab=mensajes`}
+            to={`/mis-certificaciones/${id}?tab=auditoria`}
             className="font-bold text-gold-700 hover:underline"
           >
             tutor
@@ -223,7 +223,7 @@ export default function PlanMejora() {
           <ArrowRight className="h-4 w-4" />
         </button>
         <Link
-          to={`/mis-certificaciones/${id}?tab=mensajes`}
+          to={`/mis-certificaciones/${id}?tab=auditoria`}
           className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-navy-500 hover:bg-neutral-100"
         >
           <Users className="h-4 w-4" />

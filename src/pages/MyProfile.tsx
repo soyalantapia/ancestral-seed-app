@@ -974,7 +974,11 @@ function Highlights() {
                     label="Vista previa"
                     onClick={() => {
                       setMenuFor(null)
-                      navigate(`/certificacion/${it.id}`)
+                      // El destacado guarda el id de la certificación (no el
+                      // slug); buscamos el cert para abrir su ficha pública.
+                      const cert = mockCertifications.find((c) => c.id === it.id)
+                      if (cert) navigate(`/certificado/${cert.slug}`)
+                      else toast.error('Esta pieza todavía no tiene ficha pública')
                     }}
                   />
                   <MenuButton

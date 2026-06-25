@@ -45,7 +45,7 @@ function buildEvents(requests: CertificationRequest[]): CalEvent[] {
         kind: 'payment',
         title: p.concept,
         sub: `${r.number} · ${r.productName}`,
-        to: `/mis-certificaciones/${r.id}?tab=pagos`,
+        to: '/pagos',
       })
     }
     // Diagnostic deadline (dd/MM)

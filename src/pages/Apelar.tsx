@@ -59,6 +59,25 @@ export default function Apelar() {
 
   const canSubmit = motivo.length >= 10 && fundamentacion.length >= 50 && !sent
 
+  // Guard DESPUÉS de los hooks (rules-of-hooks): si el id no existe, no
+  // seguir renderizando con request undefined.
+  if (!request) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <p className="text-sm font-bold text-navy-500">
+          Solicitud no encontrada
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/mis-certificaciones')}
+          className="mt-4 inline-flex items-center gap-2 text-sm text-gold-700 hover:underline"
+        >
+          Volver a mis certificaciones
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:py-12">
       <Breadcrumbs
