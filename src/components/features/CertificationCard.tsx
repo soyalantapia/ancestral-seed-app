@@ -37,11 +37,11 @@ export function CertificationCard({
   const realRegion = c.location ?? (isPlaceholder(c.category) ? '' : c.category)
   const region = placeholderText
     ? 'País - Región'
-    : realRegion || 'País - Región'
+    : realRegion || 'Origen por confirmar'
   const author = placeholderText
     ? 'Autor'
     : isPlaceholder(c.authorName)
-      ? 'Autor'
+      ? 'Artesano/a por confirmar'
       : c.authorName
   const title = placeholderText ? 'Título producto/servicio' : c.title
   const status = STATUS_MAP[c.status] ?? STATUS_MAP.verified
