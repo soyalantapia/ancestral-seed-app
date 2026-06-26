@@ -45,7 +45,7 @@ jobs:
 
       - name: Checkout
         if: steps.gate.outputs.ready == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node 22
         if: steps.gate.outputs.ready == 'true'
