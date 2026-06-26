@@ -97,6 +97,25 @@ Se sube como `.htaccess` al docroot. Hace:
 
 ---
 
+## F. CI/CD: deploy automático a producción (GitHub Actions)
+
+`.github/workflows/deploy.yml` deploya a **ancestralseed.com** en cada push a `main`
+(y a mano con "Run workflow"). Reemplaza el paso FTP manual de la sección B.
+
+- **Aditivo y seguro para WordPress**: usa `lftp mirror -R --no-delete`, así
+  **nunca borra** archivos del servidor (WP, wp-admin, wp-content y el
+  `.htaccess` de prod quedan intactos). Solo sube/actualiza los archivos del
+  `dist/`. El `.htaccess` del SPA NO se toca desde CI (ya está en prod; si
+  alguna vez hay que reponerlo, subir `deploy/htaccess-ancestralseed` una vez).
+- **Credenciales = GitHub Secrets** (Settings → Secrets and variables → Actions),
+  NO en el repo:
+  - `FTP_HOST` — host FTP (ej. `ancestralseed.com` o `vps-2977244-x.dattaweb.com`)
+  - `FTP_USER` — ej. `deploy@ancestralseed.com`
+  - `FTP_PASS` — contraseña de esa cuenta FTP (se setea/resetea en el cPanel)
+  - `FTP_DIR` — opcional; docroot remoto. Default `./` (donde cae el login)
+- Si los secrets no están cargados, el job se **saltea** (no falla en rojo).
+- El build lo hace el propio workflow con `npm run build:domain` (base `/`).
+
 ## Checklist de deploy (lo que conviene hacer siempre)
 
 ```bash

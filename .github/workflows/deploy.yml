@@ -1,0 +1,83 @@
+# Deploy automático a ancestralseed.com (producción, hosting Ferozo/DonWeb por FTP).
+#
+# Se dispara en cada push a `main` y también a mano (botón "Run workflow").
+# Construye con base `/` (build:domain) y sube `dist/` por FTPS de forma
+# ADITIVA: nunca borra archivos del servidor, así el WordPress que convive
+# en el mismo docroot queda intacto (no toca wp-admin, wp-content ni el
+# .htaccess que ya está en prod).
+#
+# 🔐 Las credenciales NO están en el repo (es público). Se cargan como
+# secrets en GitHub: Settings → Secrets and variables → Actions.
+#   - FTP_HOST  (ej. ancestralseed.com  o  vps-2977244-x.dattaweb.com)
+#   - FTP_USER  (ej. deploy@ancestralseed.com)
+#   - FTP_PASS  (la contraseña de esa cuenta FTP)
+#   - FTP_DIR   (opcional; docroot remoto. Default "./" = donde cae el login)
+name: Deploy a ancestralseed.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Un deploy a la vez; si llega otro push, cancela el anterior en curso.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build + FTP a producción
+    runs-on: ubuntu-latest
+    steps:
+      - name: ¿Secrets FTP configurados?
+        id: gate
+        run: |
+          if [ -n "${{ secrets.FTP_HOST }}" ] && [ -n "${{ secrets.FTP_USER }}" ] && [ -n "${{ secrets.FTP_PASS }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Secrets FTP no configurados — se saltea el deploy. Cargá FTP_HOST, FTP_USER y FTP_PASS en Settings → Secrets and variables → Actions."
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        if: steps.gate.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Build (dominio · base=/ · canonical ancestralseed.com)
+        if: steps.gate.outputs.ready == 'true'
+        run: npm run build:domain
+
+      - name: Subir dist/ por FTPS (aditivo, sin borrar WordPress)
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          REMOTE="${FTP_DIR:-./}"
+          echo "Subiendo dist/ → $FTP_HOST:$REMOTE (mirror -R --no-delete)"
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<EOF
+          set ftp:ssl-allow true
+          set ftp:ssl-force false
+          set ftp:ssl-protect-data true
+          set ssl:verify-certificate no
+          set net:max-retries 3
+          set net:timeout 20
+          mirror -R --no-delete --parallel=4 --verbose ./dist/ "$REMOTE"
+          bye
+          EOF
+          echo "✅ Deploy aditivo completo. WordPress y .htaccess de prod intactos."
