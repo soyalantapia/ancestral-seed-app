@@ -19,7 +19,6 @@ import type { TutorTask, TutorTaskPriority } from '@/types'
 import { useTutorTasksStore } from '@/store/tutorTasks'
 import { cn, downloadBlob, objectsToCsv } from '@/lib/utils'
 
-type FilterKey = 'all' | 'pending' | 'done' | TutorTaskPriority
 type SortKey = 'priority' | 'recent' | 'alphabetical'
 
 const PRIORITY_META: Record<
@@ -70,7 +69,11 @@ export default function TutorTasks() {
   const tasks = useTutorTasksStore((s) => s.tasks)
   const toggleTaskStore = useTutorTasksStore((s) => s.toggle)
   const markDoneStore = useTutorTasksStore((s) => s.markDone)
-  const [filter, setFilter] = useState<FilterKey>('all')
+  // El filtro vive en el store (igual que TutorDashboard) para que persista
+  // entre vistas y sesiones; antes era useState local y se reseteaba a 'all'
+  // en cada navegación (#TUT-29 / V2-TUT-13).
+  const filter = useTutorTasksStore((s) => s.filter)
+  const setFilter = useTutorTasksStore((s) => s.setFilter)
   const [sort, setSort] = useState<SortKey>('priority')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())

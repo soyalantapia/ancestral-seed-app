@@ -26,7 +26,13 @@ import { mockTutorTasks } from '@/services/mocks/data'
  * por "Urgentes" en el dashboard siga viendo "Urgentes" cuando entra
  * a /tutor/tareas y al volver al día siguiente.
  */
-export type TaskFilter = 'all' | 'urgent' | 'today' | 'this_week'
+export type TaskFilter =
+  | 'all'
+  | 'pending'
+  | 'done'
+  | 'urgent'
+  | 'today'
+  | 'this_week'
 
 interface TutorTasksState {
   tasks: TutorTask[]

@@ -63,8 +63,13 @@ const STATUS_META: Record<
 export default function BuyerWallet() {
   const store = useBuyerWalletStore()
   const [hash, setHash] = useState('')
-  // Para el demo, si la wallet está vacía la sembramos con 3 ejemplos.
-  const certs = store.certs.length > 0 ? store.certs : DEMO_CERTS
+  // Mostramos siempre los 3 ejemplos de demo (deduplicados por hash) junto a
+  // lo que el usuario agregó, para que al sumar el primer cert real no
+  // desaparezcan de golpe.
+  const certs = [
+    ...DEMO_CERTS.filter((d) => !store.certs.some((c) => c.hash === d.hash)),
+    ...store.certs,
+  ]
   const [query, setQuery] = useState('')
   const filtered = certs.filter(
     (c) =>
