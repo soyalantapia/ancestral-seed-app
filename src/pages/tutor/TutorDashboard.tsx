@@ -32,6 +32,7 @@ import { ConcentricDonut, MiniCalendar, PieChart } from '@/components/features/C
 import { useAutoStartTour } from '@/hooks/useAutoStartTour'
 import { useTutorCasesStore } from '@/store/tutorCases'
 import { useTutorTasksStore, type TaskFilter } from '@/store/tutorTasks'
+import { slaToneForCase } from '@/lib/caseSla'
 import { cn } from '@/lib/utils'
 
 const periods = [
@@ -86,7 +87,9 @@ export default function TutorDashboard() {
   const inProgress = cases.filter(
     (c) => c.stage !== 'certificacion' && c.stage !== 'postulado',
   ).length
-  const overdue = cases.filter((c) => c.pendingItems.length > 0 && c.risk !== 'bajo').length
+  // Misma definición de "vencido" que el kanban (slaToneForCase rojo),
+  // para que el KPI "Casos atrasados" coincida entre Dashboard y /tutor/casos.
+  const overdue = cases.filter((c) => slaToneForCase(c) === 'red').length
 
   // Casos de riesgo
   const riskCounts = useMemo(() => {

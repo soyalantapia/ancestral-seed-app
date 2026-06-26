@@ -29,18 +29,7 @@ import { resetDemoStores } from '@/store/resetDemo'
 import { validateCaseAdvance } from '@/lib/caseValidation'
 import { ConfirmDialog } from '@/components/features/ConfirmDialog'
 import { cn } from '@/lib/utils'
-
-function daysInStageFromCase(c: TutorCase): number {
-  return Math.floor((Date.now() - new Date(c.createdAt).getTime()) / 86_400_000)
-}
-
-function slaToneForCase(c: TutorCase): 'red' | 'yellow' | 'green' {
-  const sla = STAGE_SLA_DAYS[c.stage] ?? 14
-  const days = daysInStageFromCase(c)
-  if (days > sla) return 'red'
-  if (days > sla * 0.7) return 'yellow'
-  return 'green'
-}
+import { daysInStageFromCase, slaToneForCase } from '@/lib/caseSla'
 
 const STAGES: Array<{ id: CaseStage; label: string }> = [
   { id: 'postulado', label: 'Postulados' },
