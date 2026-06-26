@@ -58,25 +58,38 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         run: npm run build:domain
 
-      - name: Deploy por FTPS a producción (aditivo, no borra WordPress)
+      - name: Deploy por FTP a producción (aditivo, no borra WordPress)
         if: steps.gate.outputs.ready == 'true'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
-          # FTPS explícito (AUTH TLS) sobre el puerto 21. security: loose
-          # tolera certificados self-signed / con mismatch del hosting.
-          protocol: ftps
-          port: 21
-          security: loose
-          local-dir: ./dist/
-          # server-dir DEBE terminar en "/". Default "./" = donde cae el login
-          # (normalmente el docroot del dominio). Si la cuenta FTP cayera en otra
-          # carpeta, setear el secret FTP_DIR con la ruta (con "/" al final).
-          server-dir: ${{ secrets.FTP_DIR || './' }}
-          # SIN dangerous-clean-slate (=false): NO borra archivos preexistentes
-          # del servidor. El WordPress que convive en el docroot queda intacto;
-          # la acción solo gestiona los archivos que ella misma sube/actualiza.
-          dangerous-clean-slate: false
-          timeout: 120000
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          REMOTE="${FTP_DIR:-./}"
+          echo "Subiendo dist/ → (host oculto):$REMOTE"
+          # Seguridad + compatibilidad:
+          #  - ssl-force true      → EXIGE TLS en el canal de control: la
+          #    contraseña SIEMPRE viaja encriptada (nunca en claro).
+          #  - ssl-protect-data false → datos en claro (PROT C). Evita el
+          #    'ECONNRESET (data socket)' del PROT P que rompe en este server.
+          #    Los archivos son estáticos públicos, no hay dato sensible ahí.
+          #  - dns:order inet      → IPv4 (el runner no tiene IPv6 → ENETUNREACH).
+          # mirror -R es ADITIVO (sin --delete): no borra WordPress ni el
+          # .htaccess de producción.
+          lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<EOF
+          set dns:order "inet";
+          set ftp:ssl-allow true;
+          set ftp:ssl-force true;
+          set ftp:ssl-protect-data false;
+          set ssl:verify-certificate no;
+          set ftp:passive-mode true;
+          set ftp:prefer-epsv false;
+          set net:max-retries 2;
+          set net:timeout 30;
+          mirror -R --verbose ./dist/ "$REMOTE";
+          bye;
+          EOF
+          echo "✅ Deploy aditivo completo. WordPress y .htaccess de prod intactos."
