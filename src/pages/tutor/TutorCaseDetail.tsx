@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useEscape } from '@/hooks/useEscape'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -1770,6 +1771,7 @@ function StageAdvanceModal({
   checklist: { ok: boolean; requirements: Array<{ label: string; done: boolean }> }
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [reason, setReason] = useState('')
   const idx = STAGE_ORDER.indexOf(currentStage)
   const nextStage = STAGE_ORDER[idx + 1]
@@ -1779,6 +1781,9 @@ function StageAdvanceModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -1855,6 +1860,7 @@ function TemplateModal({
   onClose: () => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [selected, setSelected] = useState(MESSAGE_TEMPLATES[0])
   const [body, setBody] = useState(
     selected.body.replace('{nombre}', caseData.applicantName.split(' ')[0]),
@@ -1866,6 +1872,9 @@ function TemplateModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -1962,6 +1971,7 @@ function MeetingModal({
   onClose: () => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [kind, setKind] = useState<'kickoff' | 'auditoria' | 'evaluacion' | 'cierre'>('kickoff')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('10:00')
@@ -1973,6 +1983,9 @@ function MeetingModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -2108,6 +2121,7 @@ function EvidenceRequestModal({
   onClose: () => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [selected, setSelected] = useState<Record<string, boolean>>({
     fotos: true,
   })
@@ -2135,6 +2149,9 @@ function EvidenceRequestModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -2293,6 +2310,7 @@ function AISummaryModal({
   onClose: () => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const riskLevel =
     caseData.scoringIA >= 80
       ? 'bajo'
@@ -2309,6 +2327,9 @@ function AISummaryModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -2589,6 +2610,7 @@ function SignEvaluationModal({
   onConfirm: () => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [confirmText, setConfirmText] = useState('')
   const canSign = confirmText.trim().toLowerCase() === 'firmar'
 
@@ -2598,6 +2620,9 @@ function SignEvaluationModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >

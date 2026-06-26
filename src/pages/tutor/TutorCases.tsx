@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useEscape } from '@/hooks/useEscape'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -803,6 +804,7 @@ function CreateCaseModal({
   }) => void
 }) {
   useEscape(true, onClose)
+  const dialogRef = useFocusTrap<HTMLDivElement>(true)
   const [productName, setProductName] = useState('')
   const [applicantName, setApplicantName] = useState('')
   const [country, setCountry] = useState('Argentina')
@@ -820,6 +822,9 @@ function CreateCaseModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
         className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
