@@ -178,7 +178,7 @@ export const mockCertifications: Certification[] = [
     category: 'Nariño',
     description:
       'Filigrana elaborada por Alunawa, la joyería de Camila Montes en San Juan de Pasto (Nariño). Una técnica de orfebrería heredada y desarrollada en su familia: hilos de metal extremadamente finos enrollados, trenzados y soldados a mano, sin procesos industriales. Restauraciones, réplicas, diseños personalizados, alianzas y anillos de compromiso, reinterpretando los saberes de los Andes de Nariño en joyería contemporánea.',
-    coverUrl: '/cards/card-filigrana.webp',
+    coverUrl: '/gallery/alunawa/portada.webp',
     hash: '0xA3F9C2D81E47B5106F3C2A99D8E1F4B7C0D5A2E69B8F1C4D3E2A1B0F9C8E7D6',
     officialCategory: 'tradicional',
     licenseStatus: 'vigente',

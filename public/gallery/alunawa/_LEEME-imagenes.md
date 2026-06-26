@@ -5,6 +5,10 @@ estas rutas. Guardá cada foto que mandaste con el nombre exacto de abajo.
 Formato recomendado: **.webp** (si las tenés en .jpg, convertilas o cambiá la
 extensión en `src/services/mocks/data.ts`).
 
+## PORTADA de la ficha (imagen grande / cover de la card)
+- **Foto de la corona de filigrana** (close-up plateado sobre fondo oscuro)
+  → guardar como: `public/gallery/alunawa/portada.webp`
+
 ## Foto de PERFIL (avatar de Camila)
 - **Foto 1** — vos con tatuajes y anillos, ojos cerrados
   → guardar como: `public/authors/camila-montes.webp`
