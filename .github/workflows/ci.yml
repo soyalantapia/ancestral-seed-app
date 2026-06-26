@@ -10,6 +10,10 @@ on:
   push:
     branches: [main]
 
+# Mínimo privilegio: CI solo lee el repo.
+permissions:
+  contents: read
+
 jobs:
   ci:
     name: Lint + Types + Test + Build

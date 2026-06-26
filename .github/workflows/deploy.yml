@@ -19,6 +19,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Mínimo privilegio: el deploy solo lee el repo (sube por FTP, no escribe git).
+permissions:
+  contents: read
+
 # Un deploy a la vez; si llega otro push, cancela el anterior en curso.
 concurrency:
   group: deploy-prod
