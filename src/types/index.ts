@@ -100,6 +100,15 @@ export interface Certification {
    * junto al sello.
    */
   licenseNumber?: string
+  /** Contacto directo del autor/taller para pedidos desde la ficha pública. */
+  contact?: {
+    whatsappLabel?: string
+    whatsappUrl?: string
+    facebookUrl?: string
+    instagramUrl?: string
+    addressLine?: string
+    notes?: string[]
+  }
 }
 
 export interface DirectoryFilters {

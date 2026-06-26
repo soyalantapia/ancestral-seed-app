@@ -13,6 +13,8 @@ import {
   FileCheck2,
   Flag,
   Mail,
+  MapPin,
+  MessageCircle,
   Network,
   QrCode,
   Search as SearchIcon,
@@ -308,6 +310,60 @@ export default function CertificationDetail() {
                     iconColor="text-navy-500"
                   />
                 </div>
+
+                {cert.contact && (
+                  <div className="mt-5 space-y-3 border-t border-neutral-200 pt-5">
+                    <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
+                      Contacto y pedidos
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {cert.contact.whatsappUrl && (
+                        <a
+                          href={cert.contact.whatsappUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-10 items-center gap-2 rounded-full bg-success-300 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-success-400"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          WhatsApp
+                          {cert.contact.whatsappLabel
+                            ? ` · ${cert.contact.whatsappLabel}`
+                            : ''}
+                        </a>
+                      )}
+                      {cert.contact.facebookUrl && (
+                        <a
+                          href={cert.contact.facebookUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          Facebook
+                        </a>
+                      )}
+                    </div>
+                    {cert.contact.addressLine && (
+                      <p className="flex items-start gap-2 text-xs text-navy-300">
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
+                        {cert.contact.addressLine}
+                      </p>
+                    )}
+                    {cert.contact.notes && cert.contact.notes.length > 0 && (
+                      <ul className="space-y-1">
+                        {cert.contact.notes.map((n) => (
+                          <li
+                            key={n}
+                            className="flex items-center gap-2 text-xs text-navy-300"
+                          >
+                            <Check className="h-3 w-3 shrink-0 text-success-300" />
+                            {n}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-200 pt-5">
                   <button
