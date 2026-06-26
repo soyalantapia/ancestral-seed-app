@@ -280,6 +280,20 @@ export const mockCertifications: Certification[] = [
       'Sobre esa base ancestral, Flor Imbacuán Pantoja trabaja como tejedora y diseñadora: aprendió la guanga de su madre desde la infancia y desarrolló la marca de etnomoda Hajsú, donde teje junto a otras mujeres del Resguardo de Carlosama. Allí el saber heredado se traduce en colecciones contemporáneas —ruanas y prendas en lana de oveja tejidas en guanga— que se han comercializado dentro y fuera de Colombia, manteniendo viva la técnica y el sustento de las familias tejedoras.',
     ],
     galleryUrls: ['/gallery/flor/01.jpg', '/gallery/flor/02.jpg'],
+    contact: {
+      whatsappLabel: '+57 321 721 2545',
+      whatsappUrl:
+        'https://wa.me/573217212545?text=Hola%20Hajs%C3%BA%2C%20vi%20la%20ficha%20de%20Flor%20en%20Ancestral%20Seed%20y%20quiero%20hacer%20una%20consulta.',
+      instagramUrl: 'https://www.instagram.com/hajsu_etnomoda/',
+      facebookUrl: 'https://www.facebook.com/hajsuetnomoda/',
+      websiteUrl: 'https://www.hajsu.com.co',
+      addressLine:
+        'Hajsú Etnomoda · Barrio Tomás Cipriano, Cra. 1B #2-24, Carlosama (Cuaspud), Nariño',
+      notes: [
+        'Tejido en guanga, lana de oveja',
+        'Envíos nacionales e internacionales',
+      ],
+    },
   },
   {
     id: 'c-ecodestinos',

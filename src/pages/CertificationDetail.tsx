@@ -12,6 +12,8 @@ import {
   ExternalLink,
   FileCheck2,
   Flag,
+  Globe,
+  Instagram,
   Mail,
   MapPin,
   MessageCircle,
@@ -337,6 +339,17 @@ export default function CertificationDetail() {
                             : ''}
                         </a>
                       )}
+                      {cert.contact.instagramUrl && (
+                        <a
+                          href={cert.contact.instagramUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                        >
+                          <Instagram className="h-4 w-4" />
+                          Instagram
+                        </a>
+                      )}
                       {cert.contact.facebookUrl && (
                         <a
                           href={cert.contact.facebookUrl}
@@ -346,6 +359,17 @@ export default function CertificationDetail() {
                         >
                           <ExternalLink className="h-4 w-4" />
                           Facebook
+                        </a>
+                      )}
+                      {cert.contact.websiteUrl && (
+                        <a
+                          href={cert.contact.websiteUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                        >
+                          <Globe className="h-4 w-4" />
+                          Tienda online
                         </a>
                       )}
                     </div>

@@ -106,6 +106,7 @@ export interface Certification {
     whatsappUrl?: string
     facebookUrl?: string
     instagramUrl?: string
+    websiteUrl?: string
     addressLine?: string
     notes?: string[]
   }
