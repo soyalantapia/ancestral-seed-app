@@ -8,10 +8,12 @@ export const worker = setupWorker(...handlers)
  *
  * Decisiones clave (documentadas tras el fix de mayo 2026):
  *
- * 1. `waitUntilReady: true` (default v2 pero explícito acá) — la promise
- *    no resuelve hasta que el SW está controlando la página. Sin esto,
- *    los primeros fetches del Home (`useFeaturedCertifications`) pueden
- *    salir antes de que MSW intercepte → 404 al server real.
+ * 1. La race del SW (el SW se registra pero todavía no controla ESTA carga
+ *    en el primer load) se maneja en la capa de fetch: `api.ts` espera al
+ *    SW (`waitForMswReady`) y reintenta de forma transparente. Antes
+ *    usábamos `waitUntilReady` (deprecado en MSW v2, generaba warning) + un
+ *    reload con guard en sessionStorage, que era jarring y se TRABABA si el
+ *    guard quedaba seteado → "Certificado no encontrado" recurrente.
  *
  * 2. `onUnhandledRequest: 'bypass'` — pasa al network las requests que
  *    no matchean ningún handler (CDN, fonts, etc). Si fuera 'warn',
@@ -31,45 +33,27 @@ export async function startMockWorker() {
   const base = import.meta.env.BASE_URL || '/'
   await worker.start({
     onUnhandledRequest: 'bypass',
-    waitUntilReady: true,
     serviceWorker: {
       url: `${base}mockServiceWorker.js`,
       options: { updateViaCache: 'none' },
     },
   })
 
-  // Diagnóstico: verificar que el SW efectivamente esté controlando
-  // la página. Si no, las requests siguientes saldrán al network y
-  // veremos 404s. Esto debería ser imposible con waitUntilReady:true,
-  // pero el log nos da visibilidad para futuras regresiones.
-  if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+  // Ya NO recargamos la página si el SW todavía no controla esta carga
+  // (era jarring y el guard en sessionStorage podía trabarse, causando el
+  // "Certificado no encontrado" recurrente). La capa de fetch (api.ts →
+  // request/waitForMswReady) espera al SW y reintenta de forma transparente.
+  // Acá solo dejamos un diagnóstico en dev.
+  if (
+    import.meta.env.DEV &&
+    typeof navigator !== 'undefined' &&
+    navigator.serviceWorker
+  ) {
     const controller = navigator.serviceWorker.controller
-    if (!controller) {
-      // El SW se registró pero NO controla ESTA carga (típico en el primer
-      // load: la página cargó antes de que el SW activara y reclamara el
-      // cliente). Sin control, los fetch a /api/* salen al dev server y
-      // reciben index.html → los perfiles/certificados/directorio públicos
-      // fallan con "no encontrado". Recargamos UNA vez (guard en sessionStorage
-      // para no loopear) para que el SW tome control y MSW intercepte.
-      if (!sessionStorage.getItem('msw-reload-once')) {
-        sessionStorage.setItem('msw-reload-once', '1')
-        window.location.reload()
-        // Frenar el render: la página se está recargando.
-        await new Promise<never>(() => {})
-      }
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[MSW] El SW sigue sin controlar la página tras recargar. ' +
-          'Las requests a /api/* podrían fallar.',
-      )
-    } else {
-      sessionStorage.removeItem('msw-reload-once')
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.info(
-          `[MSW] Controlando la página · scope=${controller.scriptURL}`,
-        )
-      }
-    }
+    console.info(
+      controller
+        ? `[MSW] Controlando la página · scope=${controller.scriptURL}`
+        : '[MSW] SW registrado; aún no controla esta carga — los fetch a /api/* reintentan solos.',
+    )
   }
 }

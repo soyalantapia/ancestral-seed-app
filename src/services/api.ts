@@ -65,7 +65,66 @@ function isHtmlResponse(res: Response): boolean {
   return ct.toLowerCase().includes('text/html')
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/**
+ * ¿Es plausible que estemos en la race del SW de MSW? Solo si hay un SW
+ * registrado que todavía NO controla esta carga. Si no hay `serviceWorker`
+ * (tests/jsdom, o backend real sin SW) NO reintentamos: ahí un HTML o un
+ * error de red es real, no una race transitoria.
+ */
+function mswRaceLikely(): boolean {
+  return (
+    typeof navigator !== 'undefined' &&
+    !!navigator.serviceWorker &&
+    !navigator.serviceWorker.controller
+  )
+}
+
+/**
+ * Espera a que el Service Worker de MSW esté listo y controlando la
+ * página, con backoff creciente. En el primer load (o tras un HMR) el SW
+ * puede tardar un tick en reclamar el cliente; mientras tanto los fetch a
+ * /api/* caen al dev server y devuelven index.html (SPA fallback). En vez
+ * de fallarle al usuario, esperamos al SW y reintentamos.
+ */
+async function waitForMswReady(attempt: number): Promise<void> {
+  const backoff = 120 * (attempt + 1)
+  if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
+    await new Promise((r) => setTimeout(r, backoff))
+    return
+  }
+  try {
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((r) => setTimeout(r, backoff)),
+    ])
+  } catch {
+    /* ignore */
+  }
+  // Si el SW está activo pero todavía no controla ESTA carga, esperamos el
+  // `controllerchange` (clients.claim) o el backoff, lo que pase primero.
+  if (!navigator.serviceWorker.controller) {
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, backoff)
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        () => {
+          clearTimeout(timer)
+          resolve()
+        },
+        { once: true },
+      )
+    })
+  }
+}
+
+/** Reintentos ante la race del SW de MSW (no es un error real del backend). */
+const MAX_API_RETRIES = 3
+
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  attempt = 0,
+): Promise<T> {
   let res: Response
   try {
     res = await fetch(`${BASE_URL}${path}`, {
@@ -73,21 +132,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...init,
     })
   } catch {
-    // TypeError → red caída, CORS bloqueado, DNS fallido, etc.
+    // TypeError → red caída / el SW todavía no intercepta. En la demo (MSW)
+    // suele ser la race del SW en el primer load: esperamos y reintentamos.
+    if (attempt < MAX_API_RETRIES && mswRaceLikely()) {
+      await waitForMswReady(attempt)
+      return request<T>(path, init, attempt + 1)
+    }
     throw new ApiError('network', ERRORS.network)
   }
 
-  // Defensive check: si el server devuelve HTML, MSW no está
-  // controlando la página y caímos al SPA fallback. Diagnóstico
-  // explícito para el dev en consola + error tipado para la UI.
+  // HTML en vez de JSON = MSW no está controlando la página y caímos al SPA
+  // fallback. NO es un error del backend: el SW todavía no reclamó el
+  // cliente. Esperamos a que tome control y reintentamos en vez de mostrar
+  // "no pudimos cargar los datos". Solo si tras varios intentos sigue HTML
+  // (caso patológico real) tiramos el error.
   if (isHtmlResponse(res)) {
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[api] Recibí HTML en vez de JSON para ${path}. ` +
-          `Probablemente MSW no está controlando la página. ` +
-          `Verificá navigator.serviceWorker.controller.`,
-      )
+    if (attempt < MAX_API_RETRIES && mswRaceLikely()) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          `[api] MSW aún no controla la página para ${path} — reintento ${attempt + 1}/${MAX_API_RETRIES}.`,
+        )
+      }
+      await waitForMswReady(attempt)
+      return request<T>(path, init, attempt + 1)
     }
     throw new ApiError(
       'server',
