@@ -1025,7 +1025,7 @@ const FEATURED_LABELS = [
 ] as const
 
 function FeaturedCertifications() {
-  const { data, isLoading, error } = useFeaturedCertifications()
+  const { data, isLoading, error, refetch } = useFeaturedCertifications()
   return (
     <section id="certificados" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
@@ -1056,6 +1056,13 @@ function FeaturedCertifications() {
           <div className="mt-10 rounded-2xl border border-error-300 bg-error-100 p-6 text-center text-error-400">
             <p className="font-semibold">No pudimos cargar los certificados</p>
             <p className="mt-1 text-sm">{error}</p>
+            <button
+              type="button"
+              onClick={refetch}
+              className="mt-4 inline-flex h-9 items-center rounded-full bg-error-400 px-4 text-sm font-semibold text-white transition-colors hover:bg-error-300"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 

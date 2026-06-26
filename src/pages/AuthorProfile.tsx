@@ -33,7 +33,7 @@ import {
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CertificationCard } from '@/components/features/CertificationCard'
-import { cn } from '@/lib/utils'
+import { cn, imgFallback } from '@/lib/utils'
 
 // Misma lista que usamos en el mapa LATAM del Home
 const LATAM_ISO_IDS = new Set([
@@ -206,6 +206,9 @@ function ProfileHero({
         <img
           src={coverUrl}
           alt=""
+          onError={imgFallback(
+            `${import.meta.env.BASE_URL}cards/card-filigrana.webp`,
+          )}
           className="h-full w-full object-cover object-center"
         />
         {/* Tint navy + degradado para legibilidad del texto */}
@@ -228,6 +231,7 @@ function ProfileHero({
                 <img
                   src={author.avatarUrl}
                   alt={author.name}
+                  onError={imgFallback('https://i.pravatar.cc/200?img=47')}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -576,6 +580,7 @@ function SobreSection({ author }: { author: import('@/types').Author }) {
               <img
                 src={author.avatarUrl}
                 alt=""
+                onError={imgFallback('https://i.pravatar.cc/200?img=47')}
                 className="h-10 w-10 rounded-full border-2 border-white/20 object-cover"
               />
               <div>

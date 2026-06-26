@@ -41,7 +41,7 @@ import { CategoryBadge } from '@/components/features/CategoryBadge'
 import { LicenseStatusBadge } from '@/components/features/LicenseStatusBadge'
 import { QrDownloadModal } from '@/components/features/QrDownloadModal'
 import { api } from '@/services/api'
-import { cn, formatDate } from '@/lib/utils'
+import { cn, formatDate, imgFallback } from '@/lib/utils'
 import { OFFICIAL_DOCS } from '@/lib/copy'
 import { certPublicUrl, renderQrCanvas } from '@/lib/qr'
 
@@ -53,6 +53,10 @@ function resolveAsset(url: string) {
   if (url.startsWith('http')) return url
   return `${import.meta.env.BASE_URL}${url.replace(/^\//, '')}`
 }
+
+/** Fallbacks si una imagen real todavía no se subió (degradan con gracia). */
+const COVER_FALLBACK = `${import.meta.env.BASE_URL}cards/card-filigrana.webp`
+const AVATAR_FALLBACK = 'https://i.pravatar.cc/200?img=47'
 
 const reportSchema = z.object({
   reason: z.string().min(3, 'Indicá un motivo'),
@@ -197,6 +201,7 @@ export default function CertificationDetail() {
                 <img
                   src={resolveAsset(cert.coverUrl)}
                   alt={cert.title}
+                  onError={imgFallback(COVER_FALLBACK)}
                   className="aspect-[587/455] w-full object-cover"
                 />
               </div>
@@ -249,8 +254,9 @@ export default function CertificationDetail() {
               <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6 md:p-7">
                 <div className="flex items-center gap-4">
                   <img
-                    src={cert.authorAvatarUrl || 'https://i.pravatar.cc/200?img=47'}
+                    src={cert.authorAvatarUrl || AVATAR_FALLBACK}
                     alt={authorName}
+                    onError={imgFallback(AVATAR_FALLBACK)}
                     className="h-16 w-16 rounded-full border border-neutral-200 object-cover"
                   />
                   <div className="flex-1">
@@ -563,6 +569,7 @@ function Gallery({
             <img
               src={src}
               alt=""
+              onError={imgFallback(COVER_FALLBACK)}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-navy-500/0 opacity-0 transition-opacity group-hover:bg-navy-500/30 group-hover:opacity-100">

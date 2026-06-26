@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import type { Certification, CertificationStatus } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn, imgFallback } from '@/lib/utils'
 import { PLACEHOLDER_TOKEN } from '@/services/mocks/data'
 import { CategoryBadge } from '@/components/features/CategoryBadge'
 
@@ -64,6 +64,9 @@ export function CertificationCard({
                 : `${import.meta.env.BASE_URL}${c.coverUrl.replace(/^\//, '')}`
             }
             alt={title}
+            onError={imgFallback(
+              `${import.meta.env.BASE_URL}cards/card-filigrana.webp`,
+            )}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}

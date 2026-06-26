@@ -5,6 +5,21 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Handler `onError` para <img>: si la imagen falla (404), cae a un fallback
+ * UNA sola vez (flag en dataset para no loopear si el fallback también
+ * falla). Útil para covers/avatars cuya foto real todavía no se subió:
+ * degradan con gracia en vez de mostrar el ícono de imagen rota.
+ */
+export function imgFallback(fallbackSrc: string) {
+  return (e: { currentTarget: HTMLImageElement }) => {
+    const img = e.currentTarget
+    if (img.dataset.imgFallback === '1') return
+    img.dataset.imgFallback = '1'
+    img.src = fallbackSrc
+  }
+}
+
 export function formatDate(date: string | Date, locale = 'es-AR'): string {
   const d = typeof date === 'string' ? new Date(date) : date
   return d.toLocaleDateString(locale, {
