@@ -161,7 +161,7 @@ function Hero() {
               <span className="block">Autenticidad Ancestral</span>
               <span className="block">Certificada Digitalmente</span>
             </h1>
-            <p className="mt-4 max-w-xl text-justify text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
+            <p className="mt-4 max-w-xl text-center text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
               Validamos la autenticidad de productos, servicios y saberes
               ancestrales, mediante un sistema de certificación cultural,
               auditoría y tecnología blockchain.
@@ -694,18 +694,18 @@ function AncestralVision() {
             />
           </div>
           <div className="rounded-3xl bg-pattern-aztec p-6 text-white sm:p-8 md:p-10">
-            <p className="text-sm leading-relaxed text-neutral-300 md:text-base">
+            <p className="text-justify text-sm leading-relaxed text-neutral-300 md:text-base">
               Durante generaciones, los saberes de nuestras comunidades
               originarias viajaron de voz en voz, preservando una conexión
               profunda con la tierra, la identidad y la memoria colectiva.
             </p>
-            <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
+            <p className="mt-5 text-justify text-sm leading-relaxed text-neutral-300 md:text-base">
               Ancestral Seed nace con el propósito de honrar ese legado:
               registrar, validar y dar visibilidad al origen de productos y
               servicios ancestrales, reconociendo el valor cultural de
               quienes los mantienen vivos.
             </p>
-            <p className="mt-5 text-sm leading-relaxed text-neutral-300 md:text-base">
+            <p className="mt-5 text-justify text-sm leading-relaxed text-neutral-300 md:text-base">
               Junto a comunidades, especialistas y referentes territoriales,
               impulsamos certificaciones transparentes y trazables mediante
               tecnología blockchain, fortaleciendo la confianza, la
