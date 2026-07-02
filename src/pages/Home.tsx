@@ -161,7 +161,7 @@ function Hero() {
               <span className="block">Autenticidad Ancestral</span>
               <span className="block">Certificada Digitalmente</span>
             </h1>
-            <p className="mt-4 max-w-xl text-center text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
+            <p className="mt-4 max-w-xl text-justify text-sm leading-relaxed text-navy-300 sm:text-base md:mt-6 md:text-lg">
               Validamos la autenticidad de productos, servicios y saberes
               ancestrales, mediante un sistema de certificación cultural,
               auditoría y tecnología blockchain.
