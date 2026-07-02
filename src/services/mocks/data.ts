@@ -658,12 +658,19 @@ export const mockCertificationRequests: CertificationRequest[] = [
       },
     ],
     scheduledMeetings: [],
+    // Evidencias = las mismas fotos de la ficha pública (galería Alunawa),
+    // así el material del expediente coincide con lo que se ve certificado.
     evidences: [
-      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana-v2.webp' },
-      { id: 'e-002', name: 'pieza-reverso.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-02-02T10:16:00-03:00' },
-      { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image', sizeKb: 2100, uploadedAt: '2026-02-02T10:18:00-03:00' },
-      { id: 'e-004', name: 'video-proceso.mp4', kind: 'video', sizeKb: 18200, uploadedAt: '2026-02-02T10:20:00-03:00' },
-      { id: 'e-005', name: 'aval-comunidad.pdf', kind: 'document', sizeKb: 320, uploadedAt: '2026-02-03T16:42:00-03:00' },
+      { id: 'e-001', name: 'filigrana-pieza-frente.jpg', kind: 'image', sizeKb: 404, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/gallery/alunawa/01.jpg' },
+      { id: 'e-002', name: 'filigrana-detalle.jpg', kind: 'image', sizeKb: 453, uploadedAt: '2026-02-02T10:16:00-03:00', thumbUrl: '/gallery/alunawa/02.jpg' },
+      { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image', sizeKb: 348, uploadedAt: '2026-02-02T10:18:00-03:00', thumbUrl: '/gallery/alunawa/03.jpg' },
+      { id: 'e-004', name: 'soldadura-artesanal.jpg', kind: 'image', sizeKb: 389, uploadedAt: '2026-02-02T10:19:00-03:00', thumbUrl: '/gallery/alunawa/04.jpg' },
+      { id: 'e-005', name: 'pieza-terminada.jpg', kind: 'image', sizeKb: 193, uploadedAt: '2026-02-02T10:20:00-03:00', thumbUrl: '/gallery/alunawa/05.jpg' },
+      { id: 'e-006', name: 'anillo-filigrana.jpg', kind: 'image', sizeKb: 207, uploadedAt: '2026-02-02T10:21:00-03:00', thumbUrl: '/gallery/alunawa/06.jpg' },
+      { id: 'e-007', name: 'coleccion-alunawa.jpg', kind: 'image', sizeKb: 297, uploadedAt: '2026-02-02T10:22:00-03:00', thumbUrl: '/gallery/alunawa/07.jpg' },
+      { id: 'e-008', name: 'taller-detalle.jpg', kind: 'image', sizeKb: 355, uploadedAt: '2026-02-02T10:23:00-03:00', thumbUrl: '/gallery/alunawa/08.jpg' },
+      { id: 'e-009', name: 'video-proceso.mp4', kind: 'video', sizeKb: 18200, uploadedAt: '2026-02-02T10:24:00-03:00' },
+      { id: 'e-010', name: 'aval-comunidad.pdf', kind: 'document', sizeKb: 320, uploadedAt: '2026-02-03T16:42:00-03:00' },
     ],
     payments: [
       {

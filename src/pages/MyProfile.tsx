@@ -45,18 +45,21 @@ interface ProfileData {
   avatarUrl: string
 }
 
+// Perfil de Camila alineado con su ficha pública (Técnica ancestral:
+// Filigrana / Alunawa, San Juan de Pasto, Nariño): misma región, comunidad,
+// contacto, portada y narrativa (comunidad y región + técnica y producción).
 const INITIAL: ProfileData = {
   name: 'Camila Montes',
   email: 'camila.montes@gmail.com',
   country: 'Colombia',
-  region: 'Caribe colombiano',
-  phone: '+57 2345-6789',
-  bio: 'Soy artesana en filigrana ancestral, una técnica milenaria de orfebrería que trabajo como parte de una herencia cultural transmitida en mi familia. Mi práctica se basa en la réplica, preservación y continuidad de este saber ancestral, respetando sus procesos, tiempos y formas tradicionales.\n\nA través de mi trabajo en Alunawa, desarrollo piezas realizadas a mano con hilos finos de metal, explorando la filigrana como un lenguaje que conecta memoria, territorio e identidad.',
-  community: 'Sierra Nevada de Santa Marta',
-  role: 'Artesana',
+  region: 'Nariño',
+  phone: '+57 300 501 3477',
+  bio: 'Soy artesana en filigrana ancestral y llevo adelante Alunawa, mi joyería en San Juan de Pasto (Nariño). Trabajo esta técnica de orfebrería como parte de una herencia cultural transmitida en mi familia: hilos de metal extremadamente finos que enrollo, trenzo y sueldo a mano, sin procesos industriales.\n\nHago restauraciones, réplicas, diseños personalizados, alianzas y anillos de compromiso, reinterpretando los saberes de los Andes de Nariño en joyería contemporánea que conecta memoria, territorio e identidad.',
+  community: 'San Juan de Pasto, Nariño',
+  role: 'Artesana · Alunawa',
   history:
-    'Mi práctica artesanal se encuentra vinculada a una herencia cultural familiar de larga data, conectada con territorios y tradiciones de la Sierra Nevada de Santa Marta. Si bien mi vínculo es de descendencia lejana, estos saberes se han transmitido de generación en generación a través de la práctica, el respeto por el oficio y la valoración del trabajo manual.\n\nLa filigrana, como técnica ancestral, representa para mí un puente entre el pasado y mi presente. A través de ella, continúo un legado que prioriza la paciencia, la precisión y el sentido simbólico de cada pieza.',
-  coverUrl: '',
+    'Esta técnica mantiene un vínculo ancestral con los Andes de Nariño, transmitido a través de herencias familiares de las comunidades del territorio en torno a San Juan de Pasto. La filigrana tiene raíces milenarias —con hallazgos en civilizaciones antiguas como Egipto y Grecia— y se desarrolló ampliamente en América Latina (Colombia, México y Perú) y Europa (Portugal y España).\n\nCada pieza se elabora a mano con la técnica de enrollado y trenzado de hilos metálicos extremadamente finos, unidos mediante soldadura artesanal, sin intervención de procesos industriales. Un legado que prioriza la paciencia, la precisión y el sentido simbólico de cada pieza.',
+  coverUrl: '/gallery/alunawa/portada.jpg',
   avatarUrl: '',
 }
 
