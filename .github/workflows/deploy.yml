@@ -23,10 +23,14 @@ on:
 permissions:
   contents: read
 
-# Un deploy a la vez; si llega otro push, cancela el anterior en curso.
+# Un deploy a la vez. NO cancelamos el que está en curso: cancelar a mitad
+# de un `mirror` deja el server INCONSISTENTE (index.html nuevo apuntando a
+# un bundle /assets/*.js que no terminó de subir → el JS 404ea, la app no
+# bootea, MSW no arranca y las fichas dan "no encontrado"). Los deploys
+# nuevos ESPERAN a que termine el actual.
 concurrency:
   group: deploy-prod
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -83,6 +87,13 @@ jobs:
           #  - dns:order inet      → IPv4 (el runner no tiene IPv6 → ENETUNREACH).
           # mirror -R es ADITIVO (sin --delete): no borra WordPress ni el
           # .htaccess de producción.
+          #
+          # ORDEN ATÓMICO-SEGURO: subimos primero los assets hasheados
+          # (/assets/, inmutables y aditivos) y DESPUÉS el resto, incluido
+          # index.html. Así index.html —que referencia los bundles nuevos—
+          # solo se sube cuando esos bundles YA existen en el server. Si el
+          # deploy se corta en cualquier punto, index.html + assets quedan
+          # consistentes (peor caso: sigue viva la versión anterior).
           lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<EOF
           set dns:order "inet";
           set ftp:ssl-allow true;
@@ -93,6 +104,7 @@ jobs:
           set ftp:prefer-epsv false;
           set net:max-retries 2;
           set net:timeout 30;
+          mirror -R --verbose ./dist/assets/ "$REMOTE/assets/";
           mirror -R --verbose ./dist/ "$REMOTE";
           bye;
           EOF
