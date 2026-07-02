@@ -27,6 +27,7 @@ const REQUIRED_ASSETS = [
   'docs/reglamento-marca-ancestral-seed.pdf',
   // Catálogos de autores — botón "Descargar catálogo" en la ficha pública
   'docs/catalogo-ecodestinos-2025.pdf',
+  'docs/catalogo-alunawa-2022.pdf',
   // OG image — preview en WhatsApp/X/LinkedIn
   'og-image.png',
   'og-image.svg',

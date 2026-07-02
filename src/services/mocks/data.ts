@@ -273,6 +273,8 @@ export const mockCertifications: Certification[] = [
       '/gallery/alunawa/08.jpg',
     ],
     contact: {
+      catalogUrl: '/docs/catalogo-alunawa-2022.pdf',
+      catalogLabel: '2022',
       whatsappLabel: '+57 300 501 3477',
       whatsappUrl:
         'https://wa.me/573005013477?text=Hola%20Alunawa%2C%20vi%20su%20ficha%20en%20Ancestral%20Seed%20y%20quiero%20hacer%20una%20consulta.',
