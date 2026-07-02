@@ -179,6 +179,23 @@ export const mockAuthors: Author[] = [
     community: 'Tradición filigranera de Santa Cruz de Mompox',
     languages: ['Español'],
   },
+  {
+    id: 'a-efrain',
+    slug: 'efrain-jojoa',
+    name: 'Segundo Efraín Jojoa',
+    title: 'Caficultor del pueblo Quillacinga · Nariño',
+    bio: 'Caficultor del pueblo indígena Quillacinga, en las montañas de Nariño. Cultiva café de altura bajo sombra en la chagra familiar, cosecha la cereza a mano y la seca al sol como le enseñaron sus mayores. Su trabajo sostiene la economía y la cultura de su comunidad, arraigada al territorio en torno a la Laguna de La Cocha.',
+    avatarUrl: 'https://i.pravatar.cc/300?img=13',
+    location: 'Colombia · Nariño',
+    email: 'efrain.jojoa@ancestralseed.com',
+    certificationsCount: 1,
+    joinedAt: '2025-10-01',
+    // Pueblo Quillacinga (Quillasinga) — comunidad indígena de Nariño,
+    // en torno a la Laguna de La Cocha / El Encano. Lengua originaria
+    // extinta; hoy hablan español → categoría "auténtico" del Reglamento.
+    community: 'Pueblo Quillacinga',
+    languages: ['Español'],
+  },
 ]
 
 export const mockCertifications: Certification[] = [
@@ -448,22 +465,41 @@ export const mockCertifications: Certification[] = [
   {
     id: 'c-cafe',
     slug: 'cafe-artesanal-de-montana',
-    title: 'Café artesanal de montaña',
-    authorId: PLACEHOLDER,
-    authorName: PLACEHOLDER,
-    authorAvatarUrl: '',
-    issuedBy: PLACEHOLDER,
-    issuedAt: '2026-01-01',
+    title: 'Café ancestral Quillacinga',
+    authorId: 'a-efrain',
+    authorSlug: 'efrain-jojoa',
+    authorName: 'Segundo Efraín Jojoa',
+    authorAvatarUrl: 'https://i.pravatar.cc/300?img=13',
+    issuedBy: 'Ancestral Seed Foundation',
+    issuedAt: '2026-02-01',
+    expiresAt: '2028-02-01',
     status: 'verified',
-    category: PLACEHOLDER,
+    category: 'Nariño',
     description:
-      'Café cultivado y procesado de forma artesanal en montañas de origen, con trazabilidad completa.',
-    coverUrl: '/cards/card-cafe-v2.webp',
+      'Café de altura cultivado y procesado por familias del pueblo indígena Quillacinga en las montañas de Nariño. Los granos se cosechan a mano, cereza por cereza, y se secan al sol siguiendo prácticas transmitidas por generaciones, en armonía con los ciclos de la tierra y el territorio ancestral.',
+    coverUrl: '/cards/card-cafe-quillacinga.webp',
     hash: '0xC7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1A2F3E4D5C6B7A8F9',
-    officialCategory: 'inspiracion',
+    officialCategory: 'autentico',
+    entityType: 'producto',
     licenseStatus: 'vigente',
-    licenseValidUntil: '2028-01-01',
+    licenseValidUntil: '2028-02-01',
     licenseNumber: 'AS-2026-009',
+    location: 'Colombia · Nariño',
+    mapQuery: 'Buesaco, Nariño, Colombia',
+    contextParagraphs: [
+      'El pueblo Quillacinga habita desde tiempos precolombinos el altiplano de Nariño, en torno a la Laguna de La Cocha y las montañas del sur de Colombia. Su relación con la tierra —el agua, la chagra y la montaña— es el centro de su identidad y de su forma de producir.',
+      'En estas laderas de gran altitud, las familias cultivan un café de origen bajo sombra, integrado al bosque y a la huerta tradicional. Cada cosecha es un trabajo comunitario que sostiene la economía y la cultura del territorio.',
+    ],
+    techniqueParagraphs: [
+      'El café crece entre 1.800 y 2.100 metros sobre el nivel del mar, bajo sombra de árboles nativos que protegen el suelo y la biodiversidad. La cereza se recolecta a mano, seleccionando sólo los frutos maduros.',
+      'El beneficio es artesanal: despulpado, fermentación controlada y secado al sol, sin maquinaria industrial. El resultado es un café de taza limpia y dulce, con la acidez brillante característica de las montañas de Nariño.',
+    ],
+    galleryUrls: [
+      '/cards/card-cafe-quillacinga.webp',
+      '/gallery/cafe-quillacinga/01-grano-verde.webp',
+      '/gallery/cafe-quillacinga/02-secado.webp',
+      '/gallery/cafe-quillacinga/03-tostado.webp',
+    ],
   },
 ]
 
