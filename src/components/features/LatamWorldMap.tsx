@@ -46,36 +46,39 @@ const LATAM_ISO_IDS = new Set([
 ])
 
 export default function LatamWorldMap() {
-  // Un punto por cada uno de los 26 países de LATAM (coords de su
-  // capital, garantizado en tierra) — presencia regional completa,
-  // no solo donde hay certificaciones activas hoy.
+  // Un punto CENTRADO y DENTRO de cada país de LATAM. Coords calculadas
+  // sobre el MISMO topojson que dibuja el mapa (countries-110m): centroide
+  // del polígono continental cuando cae dentro (más central), o polo de
+  // inaccesibilidad como fallback en formas cóncavas (Haití). Las 25 fueron
+  // validadas con d3.geoContains → todas dentro de su país.
+  // (Guayana Francesa no está en el dataset 110m como país propio → se omite;
+  //  cualquier punto ahí flotaría en el mar.)
   const cities: Array<{ coords: [number, number]; label: string }> = [
-    { coords: [-99.1332, 19.4326], label: 'México' },
-    { coords: [-90.5069, 14.6349], label: 'Guatemala' },
-    { coords: [-88.7713, 17.1899], label: 'Belice' },
-    { coords: [-87.2068, 14.0723], label: 'Honduras' },
-    { coords: [-89.2182, 13.6929], label: 'El Salvador' },
-    { coords: [-86.2504, 12.1364], label: 'Nicaragua' },
-    { coords: [-84.0907, 9.9281], label: 'Costa Rica' },
-    { coords: [-79.5199, 8.9824], label: 'Panamá' },
-    { coords: [-82.3666, 23.1136], label: 'Cuba' },
-    { coords: [-69.9312, 18.4861], label: 'Rep. Dominicana' },
-    { coords: [-72.3074, 18.5944], label: 'Haití' },
-    { coords: [-76.7936, 18.0179], label: 'Jamaica' },
-    { coords: [-66.1057, 18.4655], label: 'Puerto Rico' },
-    { coords: [-74.0721, 4.711], label: 'Colombia' },
-    { coords: [-66.9036, 10.4806], label: 'Venezuela' },
-    { coords: [-58.1551, 6.8013], label: 'Guyana' },
-    { coords: [-55.2038, 5.852], label: 'Suriname' },
-    { coords: [-52.326, 4.9346], label: 'Guayana Francesa' },
-    { coords: [-78.4678, -0.1807], label: 'Ecuador' },
-    { coords: [-77.0428, -12.0464], label: 'Perú' },
-    { coords: [-68.1193, -16.4897], label: 'Bolivia' },
-    { coords: [-47.8825, -15.7942], label: 'Brasil' },
-    { coords: [-57.5759, -25.2637], label: 'Paraguay' },
-    { coords: [-56.1645, -34.9011], label: 'Uruguay' },
-    { coords: [-58.3816, -34.6037], label: 'Argentina' },
-    { coords: [-70.6693, -33.4489], label: 'Chile' },
+    { coords: [-102.223, 23.913], label: 'México' },
+    { coords: [-90.372, 15.696], label: 'Guatemala' },
+    { coords: [-88.704, 17.195], label: 'Belice' },
+    { coords: [-86.593, 14.825], label: 'Honduras' },
+    { coords: [-88.872, 13.726], label: 'El Salvador' },
+    { coords: [-85.021, 12.847], label: 'Nicaragua' },
+    { coords: [-84.173, 9.966], label: 'Costa Rica' },
+    { coords: [-80.109, 8.533], label: 'Panamá' },
+    { coords: [-78.932, 21.647], label: 'Cuba' },
+    { coords: [-70.462, 18.885], label: 'Rep. Dominicana' },
+    { coords: [-72.18, 19.257], label: 'Haití' },
+    { coords: [-77.324, 18.138], label: 'Jamaica' },
+    { coords: [-66.479, 18.238], label: 'Puerto Rico' },
+    { coords: [-73.073, 3.916], label: 'Colombia' },
+    { coords: [-66.153, 7.161], label: 'Venezuela' },
+    { coords: [-58.969, 4.786], label: 'Guyana' },
+    { coords: [-55.911, 4.12], label: 'Suriname' },
+    { coords: [-78.384, -1.454], label: 'Ecuador' },
+    { coords: [-74.431, -9.147], label: 'Perú' },
+    { coords: [-64.655, -16.704], label: 'Bolivia' },
+    { coords: [-53.173, -10.655], label: 'Brasil' },
+    { coords: [-58.432, -23.23], label: 'Paraguay' },
+    { coords: [-56.01, -32.774], label: 'Uruguay' },
+    { coords: [-64.738, -34.57], label: 'Argentina' },
+    { coords: [-71.238, -35.882], label: 'Chile' },
   ]
 
   return (
