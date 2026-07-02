@@ -78,7 +78,7 @@ export default function Notifications() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [query, setQuery] = useState('')
 
-  // Alertas accionables (pagos, propuestas del auditor, diagnóstico, apelar):
+  // Alertas accionables (pagos, propuestas del tutor, diagnóstico, apelar):
   // antes eran un banner dentro del detalle de cada certificación; ahora se
   // centralizan acá, arriba del log de novedades.
   const alerts = deriveActionAlerts(mockCertificationRequests)

@@ -131,7 +131,7 @@ export default function CertificationRequest() {
 
       {/* El bloque "Tu próximo paso" se movió a la pestaña Notificaciones,
           que ahora centraliza TODAS las alertas accionables (pagos,
-          propuestas del auditor, diagnóstico, apelaciones) en un solo lugar.
+          propuestas del tutor, diagnóstico, apelaciones) en un solo lugar.
           Ver src/lib/alerts.ts + pages/Notifications.tsx. */}
 
       {/* Hero summary card */}

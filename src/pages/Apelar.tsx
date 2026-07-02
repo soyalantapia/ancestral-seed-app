@@ -19,7 +19,7 @@ import { mockCertificationRequests } from '@/services/mocks/data'
  * El backend real va a:
  *  - validar plazo
  *  - crear ticket al Comité de Certificación con SLA 15 días
- *  - notificar al auditor cultural y antropólogo
+ *  - notificar al tutor cultural y antropólogo
  */
 export default function Apelar() {
   const { id } = useParams()

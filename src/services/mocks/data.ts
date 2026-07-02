@@ -162,6 +162,23 @@ export const mockAuthors: Author[] = [
     community: undefined,
     languages: undefined,
   },
+  {
+    id: 'a-rosa',
+    slug: 'rosa-villalba',
+    name: 'Rosa Elena Villalba',
+    title: 'Orfebre filigranista · Santa Cruz de Mompox',
+    bio: 'Orfebre de Santa Cruz de Mompox, Bolívar, dedicada a la filigrana en plata. Aprendió el oficio de niña en el taller familiar, viendo a su madre y a su abuela trenzar el hilo de plata, y hoy lo transmite a las nuevas generaciones de su barrio. Sus piezas —flores, hojas y aretes— nacen de una tradición momposina que se conserva viva desde la época colonial.',
+    avatarUrl: 'https://i.pravatar.cc/300?img=32',
+    location: 'Colombia · Bolívar',
+    email: 'rosa.villalba@ancestralseed.com',
+    certificationsCount: 1,
+    joinedAt: '2025-09-10',
+    // Filigrana momposina: tradición orfebre mestiza de raíz colonial
+    // (herencia andalusí adaptada en el Caribe colombiano). No es
+    // comunidad indígena → categoría "tradicional" del Reglamento.
+    community: 'Tradición filigranera de Santa Cruz de Mompox',
+    languages: ['Español'],
+  },
 ]
 
 export const mockCertifications: Certification[] = [
@@ -332,22 +349,41 @@ export const mockCertifications: Certification[] = [
   {
     id: 'c-joyeria',
     slug: 'joyeria-filigrana-tradicional',
-    title: 'Joyería Filigrana tradicional',
-    authorId: PLACEHOLDER,
-    authorName: PLACEHOLDER,
-    authorAvatarUrl: '',
-    issuedBy: PLACEHOLDER,
-    issuedAt: '2026-01-01',
+    title: 'Joyería en filigrana momposina',
+    authorId: 'a-rosa',
+    authorSlug: 'rosa-villalba',
+    authorName: 'Rosa Elena Villalba',
+    authorAvatarUrl: 'https://i.pravatar.cc/300?img=32',
+    issuedBy: 'Ancestral Seed Foundation',
+    issuedAt: '2026-01-15',
+    expiresAt: '2028-01-15',
     status: 'verified',
-    category: PLACEHOLDER,
+    category: 'Caribe colombiano',
     description:
-      'Joyería elaborada con la técnica de filigrana, herencia cultural de orfebres tradicionales.',
-    coverUrl: '/cards/card-joyeria-v2.webp',
+      'Aretes, flores y hojas trabajados en filigrana de plata, una técnica de orfebrería que consiste en trenzar y soldar finísimos hilos de metal hasta formar encajes calados. En Santa Cruz de Mompox esta tradición se conserva viva desde la época colonial y se transmite de generación en generación dentro de los talleres familiares.',
+    coverUrl: '/cards/card-joyeria-momposina.webp',
     hash: '0xE0F5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0',
     officialCategory: 'tradicional',
+    entityType: 'producto',
     licenseStatus: 'vigente',
-    licenseValidUntil: '2028-01-01',
+    licenseValidUntil: '2028-01-15',
     licenseNumber: 'AS-2026-005',
+    location: 'Colombia · Bolívar',
+    mapQuery: 'Santa Cruz de Mompox, Bolívar, Colombia',
+    contextParagraphs: [
+      'La filigrana momposina es una de las expresiones orfebres más reconocidas de Colombia. Llegó al Caribe con la tradición andalusí durante la Colonia y encontró en Santa Cruz de Mompox —puerto sobre el río Magdalena— un territorio donde florecer y volverse identidad.',
+      'Durante siglos, las familias momposinas convirtieron el oficio en herencia: los saberes pasan de madres a hijas en talleres de barrio, y las piezas acompañan celebraciones, dotes y las procesiones de la Semana Santa momposina.',
+    ],
+    techniqueParagraphs: [
+      'La filigrana parte de la plata ley 0.950 estirada en hilos finísimos. El orfebre los tuerce de a dos formando el «cordón», y con pinzas los enrolla y dobla para armar volutas, mallas y pétalos que rellenan el contorno de cada figura.',
+      'Todo se une con soldadura de plata a la llama, sin moldes ni piezas industriales: cada flor, hoja o arete es único y se realiza enteramente a mano. El brillo final se logra con un blanqueado tradicional que resalta el encaje de metal.',
+    ],
+    galleryUrls: [
+      '/cards/card-joyeria-momposina.webp',
+      '/gallery/joyeria-filigrana/01-coleccion.webp',
+      '/gallery/joyeria-filigrana/02-aros-caja.webp',
+      '/gallery/joyeria-filigrana/03-flor-amatista.webp',
+    ],
   },
   {
     id: 'c-mopa',

@@ -4,7 +4,7 @@ import type { CertificationRequest } from '@/types'
 
 /**
  * Alertas accionables del postulante — lo que necesita hacer para que sus
- * certificaciones avancen (pagar, responder al auditor, completar el
+ * certificaciones avancen (pagar, responder al tutor, completar el
  * diagnóstico, apelar). Antes vivían como un banner "Tu próximo paso" dentro
  * del detalle de cada certificación; se centralizaron en la pestaña
  * Notificaciones para que estén todas en un solo lugar.
