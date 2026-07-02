@@ -46,15 +46,36 @@ const LATAM_ISO_IDS = new Set([
 ])
 
 export default function LatamWorldMap() {
-  // Coords reales [lng, lat] de comunidades con certificaciones activas.
+  // Un punto por cada uno de los 26 países de LATAM (coords de su
+  // capital, garantizado en tierra) — presencia regional completa,
+  // no solo donde hay certificaciones activas hoy.
   const cities: Array<{ coords: [number, number]; label: string }> = [
-    { coords: [-74, 5], label: 'Colombia' },
-    { coords: [-78, -1], label: 'Ecuador' },
-    { coords: [-77, -10], label: 'Perú' },
-    { coords: [-53, -10], label: 'Brasil' },
-    { coords: [-65, -17], label: 'Bolivia' },
-    { coords: [-65, -33], label: 'Argentina' },
-    { coords: [-99, 22], label: 'México' },
+    { coords: [-99.1332, 19.4326], label: 'México' },
+    { coords: [-90.5069, 14.6349], label: 'Guatemala' },
+    { coords: [-88.7713, 17.1899], label: 'Belice' },
+    { coords: [-87.2068, 14.0723], label: 'Honduras' },
+    { coords: [-89.2182, 13.6929], label: 'El Salvador' },
+    { coords: [-86.2504, 12.1364], label: 'Nicaragua' },
+    { coords: [-84.0907, 9.9281], label: 'Costa Rica' },
+    { coords: [-79.5199, 8.9824], label: 'Panamá' },
+    { coords: [-82.3666, 23.1136], label: 'Cuba' },
+    { coords: [-69.9312, 18.4861], label: 'Rep. Dominicana' },
+    { coords: [-72.3074, 18.5944], label: 'Haití' },
+    { coords: [-76.7936, 18.0179], label: 'Jamaica' },
+    { coords: [-66.1057, 18.4655], label: 'Puerto Rico' },
+    { coords: [-74.0721, 4.711], label: 'Colombia' },
+    { coords: [-66.9036, 10.4806], label: 'Venezuela' },
+    { coords: [-58.1551, 6.8013], label: 'Guyana' },
+    { coords: [-55.2038, 5.852], label: 'Suriname' },
+    { coords: [-52.326, 4.9346], label: 'Guayana Francesa' },
+    { coords: [-78.4678, -0.1807], label: 'Ecuador' },
+    { coords: [-77.0428, -12.0464], label: 'Perú' },
+    { coords: [-68.1193, -16.4897], label: 'Bolivia' },
+    { coords: [-47.8825, -15.7942], label: 'Brasil' },
+    { coords: [-57.5759, -25.2637], label: 'Paraguay' },
+    { coords: [-56.1645, -34.9011], label: 'Uruguay' },
+    { coords: [-58.3816, -34.6037], label: 'Argentina' },
+    { coords: [-70.6693, -33.4489], label: 'Chile' },
   ]
 
   return (
