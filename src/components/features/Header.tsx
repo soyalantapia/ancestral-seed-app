@@ -117,12 +117,12 @@ export function Header() {
     toast.success('Sesión cerrada')
   }
 
-  const homeLink = isAuthenticated ? '/mis-certificaciones' : '/'
-
   return (
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="flex h-16 w-full items-center gap-4 px-4 md:h-20 md:gap-6 md:px-6">
-        <Link to={homeLink} className="shrink-0">
+        {/* El logo SIEMPRE lleva a la landing pública ("/"), esté o no
+            autenticado — es la marca, no un acceso rápido al dashboard. */}
+        <Link to="/" className="shrink-0">
           <Logo />
         </Link>
 
