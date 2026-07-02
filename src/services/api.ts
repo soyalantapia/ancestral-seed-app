@@ -7,6 +7,10 @@ import type {
   User,
 } from '@/types'
 import { ERRORS } from '@/lib/copy'
+import {
+  orphanControllerPresent,
+  purgeOrphanServiceWorkers,
+} from '@/lib/swRecovery'
 
 // El sitio se sirve desde el BASE_URL del bundle (por ej. `/ancestral-seed-app/`
 // en GitHub Pages, `/` en dev). El service worker de MSW se registra dentro
@@ -147,6 +151,18 @@ async function request<T>(
   // "no pudimos cargar los datos". Solo si tras varios intentos sigue HTML
   // (caso patológico real) tiramos el error.
   if (isHtmlResponse(res)) {
+    // Un SW huérfano (Workbox viejo de una versión anterior) controlando la
+    // página deja pasar /api/* al server → SPA-fallback (HTML). No es un
+    // error del backend: hay que DESREGISTRAR ese SW para que MSW tome
+    // control. La purga recarga la página; si lo hace, cortamos acá.
+    if (orphanControllerPresent()) {
+      const reloading = await purgeOrphanServiceWorkers()
+      if (reloading) {
+        // La página se está recargando: devolvemos una promesa que nunca
+        // resuelve para no mostrar el error en el frame que se va.
+        return new Promise<T>(() => {})
+      }
+    }
     if (attempt < MAX_API_RETRIES && mswRaceLikely()) {
       if (import.meta.env.DEV) {
         console.warn(
