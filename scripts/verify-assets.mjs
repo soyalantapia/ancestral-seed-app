@@ -30,6 +30,9 @@ const REQUIRED_ASSETS = [
   'og-image.svg',
   // Brand
   'favicon.svg',
+  'favicon.ico',
+  'favicon-32.png',
+  'apple-touch-icon.png',
   'logo-mark.png',
   // PWA
   'pwa-192.png',
