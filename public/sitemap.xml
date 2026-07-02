@@ -5,7 +5,7 @@
   Fix V4-PUB-02 (auditoría v4): incluye fichas dinámicas (autores +
   certs) además de las rutas estáticas.
 
-  Total URLs: 22 (6 estáticas + 9 certs + 7 autores)
+  Total URLs: 23 (6 estáticas + 9 certs + 8 autores)
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -97,6 +97,12 @@
     <lastmod>2026-07-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/aurora-bustos</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
   <url>
     <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/camila-montes</loc>
