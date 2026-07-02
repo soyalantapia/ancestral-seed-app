@@ -100,7 +100,7 @@ export const mockAuthors: Author[] = [
     slug: 'camila-montes',
     name: 'Camila Montes',
     title: 'Directora creativa de Alunawa · Filigrana · San Juan de Pasto',
-    bio: 'Soy Camila Montes, directora creativa de Alunawa, nuestra joyería en el centro de San Juan de Pasto (Nariño). Trabajo la filigrana ancestral —una técnica de orfebrería heredada y desarrollada en mi familia— en restauraciones, réplicas, diseños personalizados, alianzas matrimoniales y anillos de compromiso. Mi obra reinterpreta los saberes tradicionales de los Andes de Nariño en piezas de joyería contemporánea.',
+    bio: 'Soy Camila Montes, directora creativa de Alunawa, nuestra joyería en el centro de San Juan de Pasto (Nariño). Trabajo la filigrana ancestral, una técnica de orfebrería heredada y desarrollada en mi familia, en restauraciones, réplicas, diseños personalizados, alianzas matrimoniales y anillos de compromiso. Mi obra reinterpreta los saberes tradicionales de los Andes de Nariño en piezas de joyería contemporánea.',
     avatarUrl: '/authors/camila-montes.jpg',
     location: 'Colombia',
     email: 'camila.montes@ancestralseed.com',
@@ -133,7 +133,7 @@ export const mockAuthors: Author[] = [
     slug: 'flor-imbacuan-pantoja',
     name: 'Flor Imbacuán Pantoja',
     title: 'Tejedora del Pueblo de los Pastos',
-    bio: 'Tejedora y diseñadora del Pueblo de los Pastos, en el Resguardo de Carlosama (Cuaspud), Nariño. Trabaja la guanga —el telar vertical ancestral— que aprendió de su madre, y fundó la marca de etnomoda Hajsú, donde teje junto a otras mujeres del territorio.',
+    bio: 'Tejedora y diseñadora del Pueblo de los Pastos, en el Resguardo de Carlosama (Cuaspud), Nariño. Trabaja la guanga, el telar vertical ancestral, que aprendió de su madre, y fundó la marca de etnomoda Hajsú, donde teje junto a otras mujeres del territorio.',
     avatarUrl: '/authors/flor-imbacuan.jpg',
     location: 'Colombia · Nariño · Resguardo de Carlosama (Cuaspud)',
     email: 'flor.imbacuan@ancestralseed.io',
@@ -167,7 +167,7 @@ export const mockAuthors: Author[] = [
     slug: 'rosa-villalba',
     name: 'Rosa Elena Villalba',
     title: 'Orfebre filigranista · Santa Cruz de Mompox',
-    bio: 'Orfebre de Santa Cruz de Mompox, Bolívar, dedicada a la filigrana en plata. Aprendió el oficio de niña en el taller familiar, viendo a su madre y a su abuela trenzar el hilo de plata, y hoy lo transmite a las nuevas generaciones de su barrio. Sus piezas —flores, hojas y aretes— nacen de una tradición momposina que se conserva viva desde la época colonial.',
+    bio: 'Orfebre de Santa Cruz de Mompox, Bolívar, dedicada a la filigrana en plata. Aprendió el oficio de niña en el taller familiar, viendo a su madre y a su abuela trenzar el hilo de plata, y hoy lo transmite a las nuevas generaciones de su barrio. Sus piezas, flores, hojas y aretes, nacen de una tradición momposina que se conserva viva desde la época colonial.',
     avatarUrl: 'https://i.pravatar.cc/300?img=32',
     location: 'Colombia · Bolívar',
     email: 'rosa.villalba@ancestralseed.com',
@@ -194,6 +194,22 @@ export const mockAuthors: Author[] = [
     // en torno a la Laguna de La Cocha / El Encano. Lengua originaria
     // extinta; hoy hablan español → categoría "auténtico" del Reglamento.
     community: 'Pueblo Quillacinga',
+    languages: ['Español'],
+  },
+  {
+    id: 'a-jobando',
+    slug: 'jose-obando',
+    name: 'José Antonio Obando',
+    title: 'Maestro barnizador · Barniz de Pasto',
+    bio: 'Maestro del Barniz de Pasto, o Mopa-Mopa, en San Juan de Pasto, Nariño. Aprendió el oficio de niño en el taller de su familia y lleva más de treinta años estirando la resina de mopa-mopa con las manos y los dientes para vestir de color la madera. Sus piezas continúan una tradición que la UNESCO reconoció como Patrimonio de la Humanidad.',
+    avatarUrl: 'https://i.pravatar.cc/300?img=51',
+    location: 'Colombia · Nariño',
+    email: 'jose.obando@ancestralseed.com',
+    certificationsCount: 1,
+    joinedAt: '2025-11-05',
+    // Barniz de Pasto (Mopa-Mopa): oficio artesanal de raíz prehispánica
+    // desarrollado por familias barnizadoras de Pasto. Patrimonio UNESCO 2020.
+    community: 'Maestros del Barniz de Pasto (Mopa-Mopa)',
     languages: ['Español'],
   },
 ]
@@ -224,7 +240,7 @@ export const mockCertifications: Certification[] = [
     mapQuery: 'San Juan de Pasto, Nariño, Colombia',
     contextParagraphs: [
       'Esta técnica mantiene un vínculo ancestral con los Andes de Nariño, transmitido a través de herencias familiares de comunidades del territorio en torno a San Juan de Pasto.',
-      'Tiene raíces milenarias, con hallazgos en civilizaciones antiguas como Egipto y Grecia, y se desarrolló ampliamente en distintas regiones de América Latina —como Colombia, México y Perú— y Europa, especialmente en Portugal y España.',
+      'Tiene raíces milenarias, con hallazgos en civilizaciones antiguas como Egipto y Grecia, y se desarrolló ampliamente en distintas regiones de América Latina, como Colombia, México y Perú, y Europa, especialmente en Portugal y España.',
     ],
     techniqueParagraphs: [
       'A lo largo del tiempo, la práctica se mantuvo viva gracias a la transmisión oral y a la práctica familiar, conservando su valor cultural y simbólico como una forma de expresión ligada a la paciencia, la precisión y el trabajo manual.',
@@ -279,7 +295,7 @@ export const mockCertifications: Certification[] = [
     ],
     techniqueParagraphs: [
       'A través de una mirada contemporánea, la obra propone comprender el sentido cultural y energético que estas prácticas tenían dentro de las sociedades tradicionales, explorando cómo pueden reinterpretarse en el contexto actual para recuperar una relación más equilibrada entre la alimentación, el cuerpo y los ritmos de la naturaleza.',
-      'El libro combina fundamentos teóricos con propuestas prácticas —calendarios lunares, agrupaciones de alimentos según su energía y recetas de estación— para que cada lectora y lector pueda llevar estos principios a su mesa cotidiana.',
+      'El libro combina fundamentos teóricos con propuestas prácticas: calendarios lunares, agrupaciones de alimentos según su energía y recetas de estación, para que cada lectora y lector pueda llevar estos principios a su mesa cotidiana.',
     ],
     galleryUrls: [
       '/cards/card-sabores-cosmicos.webp',
@@ -304,7 +320,7 @@ export const mockCertifications: Certification[] = [
     status: 'verified',
     category: 'Nariño',
     description:
-      'Tradición textil del Pueblo de los Pastos, en el sur de Nariño, encarnada por Flor Imbacuán Pantoja, tejedora del Resguardo de Carlosama (municipio de Cuaspud). Las prendas se elaboran en guanga, el telar vertical precolombino con el que las mujeres del territorio transforman lana de oveja —hilada y teñida a mano— en ruanas, bufandas y diseños contemporáneos. Es un oficio que Flor heredó de su madre y que hoy comparte con otras tejedoras a través de su marca de etnomoda, Hajsú. En cada pieza el tejido conserva la iconografía y la cosmovisión andina del pueblo Pasto, transmitida de madres a hijas como un saber a la vez técnico, espiritual y comunitario.',
+      'Tradición textil del Pueblo de los Pastos, en el sur de Nariño, encarnada por Flor Imbacuán Pantoja, tejedora del Resguardo de Carlosama (municipio de Cuaspud). Las prendas se elaboran en guanga, el telar vertical precolombino con el que las mujeres del territorio transforman lana de oveja, hilada y teñida a mano, en ruanas, bufandas y diseños contemporáneos. Es un oficio que Flor heredó de su madre y que hoy comparte con otras tejedoras a través de su marca de etnomoda, Hajsú. En cada pieza el tejido conserva la iconografía y la cosmovisión andina del pueblo Pasto, transmitida de madres a hijas como un saber a la vez técnico, espiritual y comunitario.',
     coverUrl: '/gallery/flor/portada.jpg',
     hash: '0xB7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8A2B7C1D6F5E3A0B4C9D1E7F2',
     officialCategory: 'autentico',
@@ -315,12 +331,12 @@ export const mockCertifications: Certification[] = [
     mapQuery: 'Carlosama, Cuaspud, Nariño, Colombia',
     contextParagraphs: [
       'El tejido en guanga es uno de los saberes centrales del Pueblo de los Pastos, en los Andes del sur de Nariño. La guanga es un telar vertical de origen precolombino, en el que se tensan y entrelazan a mano los hilos hasta dar forma a ruanas, cobijas, bufandas, fajas y mochilas en lana de oveja. El oficio se transmite de madres a hijas y forma parte de la identidad y el patrimonio del territorio.',
-      'Más allá de la prenda, el textil es para los Pastos una forma de escritura. En sus diseños recurren motivos de la cosmovisión andina —como el sol de los Pastos, el churo cósmico o espiral, y las escaleras— que ordenan el pensamiento, el tiempo y la relación con la naturaleza. Tejer es también una manera de recordar y de enseñar.',
-      'La lengua originaria del Pueblo de los Pastos —el idioma pasto— se considera hoy extinta, y la comunidad se comunica en español, conservando topónimos y vocablos propios. (El awapít, que antes figuraba en esta ficha, no es lengua de los Pastos sino del vecino pueblo Awá.)',
+      'Más allá de la prenda, el textil es para los Pastos una forma de escritura. En sus diseños recurren motivos de la cosmovisión andina, como el sol de los Pastos, el churo cósmico o espiral, y las escaleras, que ordenan el pensamiento, el tiempo y la relación con la naturaleza. Tejer es también una manera de recordar y de enseñar.',
+      'La lengua originaria del Pueblo de los Pastos, el idioma pasto, se considera hoy extinta, y la comunidad se comunica en español, conservando topónimos y vocablos propios. (El awapít, que antes figuraba en esta ficha, no es lengua de los Pastos sino del vecino pueblo Awá.)',
     ],
     techniqueParagraphs: [
       'El proceso es enteramente manual y empieza mucho antes del telar: esquila de la oveja, cardado, hilado y torcido de la lana, lavado y secado de las madejas, y el teñido, que tradicionalmente se realiza con pigmentos naturales. Recién entonces se urde y se teje en la guanga, y al final se carda la prenda terminada. Cada etapa exige tiempo, paciencia y un conocimiento que no está escrito.',
-      'Sobre esa base ancestral, Flor Imbacuán Pantoja trabaja como tejedora y diseñadora: aprendió la guanga de su madre desde la infancia y desarrolló la marca de etnomoda Hajsú, donde teje junto a otras mujeres del Resguardo de Carlosama. Allí el saber heredado se traduce en colecciones contemporáneas —ruanas y prendas en lana de oveja tejidas en guanga— que se han comercializado dentro y fuera de Colombia, manteniendo viva la técnica y el sustento de las familias tejedoras.',
+      'Sobre esa base ancestral, Flor Imbacuán Pantoja trabaja como tejedora y diseñadora: aprendió la guanga de su madre desde la infancia y desarrolló la marca de etnomoda Hajsú, donde teje junto a otras mujeres del Resguardo de Carlosama. Allí el saber heredado se traduce en colecciones contemporáneas: ruanas y prendas en lana de oveja tejidas en guanga, que se han comercializado dentro y fuera de Colombia, manteniendo viva la técnica y el sustento de las familias tejedoras.',
     ],
     galleryUrls: ['/gallery/flor/01.jpg', '/gallery/flor/02.jpg'],
     contact: {
@@ -388,7 +404,7 @@ export const mockCertifications: Certification[] = [
     location: 'Colombia · Bolívar',
     mapQuery: 'Santa Cruz de Mompox, Bolívar, Colombia',
     contextParagraphs: [
-      'La filigrana momposina es una de las expresiones orfebres más reconocidas de Colombia. Llegó al Caribe con la tradición andalusí durante la Colonia y encontró en Santa Cruz de Mompox —puerto sobre el río Magdalena— un territorio donde florecer y volverse identidad.',
+      'La filigrana momposina es una de las expresiones orfebres más reconocidas de Colombia. Llegó al Caribe con la tradición andalusí durante la Colonia y encontró en Santa Cruz de Mompox, puerto sobre el río Magdalena, un territorio donde florecer y volverse identidad.',
       'Durante siglos, las familias momposinas convirtieron el oficio en herencia: los saberes pasan de madres a hijas en talleres de barrio, y las piezas acompañan celebraciones, dotes y las procesiones de la Semana Santa momposina.',
     ],
     techniqueParagraphs: [
@@ -405,22 +421,42 @@ export const mockCertifications: Certification[] = [
   {
     id: 'c-mopa',
     slug: 'tecnica-mopa-mopa',
-    title: 'Técnica Mopa-Mopa',
-    authorId: PLACEHOLDER,
-    authorName: PLACEHOLDER,
-    authorAvatarUrl: '',
-    issuedBy: PLACEHOLDER,
-    issuedAt: '2026-01-01',
+    title: 'Barniz de Pasto (Mopa-Mopa)',
+    authorId: 'a-jobando',
+    authorSlug: 'jose-obando',
+    authorName: 'José Antonio Obando',
+    authorAvatarUrl: 'https://i.pravatar.cc/300?img=51',
+    issuedBy: 'Ancestral Seed Foundation',
+    issuedAt: '2026-02-10',
+    expiresAt: '2028-02-10',
     status: 'verified',
-    category: PLACEHOLDER,
+    category: 'Nariño',
     description:
-      'Técnica artesanal del barniz de Pasto, originaria del territorio andino, declarada patrimonio cultural inmaterial.',
-    coverUrl: '/cards/card-mopa-v2.webp',
+      'Objetos de madera decorados con la técnica del Barniz de Pasto, o Mopa-Mopa: una resina vegetal que se estira a mano hasta formar láminas finísimas, se tiñe con colores intensos y se aplica sobre la superficie tallada. Es uno de los oficios más emblemáticos de San Juan de Pasto, reconocido por la UNESCO como Patrimonio Cultural Inmaterial de la Humanidad.',
+    coverUrl: '/cards/card-mopa-pasto.webp',
     hash: '0xF1A6E5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9',
-    officialCategory: 'autentico',
+    officialCategory: 'tradicional',
+    entityType: 'producto',
     licenseStatus: 'vigente',
-    licenseValidUntil: '2028-01-01',
+    licenseValidUntil: '2028-02-10',
     licenseNumber: 'AS-2026-006',
+    location: 'Colombia · Nariño',
+    mapQuery: 'San Juan de Pasto, Nariño, Colombia',
+    contextParagraphs: [
+      'El Barniz de Pasto hunde sus raíces en tiempos prehispánicos: los pueblos del sur andino ya usaban la resina de mopa-mopa para embellecer y proteger sus objetos. En la Colonia, los talleres de Pasto llevaron la técnica a su máxima expresión, combinando motivos indígenas, europeos y propios.',
+      'En 2020, la UNESCO inscribió los saberes y técnicas del Barniz de Pasto Mopa-Mopa en la Lista Representativa del Patrimonio Cultural Inmaterial de la Humanidad, reconociendo un oficio que se transmite de maestros a aprendices dentro de las familias barnizadoras.',
+    ],
+    techniqueParagraphs: [
+      'La resina se extrae de los brotes del arbusto de mopa-mopa (Elaeagia pastoensis), que crece en la selva del Putumayo. Los maestros la limpian, la calientan y la estiran con las manos y los dientes hasta obtener láminas traslúcidas y elásticas como un velo.',
+      'Cada lámina se tiñe con pigmentos, se recorta en figuras y se adhiere sobre la madera con el calor, capa sobre capa. El resultado es una superficie brillante y de colores profundos, con diseños geométricos y florales que ningún proceso industrial puede imitar.',
+    ],
+    galleryUrls: [
+      '/cards/card-mopa-pasto.webp',
+      '/gallery/mopa-mopa/01-vasija-greca.webp',
+      '/gallery/mopa-mopa/02-taller.webp',
+      '/gallery/mopa-mopa/03-coleccion.webp',
+      '/gallery/mopa-mopa/04-pulseras.webp',
+    ],
   },
   {
     id: 'c-chaquira',
@@ -487,7 +523,7 @@ export const mockCertifications: Certification[] = [
     location: 'Colombia · Nariño',
     mapQuery: 'Buesaco, Nariño, Colombia',
     contextParagraphs: [
-      'El pueblo Quillacinga habita desde tiempos precolombinos el altiplano de Nariño, en torno a la Laguna de La Cocha y las montañas del sur de Colombia. Su relación con la tierra —el agua, la chagra y la montaña— es el centro de su identidad y de su forma de producir.',
+      'El pueblo Quillacinga habita desde tiempos precolombinos el altiplano de Nariño, en torno a la Laguna de La Cocha y las montañas del sur de Colombia. Su relación con la tierra, el agua, la chagra y la montaña, es el centro de su identidad y de su forma de producir.',
       'En estas laderas de gran altitud, las familias cultivan un café de origen bajo sombra, integrado al bosque y a la huerta tradicional. Cada cosecha es un trabajo comunitario que sostiene la economía y la cultura del territorio.',
     ],
     techniqueParagraphs: [
