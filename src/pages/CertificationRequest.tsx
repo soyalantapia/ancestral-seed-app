@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { mockCertificationRequests } from '@/services/mocks/data'
-import { StagePipeline, StageStatusBadge } from '@/components/features/StagePipeline'
+import { StageStatusBadge } from '@/components/features/StagePipeline'
 import type {
   AuditMeeting,
   AuditMeetingStatus,
@@ -426,49 +426,40 @@ function SeguimientoTab({
   request: (typeof mockCertificationRequests)[number]
 }) {
   return (
-    <div className="space-y-6">
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-navy-500">
-              Tu certificación en proceso
-            </h2>
-            <p className="mt-1 text-sm text-navy-300">{request.productName}</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-navy-300">
-            Estado actual:
-            {/* Fix QW-A4 (auditoría UX): igual que el hero — derivar del
-                currentStage. */}
-            <StageStatusBadge
-              status={STAGES[request.currentStage]?.label ?? 'En curso'}
-            />
-          </div>
+    <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-navy-500">
+            Tu certificación en proceso
+          </h2>
+          <p className="mt-1 text-sm text-navy-300">{request.productName}</p>
         </div>
-
-        <div className="mt-6">
-          <StagePipeline stages={request.stages} />
+        <div className="flex items-center gap-2 text-sm text-navy-300">
+          Estado actual:
+          {/* Fix QW-A4 (auditoría UX): igual que el hero — derivar del
+              currentStage. */}
+          <StageStatusBadge
+            status={STAGES[request.currentStage]?.label ?? 'En curso'}
+          />
         </div>
+      </div>
 
-        <div className="mt-6">
-          <Link
-            to={`?tab=evidencias`}
-            className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
-          >
-            <Plus className="h-4 w-4" />
-            Añadir evidencias
-          </Link>
-        </div>
-      </section>
+      {/* Seguimiento etapa por etapa. Antes esto vivía en DOS cards
+          redundantes (un pipeline horizontal de 5 etapas + este timeline de 6
+          con el mismo progreso). Unificado en una sola vista: el timeline es
+          el más completo (las 6 etapas, con fecha, descripción y estado). */}
+      <Timeline stages={request.stages} />
 
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
-        <h3 className="text-lg font-bold text-navy-500">
-          Detalles de seguimiento de solicitud
-        </h3>
-        <p className="mt-1 text-sm text-navy-300">{request.productName}</p>
-
-        <Timeline stages={request.stages} />
-      </section>
-    </div>
+      <div className="mt-8">
+        <Link
+          to={`?tab=evidencias`}
+          className="inline-flex items-center gap-2 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+        >
+          <Plus className="h-4 w-4" />
+          Añadir evidencias
+        </Link>
+      </div>
+    </section>
   )
 }
 
