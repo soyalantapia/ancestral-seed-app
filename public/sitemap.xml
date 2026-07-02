@@ -111,12 +111,6 @@
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/ecodestinos</loc>
-    <lastmod>2026-07-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
     <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/efrain-jojoa</loc>
     <lastmod>2026-07-02</lastmod>
     <changefreq>monthly</changefreq>
@@ -124,6 +118,12 @@
   </url>
   <url>
     <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/flor-imbacuan-pantoja</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://soyalantapia.github.io/ancestral-seed-app/autor/helida-leon</loc>
     <lastmod>2026-07-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>

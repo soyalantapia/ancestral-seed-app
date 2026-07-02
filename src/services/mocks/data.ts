@@ -147,20 +147,20 @@ export const mockAuthors: Author[] = [
   },
   {
     id: 'a-eco',
-    slug: 'ecodestinos',
-    name: 'Ecodestinos',
-    title: 'Turismo ancestral',
-    bio: 'Operador de turismo ancestral en territorios originarios de Colombia.',
-    avatarUrl: 'https://i.pravatar.cc/300?img=12',
-    location: 'Colombia · Colombia',
-    email: 'contacto@ecodestinos.co',
+    slug: 'helida-leon',
+    name: 'Helida León',
+    title: 'Fundadora de Ecodestinos · Turismo regenerativo',
+    bio: 'Fundadora y directora de Ecodestinos, operador colombiano de turismo regenerativo con más de 20 años de trayectoria. Desde Bogotá impulsa viajes responsables por toda Colombia, tejiendo alianzas con comunidades indígenas y locales para que el turismo sea una herramienta de conservación, empoderamiento y reconocimiento de los saberes ancestrales.',
+    avatarUrl: 'https://i.pravatar.cc/300?img=44',
+    location: 'Colombia · Bogotá',
+    email: 'info@ecodestinos.com.co',
     certificationsCount: 1,
     joinedAt: '2024-05-02',
-    // Operador de turismo — trabaja con varias comunidades sin
-    // pertenecer a una específica. Por confirmar a futuro qué alianzas
-    // declaran cada una.
-    community: undefined,
-    languages: undefined,
+    // Ecodestinos (ecodestinos.com.co): operador de turismo de naturaleza,
+    // sede en Bogotá. Trabaja con 50+ comunidades aliadas de Colombia
+    // (Misak, Amazonía, etc.). Idiomas: español, inglés, francés.
+    community: 'En alianza con comunidades de Colombia (Misak, Amazonía y más)',
+    languages: ['Español', 'Inglés', 'Francés'],
   },
   {
     id: 'a-rosa',
@@ -375,18 +375,18 @@ export const mockCertifications: Certification[] = [
   {
     id: 'c-ecodestinos',
     slug: 'ecodestinos-turismo-ancestral',
-    title: 'Ecodestinos: Turismo ancestral',
+    title: 'Ecodestinos · Turismo regenerativo',
     authorId: 'a-eco',
-    authorSlug: 'ecodestinos',
-    authorName: 'Ecodestinos',
-    authorAvatarUrl: 'https://i.pravatar.cc/300?img=12',
+    authorSlug: 'helida-leon',
+    authorName: 'Helida León',
+    authorAvatarUrl: 'https://i.pravatar.cc/300?img=44',
     issuedBy: 'Ancestral Seed Foundation',
     issuedAt: '2026-03-12',
     expiresAt: '2028-03-12',
     status: 'verified',
     category: 'Colombia',
     description:
-      'Operador de turismo ancestral certificado, con experiencias diseñadas en alianza con comunidades originarias del territorio.',
+      'Ecodestinos es un operador de turismo de naturaleza y experiencias culturales, con más de 20 años creando viajes regenerativos y responsables por Colombia. Bajo el lema «Viajes que inspiran sonrisas», diseña cada itinerario de la mano de comunidades locales, sabedores e intérpretes, para conectar a los viajeros con los territorios, sus ecosistemas y sus saberes ancestrales.',
     coverUrl: '/cards/card-ecodestinos-v2.webp',
     hash: '0xD9E4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1',
     officialCategory: 'tradicional',
@@ -394,12 +394,27 @@ export const mockCertifications: Certification[] = [
     licenseStatus: 'vigente',
     licenseValidUntil: '2028-03-12',
     licenseNumber: 'AS-2026-004',
-    location: 'Colombia',
-    mapQuery: 'Colombia',
+    location: 'Colombia · Bogotá',
+    mapQuery: 'Bogotá, Colombia',
     contact: {
       catalogUrl: '/docs/catalogo-ecodestinos-2025.pdf',
       catalogLabel: 'Colombia 2025',
     },
+    contextParagraphs: [
+      'Con sede en Bogotá, Ecodestinos opera en 13 regiones de Colombia junto a más de 50 comunidades aliadas: desde Puerto Nariño y el río Amazonas hasta Caño Cristales (Meta), la comunidad Misak (Cauca), el Santuario de Las Lajas (Nariño), la Cascada Fin del Mundo (Putumayo) y los Cerros de Mavicure (Guainía).',
+      'Su modelo es el turismo regenerativo: cada destino cuenta con la autorización de las comunidades locales, impulsa el empoderamiento comunitario, apoya más de 100 emprendimientos del territorio y promueve la conservación del entorno. «Pequeñas acciones provocan grandes cambios».',
+    ],
+    techniqueParagraphs: [
+      'Cada experiencia se diseña de la mano de sabedores, intérpretes y prestadores locales, garantizando el reconocimiento de los saberes ancestrales y el consentimiento de las comunidades. Ecodestinos participa en espacios como la Cumbre de Turismo Indígena de las Américas.',
+      'Los viajes se ofrecen como multidestinos, viajes temáticos, experiencias de bienestar y aventura, o itinerarios a la medida, siempre bajo estándares de sostenibilidad y bioseguridad, con atención en español, inglés y francés.',
+    ],
+    galleryUrls: [
+      '/gallery/ecodestinos/01-mavicure.webp',
+      '/gallery/ecodestinos/02-amazonas.webp',
+      '/gallery/ecodestinos/03-san-agustin.webp',
+      '/gallery/ecodestinos/04-rafting-sangil.webp',
+      '/gallery/ecodestinos/05-cumbre-indigena.webp',
+    ],
   },
   {
     id: 'c-joyeria',

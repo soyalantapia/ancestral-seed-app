@@ -9,7 +9,6 @@ import {
   Calendar as CalendarIcon,
   Check,
   CheckCircle2,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -52,6 +51,8 @@ const tabs = [
   'Evaluación',
   'Auditoría',
   'Evidencias',
+  'Datos',
+  'Historial',
 ] as const
 
 type Tab = (typeof tabs)[number]
@@ -60,6 +61,8 @@ function tabFromParam(p: string | null): Tab {
   if (p === 'evaluacion') return 'Evaluación'
   if (p === 'auditoria') return 'Auditoría'
   if (p === 'evidencias') return 'Evidencias'
+  if (p === 'datos') return 'Datos'
+  if (p === 'historial') return 'Historial'
   return 'Seguimiento'
 }
 
@@ -72,6 +75,8 @@ export default function CertificationRequest() {
       t === 'Evaluación' ? 'evaluacion'
       : t === 'Auditoría' ? 'auditoria'
       : t === 'Evidencias' ? 'evidencias'
+      : t === 'Datos' ? 'datos'
+      : t === 'Historial' ? 'historial'
       : ''
     if (slug) setParams({ tab: slug }, { replace: true })
     else setParams({}, { replace: true })
@@ -309,29 +314,8 @@ export default function CertificationRequest() {
           />
         )}
         {tab === 'Evidencias' && <EvidenciasTab request={request} />}
-      </div>
-
-      {/* Referencia (no flujo de acción) — colapsadas por defecto para no
-          saturar la barra de tabs. */}
-      <div className="mt-10 space-y-3">
-        <details className="group rounded-2xl border border-neutral-200 bg-white">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-bold text-navy-500">
-            Datos que enviaste en el formulario
-            <ChevronDown className="h-4 w-4 shrink-0 text-navy-300 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="border-t border-neutral-100 p-5">
-            <DatosTab request={request} />
-          </div>
-        </details>
-        <details className="group rounded-2xl border border-neutral-200 bg-white">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-bold text-navy-500">
-            Historial completo del expediente
-            <ChevronDown className="h-4 w-4 shrink-0 text-navy-300 transition-transform group-open:rotate-180" />
-          </summary>
-          <div className="border-t border-neutral-100 p-5">
-            <HistorialTab request={request} />
-          </div>
-        </details>
+        {tab === 'Datos' && <DatosTab request={request} />}
+        {tab === 'Historial' && <HistorialTab request={request} />}
       </div>
 
       <RescheduleSheet
