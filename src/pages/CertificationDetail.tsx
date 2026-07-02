@@ -57,7 +57,7 @@ function resolveAsset(url: string) {
 }
 
 /** Fallbacks si una imagen real todavía no se subió (degradan con gracia). */
-const COVER_FALLBACK = `${import.meta.env.BASE_URL}cards/card-filigrana.webp`
+const COVER_FALLBACK = `${import.meta.env.BASE_URL}cards/card-filigrana-v2.webp`
 const AVATAR_FALLBACK = 'https://i.pravatar.cc/200?img=47'
 
 const reportSchema = z.object({

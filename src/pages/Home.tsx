@@ -898,14 +898,14 @@ function BlockchainSection() {
           <div className="relative h-[420px] hidden lg:block">
             <div className="absolute left-0 top-0 h-64 w-80 overflow-hidden rounded-3xl shadow-xl">
               <img
-                src={`${import.meta.env.BASE_URL}cards/card-mopa.webp`}
+                src={`${import.meta.env.BASE_URL}cards/card-mopa-v2.webp`}
                 alt="Tejido en mopa, técnica ancestral certificada"
                 className="h-full w-full object-cover"
               />
             </div>
             <div className="absolute right-4 bottom-0 h-56 w-72 overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
               <img
-                src={`${import.meta.env.BASE_URL}cards/card-chaquira.webp`}
+                src={`${import.meta.env.BASE_URL}cards/card-chaquira-v2.webp`}
                 alt="Joyería en chaquira, oficio ancestral certificado"
                 className="h-full w-full object-cover"
               />
@@ -913,12 +913,12 @@ function BlockchainSection() {
           </div>
           <div className="grid grid-cols-2 gap-3 lg:hidden">
             <img
-              src={`${import.meta.env.BASE_URL}cards/card-mopa.webp`}
+              src={`${import.meta.env.BASE_URL}cards/card-mopa-v2.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />
             <img
-              src={`${import.meta.env.BASE_URL}cards/card-chaquira.webp`}
+              src={`${import.meta.env.BASE_URL}cards/card-chaquira-v2.webp`}
               alt=""
               className="aspect-square rounded-2xl object-cover"
             />

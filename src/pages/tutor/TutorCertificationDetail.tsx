@@ -86,10 +86,10 @@ const STATUS_META: Record<
 }
 
 const COVER_BY_CERT: Record<string, string> = {
-  'CE-001': '/cards/card-filigrana.webp',
+  'CE-001': '/cards/card-filigrana-v2.webp',
   'CE-002': '/cards/card-sabores-cosmicos.webp',
   'CE-003': '/cards/card-tejido.webp',
-  'CE-004': '/cards/card-ecodestinos.webp',
+  'CE-004': '/cards/card-ecodestinos-v2.webp',
 }
 
 type Tab = 'info' | 'blockchain'
@@ -162,7 +162,7 @@ export default function TutorCertificationDetail() {
 
   const extra = getExpedienteData(cert.id)
   const meta = STATUS_META[cert.status]
-  const cover = COVER_BY_CERT[cert.id] ?? '/cards/card-filigrana.webp'
+  const cover = COVER_BY_CERT[cert.id] ?? '/cards/card-filigrana-v2.webp'
   const score = parseScoreNum(cert.scoreLabel)
   const daysToExpiry = daysUntil(cert.expiresAt)
   /**

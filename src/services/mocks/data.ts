@@ -326,7 +326,7 @@ export const mockCertifications: Certification[] = [
     category: 'Colombia',
     description:
       'Operador de turismo ancestral certificado, con experiencias diseñadas en alianza con comunidades originarias del territorio.',
-    coverUrl: '/cards/card-ecodestinos.webp',
+    coverUrl: '/cards/card-ecodestinos-v2.webp',
     hash: '0xD9E4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1',
     officialCategory: 'tradicional',
     entityType: 'servicio',
@@ -349,7 +349,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Joyería elaborada con la técnica de filigrana, herencia cultural de orfebres tradicionales.',
-    coverUrl: '/cards/card-joyeria.webp',
+    coverUrl: '/cards/card-joyeria-v2.webp',
     hash: '0xE0F5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0',
     officialCategory: 'tradicional',
     licenseStatus: 'vigente',
@@ -369,7 +369,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Técnica artesanal del barniz de Pasto, originaria del territorio andino, declarada patrimonio cultural inmaterial.',
-    coverUrl: '/cards/card-mopa.webp',
+    coverUrl: '/cards/card-mopa-v2.webp',
     hash: '0xF1A6E5D4C3B2A1F0E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9',
     officialCategory: 'autentico',
     licenseStatus: 'vigente',
@@ -389,7 +389,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Tejido en chaquira ceremonial, con simbolismo y cosmovisión propios de comunidades indígenas.',
-    coverUrl: '/cards/card-chaquira.webp',
+    coverUrl: '/cards/card-chaquira-v2.webp',
     hash: '0xA2B7C1D6F5E3A0B4C9D1E7F2B7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8',
     officialCategory: 'autentico',
     licenseStatus: 'vigente',
@@ -409,7 +409,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Sahumerio elaborado con hierbas y resinas tradicionales utilizadas en rituales de limpieza espiritual.',
-    coverUrl: '/cards/card-sahumerio.webp',
+    coverUrl: '/cards/card-sahumerio-v2.webp',
     hash: '0xB1A2F3E4D5C6B7A8F9E0D1C2C8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0',
     officialCategory: 'tradicional',
     licenseStatus: 'vigente',
@@ -429,7 +429,7 @@ export const mockCertifications: Certification[] = [
     category: PLACEHOLDER,
     description:
       'Café cultivado y procesado de forma artesanal en montañas de origen, con trazabilidad completa.',
-    coverUrl: '/cards/card-cafe.webp',
+    coverUrl: '/cards/card-cafe-v2.webp',
     hash: '0xC7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1A2F3E4D5C6B7A8F9',
     officialCategory: 'inspiracion',
     licenseStatus: 'vigente',
@@ -501,7 +501,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
     ],
     scheduledMeetings: [],
     evidences: [
-      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana.webp' },
+      { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image', sizeKb: 1240, uploadedAt: '2026-02-02T10:15:00-03:00', thumbUrl: '/cards/card-filigrana-v2.webp' },
       { id: 'e-002', name: 'pieza-reverso.jpg', kind: 'image', sizeKb: 980, uploadedAt: '2026-02-02T10:16:00-03:00' },
       { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image', sizeKb: 2100, uploadedAt: '2026-02-02T10:18:00-03:00' },
       { id: 'e-004', name: 'video-proceso.mp4', kind: 'video', sizeKb: 18200, uploadedAt: '2026-02-02T10:20:00-03:00' },
@@ -1725,7 +1725,7 @@ export function getExpedienteData(certId: string) {
 export function getEvidenciasByCert(certId: string): CertExpedienteEvidence[] {
   // Default 3 imágenes + 1 video + 1 documento (matchea el Figma)
   return [
-    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana.webp' },
+    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana-v2.webp' },
     { id: `${certId}-img-2`, kind: 'image', name: 'pieza-reverso.jpg', sizeKb: 980 },
     { id: `${certId}-img-3`, kind: 'image', name: 'proceso-detalle.jpg', sizeKb: 2100 },
     { id: `${certId}-vid-1`, kind: 'video', name: 'proceso-completo.mp4', sizeKb: 18_200 },

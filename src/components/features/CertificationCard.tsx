@@ -65,7 +65,7 @@ export function CertificationCard({
             }
             alt={title}
             onError={imgFallback(
-              `${import.meta.env.BASE_URL}cards/card-filigrana.webp`,
+              `${import.meta.env.BASE_URL}cards/card-filigrana-v2.webp`,
             )}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

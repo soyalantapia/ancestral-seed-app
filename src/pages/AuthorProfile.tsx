@@ -207,7 +207,7 @@ function ProfileHero({
           src={coverUrl}
           alt=""
           onError={imgFallback(
-            `${import.meta.env.BASE_URL}cards/card-filigrana.webp`,
+            `${import.meta.env.BASE_URL}cards/card-filigrana-v2.webp`,
           )}
           className="h-full w-full object-cover object-center"
         />
