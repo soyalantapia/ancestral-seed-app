@@ -230,7 +230,7 @@ export const mockCertifications: Certification[] = [
     category: 'Córdoba',
     description:
       '«La conexión de la alimentación con tu energía vital». Sabores Cósmicos es una obra de investigación y reflexión que reúne conocimientos vinculados a la alimentación consciente, los ciclos naturales y las tradiciones cosmológicas presentes en diversas culturas. El libro recupera prácticas como la observación de las fases lunares, las dietas asociadas a estos ciclos y algunos principios vinculados a la astromedicina, una disciplina antigua que estudiaba la relación entre los movimientos celestes y el funcionamiento del cuerpo humano.',
-    coverUrl: '/cards/card-sabores.webp',
+    coverUrl: '/cards/card-sabores-cosmicos.webp',
     hash: '0xC8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1C2',
     officialCategory: 'inspiracion',
     licenseStatus: 'vigente',

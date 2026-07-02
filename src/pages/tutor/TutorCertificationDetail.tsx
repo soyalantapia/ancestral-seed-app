@@ -87,7 +87,7 @@ const STATUS_META: Record<
 
 const COVER_BY_CERT: Record<string, string> = {
   'CE-001': '/cards/card-filigrana.webp',
-  'CE-002': '/cards/card-sabores.webp',
+  'CE-002': '/cards/card-sabores-cosmicos.webp',
   'CE-003': '/cards/card-tejido.webp',
   'CE-004': '/cards/card-ecodestinos.webp',
 }
