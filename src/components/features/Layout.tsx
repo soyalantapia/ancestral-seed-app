@@ -5,7 +5,7 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { SkipToContent } from './SkipToContent'
 import { CommandPalette } from './CommandPalette'
 import { HashScrollHandler } from './HashScrollHandler'
-import { CookieBanner } from './CookieBanner'
+// import { CookieBanner } from './CookieBanner' — reactivar junto con el JSX de abajo
 
 export function Layout() {
   const location = useLocation()
@@ -21,8 +21,9 @@ export function Layout() {
       </main>
       <Footer />
       <CommandPalette />
-      {/* Fix #FEAT-13: aviso de cookies LGPD/GDPR. */}
-      <CookieBanner />
+      {/* Aviso de cookies (Fix #FEAT-13, LGPD/GDPR) — oculto a pedido,
+          se reactiva más adelante. Descomentar <CookieBanner /> cuando
+          se retome. */}
     </div>
   )
 }
