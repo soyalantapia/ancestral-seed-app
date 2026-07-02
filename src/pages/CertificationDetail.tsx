@@ -671,7 +671,7 @@ function OfficialDocsSection() {
   const doc = OFFICIAL_DOCS.reglamentoMarca
   const href = `${import.meta.env.BASE_URL}${doc.path}`
   return (
-    <section className="bg-neutral-100/60">
+    <section className="mb-10 bg-gold-50 md:mb-16">
       <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
           {/* Explicación en lenguaje claro — para que cualquiera entienda
