@@ -673,44 +673,86 @@ function OfficialDocsSection() {
   return (
     <section className="bg-neutral-100/60">
       <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
-        <h2 className="text-xl font-bold text-navy-500 md:text-2xl">
-          Documentación oficial
-        </h2>
-        <p className="mt-2 max-w-xl text-sm text-navy-300">
-          Documento legal que define las condiciones de uso del Sello
-          Ancestral Seed por parte de los titulares de la licencia.
-        </p>
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+          {/* Explicación en lenguaje claro — para que cualquiera entienda
+              qué es este documento antes de abrirlo. */}
+          <div>
+            <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-gold-700">
+              <FileCheck2 className="h-4 w-4" strokeWidth={2} />
+              Documentación oficial
+            </span>
+            <h2 className="mt-3 text-2xl font-bold leading-tight text-navy-500 md:text-[28px]">
+              Cómo se usa el Sello Ancestral Seed
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-navy-300 md:text-base">
+              El{' '}
+              <strong className="font-semibold text-navy-500">
+                Reglamento de uso de la Marca
+              </strong>{' '}
+              es la guía oficial para quienes reciben el Sello. Está escrito en
+              lenguaje claro y explica, sin vueltas, qué representa y cómo se
+              usa.
+            </p>
+            <ul className="mt-5 space-y-3">
+              {[
+                'Qué significan las categorías: Auténtico, Tradicional e Inspiración cultural.',
+                'Cómo, dónde y en qué condiciones se puede mostrar el Sello.',
+                'Los derechos y compromisos de cada titular de la certificación.',
+              ].map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-sm leading-relaxed text-navy-500"
+                >
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+          {/* Card de descarga */}
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-start gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md md:p-6"
+            aria-label={`Abrir o descargar ${doc.title} en PDF`}
+            className="group flex flex-col rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg md:p-8"
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
-              <FileCheck2 className="h-6 w-6" strokeWidth={1.85} />
+            <div className="flex items-start justify-between gap-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gold-100 text-gold-700">
+                <FileCheck2 className="h-7 w-7" strokeWidth={1.85} />
+              </span>
+              <span className="rounded-full bg-neutral-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-navy-400">
+                PDF
+              </span>
             </div>
-            <div className="flex-1">
-              <p className="text-base font-bold text-navy-500 group-hover:text-gold-700">
-                {doc.title}
-              </p>
-              <p className="mt-1 text-xs text-navy-300">
-                {doc.description}
-              </p>
-              <p className="mt-2 text-[11px] font-medium uppercase tracking-widest text-navy-300">
-                PDF · {doc.sizeKb} KB · {doc.pages} páginas · actualizado{' '}
+            <p className="mt-5 text-lg font-bold leading-snug text-navy-500 group-hover:text-gold-700">
+              {doc.title}
+            </p>
+            <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-navy-300">
+              <span>{doc.sizeKb} KB</span>
+              <span aria-hidden className="text-neutral-300">
+                ·
+              </span>
+              <span>{doc.pages} páginas</span>
+              <span aria-hidden className="text-neutral-300">
+                ·
+              </span>
+              <span>
+                Actualizado el{' '}
                 {new Date(doc.updatedAt).toLocaleDateString('es-AR', {
                   day: '2-digit',
-                  month: 'short',
+                  month: 'long',
                   year: 'numeric',
                 })}
-              </p>
-            </div>
-            <Download
-              className="h-5 w-5 shrink-0 text-navy-300 transition-transform group-hover:translate-y-0.5 group-hover:text-gold-700"
-              aria-hidden
-            />
+              </span>
+            </p>
+            <span className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-navy-500 px-5 py-3 text-sm font-semibold text-white transition-colors group-hover:bg-navy-400">
+              <Download className="h-4 w-4" />
+              Leer o descargar
+            </span>
           </a>
         </div>
       </div>
