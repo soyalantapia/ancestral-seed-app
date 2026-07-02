@@ -25,6 +25,8 @@ const PUBLIC = join(__dirname, '..', 'public')
 const REQUIRED_ASSETS = [
   // Reglamento PDF — usado en Footer, Help (cláusulas), CertRequest
   'docs/reglamento-marca-ancestral-seed.pdf',
+  // Catálogos de autores — botón "Descargar catálogo" en la ficha pública
+  'docs/catalogo-ecodestinos-2025.pdf',
   // OG image — preview en WhatsApp/X/LinkedIn
   'og-image.png',
   'og-image.svg',

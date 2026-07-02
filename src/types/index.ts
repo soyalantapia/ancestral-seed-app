@@ -109,6 +109,9 @@ export interface Certification {
     websiteUrl?: string
     addressLine?: string
     notes?: string[]
+    /** PDF servido desde /public/docs/ — catálogo de productos/experiencias del autor. */
+    catalogUrl?: string
+    catalogLabel?: string
   }
 }
 

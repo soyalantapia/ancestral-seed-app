@@ -394,6 +394,10 @@ export const mockCertifications: Certification[] = [
     licenseNumber: 'AS-2026-004',
     location: 'Colombia',
     mapQuery: 'Colombia',
+    contact: {
+      catalogUrl: '/docs/catalogo-ecodestinos-2025.pdf',
+      catalogLabel: 'Colombia 2025',
+    },
   },
   {
     id: 'c-joyeria',

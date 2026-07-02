@@ -325,6 +325,20 @@ export default function CertificationDetail() {
                       Contacto y pedidos
                     </p>
                     <div className="flex flex-wrap gap-2">
+                      {cert.contact.catalogUrl && (
+                        <a
+                          href={cert.contact.catalogUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className="inline-flex h-10 items-center gap-2 rounded-full bg-gold-500 px-4 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+                        >
+                          <Download className="h-4 w-4" />
+                          Descargar catálogo
+                          {cert.contact.catalogLabel
+                            ? ` · ${cert.contact.catalogLabel}`
+                            : ''}
+                        </a>
+                      )}
                       {cert.contact.whatsappUrl && (
                         <a
                           href={cert.contact.whatsappUrl}
