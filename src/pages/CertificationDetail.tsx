@@ -1008,10 +1008,13 @@ function ShareModal({
     >
       <div
         className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-title"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-          <h2 className="text-lg font-bold text-navy-500">Compartir ficha</h2>
+          <h2 id="share-title" className="text-lg font-bold text-navy-500">Compartir ficha</h2>
           <button
             type="button"
             onClick={onClose}

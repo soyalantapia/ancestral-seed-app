@@ -135,7 +135,7 @@ export function Header() {
             active simultáneamente en `/`. Solución: usar <Link> normal
             y calcular el active manualmente comparando hash. */}
         {showLandingNav && (
-          <nav className="hidden flex-1 items-center gap-5 lg:flex lg:gap-6 xl:gap-7">
+          <nav className="hidden flex-1 items-center gap-4 xl:flex xl:gap-5">
             {navItems.map((item) => {
               // El active state se calcula así:
               // - Si el link tiene hash (#beneficios), solo es active si
@@ -167,7 +167,7 @@ export function Header() {
         {/* Grupo derecho: el ml-auto siempre lo empuja al borde, ya sea
             que esté presente el nav central (publico/no auth) o no
             (dashboard logueado). */}
-        <div className="ml-auto hidden items-center gap-2 lg:flex">
+        <div className="ml-auto hidden items-center gap-2 xl:flex">
           {isDashboardRoute && (
             <Link
               to="/"
@@ -182,10 +182,10 @@ export function Header() {
           {!isAuthenticated && (
             <>
               <Button variant="gold" size="md" onClick={() => navigate('/certificar')}>
-                Certificar Producto
+                Certificar
               </Button>
               <Button variant="navy" size="md" onClick={() => navigate('/verificar')}>
-                Verificar Certificado
+                Verificar
               </Button>
               <Button variant="outlineNavy" size="md" onClick={() => navigate('/login')}>
                 <LogIn className="h-4 w-4" />
@@ -396,7 +396,7 @@ export function Header() {
           <button
             type="button"
             onClick={toggleMobileMenu}
-            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 lg:hidden"
+            className="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-navy-500 transition-colors hover:bg-neutral-200 xl:hidden"
             aria-label="Abrir menú"
             aria-expanded={isMobileMenuOpen}
           >
@@ -412,7 +412,7 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-16 z-30 bg-navy-500/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-x-0 top-16 z-30 bg-navy-500/40 backdrop-blur-sm xl:hidden"
             style={{ height: 'calc(100vh - 64px)' }}
             onClick={closeMobileMenu}
           >
