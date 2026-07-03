@@ -354,7 +354,7 @@ export const mockCertifications: Certification[] = [
     category: 'Nariño',
     description:
       'Tradición textil del Pueblo de los Pastos, en el sur de Nariño, encarnada por Flor Imbacuán Pantoja, tejedora del Resguardo de Carlosama (municipio de Cuaspud). Las prendas se elaboran en guanga, el telar vertical precolombino con el que las mujeres del territorio transforman lana de oveja, hilada y teñida a mano, en ruanas, bufandas y diseños contemporáneos. Es un oficio que Flor heredó de su madre y que hoy comparte con otras tejedoras a través de su marca de etnomoda, Hajsú. En cada pieza el tejido conserva la iconografía y la cosmovisión andina del pueblo Pasto, transmitida de madres a hijas como un saber a la vez técnico, espiritual y comunitario.',
-    coverUrl: '/gallery/flor/portada.jpg',
+    coverUrl: '/gallery/flor/portada-v2.jpg',
     hash: '0xB7E2A1F08C5D3E94B1A6F2C8D7E5A1B3F0C4D9E8A2B7C1D6F5E3A0B4C9D1E7F2',
     officialCategory: 'autentico',
     licenseStatus: 'vigente',
