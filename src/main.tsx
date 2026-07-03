@@ -40,7 +40,18 @@ async function bootstrap() {
     await startMockWorker()
   }
 
-  createRoot(document.getElementById('root')!).render(
+  // Root idempotente: en dev, el HMR (o una doble ejecución del módulo por
+  // el churn de varias sesiones editando el server) puede re-ejecutar este
+  // archivo. Sin esto, createRoot() se llamaría dos veces sobre #root y React
+  // tira el warning "container already passed to createRoot". Cacheamos el
+  // root en window y solo re-renderizamos.
+  const container = document.getElementById('root')!
+  const w = window as unknown as {
+    __appRoot?: ReturnType<typeof createRoot>
+  }
+  const root = w.__appRoot ?? createRoot(container)
+  w.__appRoot = root
+  root.render(
     <StrictMode>
       <AppShell />
     </StrictMode>,
