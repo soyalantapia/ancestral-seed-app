@@ -23,6 +23,7 @@ const LatamWorldMap = lazy(
   () => import('@/components/features/LatamWorldMap'),
 )
 import { useFeaturedCertifications } from '@/hooks/useCertifications'
+import { resetServiceWorkersAndReload } from '@/lib/swRecovery'
 import { CertificationCard } from '@/components/features/CertificationCard'
 import { PageMeta } from '@/components/features/PageMeta'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -1026,6 +1027,15 @@ const FEATURED_LABELS = [
 
 function FeaturedCertifications() {
   const { data, isLoading, error, refetch } = useFeaturedCertifications()
+  // Si un SW controla la página y los datos no cargan, refetch falla igual;
+  // hacemos reset duro del SW + recarga. Si no, refetch normal.
+  const handleRetry = () => {
+    if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) {
+      void resetServiceWorkersAndReload()
+      return
+    }
+    refetch()
+  }
   return (
     <section id="certificados" className="scroll-mt-24 bg-white">
       <div className="mx-auto max-w-[1320px] px-4 pb-16 md:px-8 md:pb-20">
@@ -1058,7 +1068,7 @@ function FeaturedCertifications() {
             <p className="mt-1 text-sm">{error}</p>
             <button
               type="button"
-              onClick={refetch}
+              onClick={handleRetry}
               className="mt-4 inline-flex h-9 items-center rounded-full bg-error-400 px-4 text-sm font-semibold text-white transition-colors hover:bg-error-300"
             >
               Reintentar

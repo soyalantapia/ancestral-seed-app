@@ -10,6 +10,7 @@ import { ERRORS } from '@/lib/copy'
 import {
   orphanControllerPresent,
   purgeOrphanServiceWorkers,
+  resetServiceWorkersAndReload,
 } from '@/lib/swRecovery'
 
 // El sitio se sirve desde el BASE_URL del bundle (por ej. `/ancestral-seed-app/`
@@ -171,6 +172,18 @@ async function request<T>(
       }
       await waitForMswReady(attempt)
       return request<T>(path, init, attempt + 1)
+    }
+    // Último recurso: seguimos recibiendo HTML y hay un SW CONTROLANDO la
+    // página que evidentemente no mockea — un `mockServiceWorker.js` viejo/roto
+    // (que la purga de huérfanos no toca) o un huérfano que sobrevivió. Reset
+    // duro acotado: desregistra TODOS los SW + limpia caches + recarga para que
+    // MSW arranque limpio. El contador de sesión evita loops.
+    if (
+      typeof navigator !== 'undefined' &&
+      navigator.serviceWorker?.controller
+    ) {
+      const reloading = await resetServiceWorkersAndReload({ bounded: true })
+      if (reloading) return new Promise<T>(() => {})
     }
     throw new ApiError(
       'server',

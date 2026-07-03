@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   orphanControllerPresent,
   purgeOrphanServiceWorkers,
+  resetServiceWorkersAndReload,
 } from '@/lib/swRecovery'
 
 /**
@@ -124,6 +125,55 @@ describe('purgeOrphanServiceWorkers()', () => {
     })
 
     const reloading = await purgeOrphanServiceWorkers()
+
+    expect(reloadSpy).not.toHaveBeenCalled()
+    expect(reloading).toBe(false)
+  })
+})
+
+describe('resetServiceWorkersAndReload() — reset duro (cubre MSW roto)', () => {
+  it('desregistra TODOS los SW (incluido mockServiceWorker.js) y recarga', async () => {
+    const unregMsw = vi.fn().mockResolvedValue(true)
+    const unregOrphan = vi.fn().mockResolvedValue(true)
+    // Un mockServiceWorker.js controlando pero que ya no mockea (deja pasar
+    // /api → HTML): la purga de huérfanos NO lo tocaría; el reset duro sí.
+    stubServiceWorker({
+      controllerUrl: MSW_URL,
+      registrations: [
+        { scriptURL: MSW_URL, unregister: unregMsw },
+        { scriptURL: WORKBOX_URL, unregister: unregOrphan },
+      ],
+    })
+
+    const reloading = await resetServiceWorkersAndReload()
+
+    expect(unregMsw).toHaveBeenCalledTimes(1)
+    expect(unregOrphan).toHaveBeenCalledTimes(1)
+    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    expect(reloading).toBe(true)
+  })
+
+  it('manual (sin bounded) ignora el contador y siempre resetea', async () => {
+    sessionStorage.setItem(ATTEMPTS_KEY, '3') // presupuesto agotado
+    stubServiceWorker({
+      controllerUrl: MSW_URL,
+      registrations: [{ scriptURL: MSW_URL, unregister: vi.fn().mockResolvedValue(true) }],
+    })
+
+    const reloading = await resetServiceWorkersAndReload()
+
+    expect(reloadSpy).toHaveBeenCalledTimes(1)
+    expect(reloading).toBe(true)
+  })
+
+  it('bounded respeta el tope de 3 (no loopea)', async () => {
+    sessionStorage.setItem(ATTEMPTS_KEY, '3')
+    stubServiceWorker({
+      controllerUrl: MSW_URL,
+      registrations: [{ scriptURL: MSW_URL, unregister: vi.fn().mockResolvedValue(true) }],
+    })
+
+    const reloading = await resetServiceWorkersAndReload({ bounded: true })
 
     expect(reloadSpy).not.toHaveBeenCalled()
     expect(reloading).toBe(false)

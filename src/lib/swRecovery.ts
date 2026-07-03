@@ -117,3 +117,52 @@ export async function purgeOrphanServiceWorkers(): Promise<boolean> {
   window.location.reload()
   return true
 }
+
+/**
+ * Reset DURO: desregistra TODOS los Service Workers (MSW incluido) + limpia
+ * el Cache API y recarga. A diferencia de `purgeOrphanServiceWorkers` —que
+ * solo saca los SW ajenos a MSW— esto también saca un `mockServiceWorker.js`
+ * viejo/roto que quedó CONTROLANDO la página pero ya no mockea (deja pasar
+ * /api al server → HTML → "No pudimos cargar los datos"). Tras la recarga,
+ * MSW se registra limpio.
+ *
+ * @param opts.bounded  Si `true` (uso AUTOMÁTICO desde el fetch), respeta el
+ *   contador de sesión para no loopear. Si se omite (uso MANUAL desde el
+ *   botón "Reintentar"), siempre resetea: el usuario lo pidió explícito.
+ * @returns `true` si disparó la recarga (el caller debe cortar su flujo).
+ */
+export async function resetServiceWorkersAndReload(
+  opts: { bounded?: boolean } = {},
+): Promise<boolean> {
+  const { bounded = false } = opts
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    if (!bounded) window.location.reload()
+    return !bounded
+  }
+  if (bounded && readAttempts() >= MAX_PURGE_RELOADS) return false
+
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations()
+    await Promise.all(regs.map((r) => r.unregister().catch(() => false)))
+  } catch {
+    /* ignore */
+  }
+  if (typeof caches !== 'undefined') {
+    try {
+      const names = await caches.keys()
+      await Promise.all(names.map((n) => caches.delete(n)))
+    } catch {
+      /* ignore */
+    }
+  }
+  if (bounded) {
+    try {
+      sessionStorage.setItem(PURGE_ATTEMPTS_KEY, String(readAttempts() + 1))
+    } catch {
+      /* ignore */
+    }
+  }
+
+  window.location.reload()
+  return true
+}

@@ -16,6 +16,7 @@ import { Sheet } from '@/components/ui/sheet'
 import { CertificationCard } from '@/components/features/CertificationCard'
 import { PageMeta } from '@/components/features/PageMeta'
 import { useCategories, useCertifications } from '@/hooks/useCertifications'
+import { resetServiceWorkersAndReload } from '@/lib/swRecovery'
 import type {
   CertificationStatus,
   DirectoryFilters,
@@ -58,6 +59,21 @@ export default function Directory() {
   const [showSortSheet, setShowSortSheet] = useState(false)
   const { data: categories } = useCategories()
   const { data: certs, isLoading, error, refetch } = useCertifications(filters)
+
+  // "Reintentar": si un Service Worker está controlando la página y los datos
+  // no cargan, un refetch va a fallar igual (MSW no intercepta → /api = HTML).
+  // Ahí hacemos un reset duro del SW + recarga, que sí lo arregla. Si no hay
+  // SW controlando (error transitorio real), refetcheamos normal.
+  const handleRetry = () => {
+    if (
+      typeof navigator !== 'undefined' &&
+      navigator.serviceWorker?.controller
+    ) {
+      void resetServiceWorkersAndReload()
+      return
+    }
+    refetch()
+  }
 
   /**
    * Filtrado en cliente por categoría oficial. No tocamos el handler MSW
@@ -401,7 +417,7 @@ export default function Directory() {
             )}
 
             {error && (
-              <ErrorState message={error} onRetry={refetch} />
+              <ErrorState message={error} onRetry={handleRetry} />
             )}
 
             {!isLoading && !error && paged.length === 0 && (
