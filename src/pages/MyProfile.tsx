@@ -764,16 +764,36 @@ function Highlights() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [menuFor])
-  const [items, setItems] = useState<HighlightItem[]>(() =>
-    mockCertifications.slice(0, 3).map((c, i) => ({
-      id: c.id,
-      title: c.title.split(' ')[0] + ' Tuberosum',
-      subtitle: 'Carnaval de Negros y Blancos / Técnica ancestral "Filigrana"',
-      status: i === 1 ? ('Borrador' as HighlightStatus) : ('Publicada' as HighlightStatus),
+  // Destacados de Camila — piezas reales de su taller, ilustradas. La de
+  // filigrana usa el id del cert (c-filigrana) para que "Vista previa" abra su
+  // ficha pública; las otras dos son piezas sin ficha propia (muestran el
+  // toast "todavía no tiene ficha pública" al previsualizar).
+  const [items, setItems] = useState<HighlightItem[]>(() => [
+    {
+      id: 'c-filigrana',
+      title: 'Filigrana ancestral',
+      subtitle: 'Alunawa · San Juan de Pasto, Nariño',
+      status: 'Publicada' as HighlightStatus,
       date: '20 Ene, 2026',
-      imageUrl: c.coverUrl,
-    })),
-  )
+      imageUrl: '/gallery/alunawa/portada.jpg',
+    },
+    {
+      id: 'h-tejido-telar',
+      title: 'Tejido en telar tradicional',
+      subtitle: 'Textiles andinos · lana hilada y teñida a mano',
+      status: 'Publicada' as HighlightStatus,
+      date: '15 Feb, 2026',
+      imageUrl: '/gallery/camila/tejido-en-telar.webp',
+    },
+    {
+      id: 'h-ceramica-esmaltada',
+      title: 'Cerámica esmaltada',
+      subtitle: 'Alfarería tradicional · modelado y esmaltado a mano',
+      status: 'Publicada' as HighlightStatus,
+      date: '02 Mar, 2026',
+      imageUrl: '/gallery/camila/ceramica-esmaltada.webp',
+    },
+  ])
 
   const filtered = items
     .filter((it) => {
