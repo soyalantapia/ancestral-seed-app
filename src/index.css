@@ -172,6 +172,16 @@
   }
 }
 
+@layer utilities {
+  /* Texto justificado en español (palabras largas: "certificación",
+     "trazabilidad") sin corte silábico deja espacios muy grandes entre
+     palabras, sobre todo en columnas angostas de mobile. */
+  .text-justify {
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+}
+
 /* Subtle geometric backgrounds (very low contrast, decorative only) */
 .bg-pattern-gold {
   background-color: #faf6e8;

@@ -6,21 +6,62 @@
  * el build falla con mensaje claro en vez de deployar 404s.
  *
  * Assets que verifica:
- *   - PDF del Reglamento (referenciado desde Footer + Help + CertReq)
- *   - OG image (referenciada desde index.html + PageMeta default)
- *   - Logo y favicons (referenciados desde index.html + manifest)
- *   - PWA icons (referenciados desde manifest)
- *   - robots.txt y sitemap.xml (SEO)
+ *   - Lista fija: PDF del Reglamento, OG image, favicons/logo, PWA
+ *     icons, robots.txt/sitemap.xml.
+ *   - Dinámico: TODAS las rutas locales (/cards, /gallery, /authors,
+ *     /docs) referenciadas en cualquier .ts/.tsx bajo src/ — cubre
+ *     coverUrl/avatarUrl/galleryUrls/contact.catalogUrl de data.ts
+ *     Y los fallbacks hardcodeados en componentes (COVER_FALLBACK,
+ *     AVATAR_FALLBACK, etc.) sin tener que listarlos a mano.
+ *     Auditoría (2026-07-02): la lista fija no cubría esas ~50+
+ *     referencias; un rename/delete futuro de una card o foto de
+ *     galería pasaba CI sin que nada lo detectara.
  *
  * Se invoca antes del build vía `prebuild`. Si falla, el build NO
  * arranca y el deploy queda bloqueado hasta arreglarlo.
  */
-import { existsSync, statSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { existsSync, statSync, readFileSync, readdirSync } from 'node:fs'
+import { join, dirname, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const PUBLIC = join(__dirname, '..', 'public')
+const ROOT = join(__dirname, '..')
+const PUBLIC = join(ROOT, 'public')
+const SRC = join(ROOT, 'src')
+
+function listSourceFiles(dir) {
+  const out = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) out.push(...listSourceFiles(full))
+    else if (['.ts', '.tsx'].includes(extname(entry.name))) out.push(full)
+  }
+  return out
+}
+
+/**
+ * Extrae de todo src/ cualquier ruta local dentro de /cards, /gallery,
+ * /authors o /docs (las 4 carpetas de assets del sitio). NO ancla al
+ * inicio del string entre comillas: muchas referencias van con
+ * `${import.meta.env.BASE_URL}cards/x.webp` (BASE_URL interpolado
+ * antes), así que buscamos la subcadena en cualquier posición.
+ * Ignora URLs http(s) externas (ej. avatares de pravatar.cc de mocks
+ * placeholder) porque esas nunca matchean el patrón de carpeta local.
+ */
+function extractLocalAssetRefs() {
+  const found = new Set()
+  for (const filePath of listSourceFiles(SRC)) {
+    const src = readFileSync(filePath, 'utf-8')
+    for (const m of src.matchAll(
+      /(?:cards|gallery|authors|docs)\/[a-zA-Z0-9_./-]+\.(?:webp|jpe?g|png|svg|pdf)/g,
+    )) {
+      found.add(m[0])
+    }
+  }
+  return [...found]
+}
+
+const DYNAMIC_ASSETS = extractLocalAssetRefs()
 
 const REQUIRED_ASSETS = [
   // Reglamento PDF — usado en Footer, Help (cláusulas), CertRequest
@@ -45,10 +86,12 @@ const REQUIRED_ASSETS = [
   'sitemap.xml',
 ]
 
+const ALL_ASSETS = [...new Set([...REQUIRED_ASSETS, ...DYNAMIC_ASSETS])]
+
 const missing = []
 const warnings = []
 
-for (const rel of REQUIRED_ASSETS) {
+for (const rel of ALL_ASSETS) {
   const full = join(PUBLIC, rel)
   if (!existsSync(full)) {
     missing.push(rel)
@@ -61,7 +104,7 @@ for (const rel of REQUIRED_ASSETS) {
 }
 
 if (missing.length > 0) {
-  console.error('❌ Assets críticos FALTANTES en public/:')
+  console.error('❌ Assets FALTANTES en public/:')
   for (const m of missing) console.error(`   - ${m}`)
   console.error('')
   console.error('El build no puede continuar — restaurá o regenerá los assets.')
@@ -72,4 +115,6 @@ if (warnings.length > 0) {
   for (const w of warnings) console.warn(`⚠️  ${w}`)
 }
 
-console.log(`✓ Assets verificados · ${REQUIRED_ASSETS.length} archivos OK`)
+console.log(
+  `✓ Assets verificados · ${REQUIRED_ASSETS.length} fijos + ${DYNAMIC_ASSETS.length} de data.ts OK`,
+)

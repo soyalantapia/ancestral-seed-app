@@ -1119,7 +1119,13 @@ function EditHighlightModal({
                   className="sr-only"
                   onChange={(e) => {
                     const f = e.target.files?.[0]
-                    if (f) setPdfName(f.name)
+                    if (!f) return
+                    if (f.size > 10 * 1024 * 1024) {
+                      toast.error('El PDF no puede superar los 10 MB')
+                      e.target.value = ''
+                      return
+                    }
+                    setPdfName(f.name)
                   }}
                 />
               </label>

@@ -133,10 +133,13 @@ export default function LatamWorldMap() {
 
         {cities.map((c, i) => (
           <Marker key={c.label} coordinates={c.coords}>
-            <circle r={12} fill="url(#dot-halo)">
+            {/* Radio del halo acotado a 6-11px — con 25 países en un solo
+                viewport, Centroamérica/Caribe quedan a 10-20px entre sí;
+                un halo más grande se solapa entre países vecinos. */}
+            <circle r={9} fill="url(#dot-halo)">
               <animate
                 attributeName="r"
-                values="8;16;8"
+                values="6;11;6"
                 dur="3s"
                 repeatCount="indefinite"
                 begin={`${i * 0.4}s`}

@@ -32,6 +32,14 @@ AddType application/json .json
 
 # Cache: assets hasheados de Vite pueden cachearse fuerte;
 # index.html y el service worker NO (deben revalidarse siempre).
+#
+# OJO: .pdf queda deliberadamente FUERA de este patrón. Los catálogos en
+# public/docs/*.pdf tienen nombre fijo (sin hash de contenido, a diferencia
+# de los assets de Vite) — cachearlos "immutable" 1 año haría que un
+# reemplazo futuro del mismo archivo no se vea hasta que expire el caché de
+# Cloudflare (nos pasó con las cards del directorio, por eso ahora llevan
+# sufijo -v2). Si algún día se hashea el nombre del PDF en el build, recién
+# ahí conviene sumarlo acá.
 <IfModule mod_headers.c>
   <FilesMatch "\.(js|css|woff2?|webp|png|jpg|svg)$">
     Header set Cache-Control "public, max-age=31536000, immutable"

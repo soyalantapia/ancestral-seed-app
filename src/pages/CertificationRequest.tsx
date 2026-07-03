@@ -273,16 +273,19 @@ export default function CertificationRequest() {
         data-tour="seguimiento"
         className="sticky top-16 z-10 -mx-4 mt-6 overflow-x-auto border-b border-neutral-200 bg-white/95 px-4 backdrop-blur [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:px-6 md:top-20 md:-mx-10 md:px-10"
       >
-        <div className="flex gap-1 py-3">
+        <div role="tablist" aria-label="Secciones de la solicitud" className="flex gap-1 py-3">
           {tabs.map((t) => {
+            const isActive = tab === t
             return (
               <button
                 key={t}
                 type="button"
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setTab(t)}
                 className={cn(
                   'whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors',
-                  tab === t
+                  isActive
                     ? 'bg-gold-100 text-gold-700 ring-1 ring-gold-300'
                     : 'text-navy-300 hover:bg-neutral-100 hover:text-navy-500',
                 )}
