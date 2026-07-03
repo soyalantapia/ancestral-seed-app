@@ -42,10 +42,10 @@ import { REGLAMENTO_DEADLINES, STAGES } from '@/lib/copy'
 import { useCoverByRequestStore } from '@/store/coverByRequest'
 import { cn } from '@/lib/utils'
 
-// Fix UX (revisión postulante): la barra tenía 6 tabs que se cortaban en
-// mobile y mezclaban acción con referencia. Dejamos 4 tabs accionables;
-// "Datos de la solicitud" e "Historial" pasan a acordeones al pie (son
-// referencia, no flujo de acción).
+// Barra de pestañas del expediente. Seguimiento/Evaluación/Auditoría/Evidencias
+// son el flujo de acción; Datos e Historial son referencia. En mobile la barra
+// scrollea horizontal (overflow-x) para que las 6 entren sin cortarse — se
+// verificó que no genera overflow del documento a 375px.
 const tabs = [
   'Seguimiento',
   'Evaluación',

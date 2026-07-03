@@ -34,7 +34,8 @@ const LATAM_ISO_IDS = new Set([
   '862', // Venezuela
   '328', // Guyana
   '740', // Suriname
-  '254', // French Guiana
+  // Guayana Francesa (254) NO está en countries-110m como país propio, así que
+  // ni se renderiza ni tiene punto — coincide con los 25 markers de `cities`.
   '218', // Ecuador
   '604', // Perú
   '068', // Bolivia
