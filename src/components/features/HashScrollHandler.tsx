@@ -25,32 +25,40 @@ export function HashScrollHandler() {
 
   useEffect(() => {
     const scrollToHash = (rawHash: string) => {
-      if (!rawHash) return
       const id = rawHash.replace('#', '')
       if (!id) return
-      // 2 frames: 1 para que React haya commiteado, otro para layout
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          const el = document.getElementById(id)
-          if (!el) return
+      // Poll acotado hasta que el elemento exista. Un 2-rAF fijo fallaba
+      // al navegar DESDE otra ruta (o deep-link /#seccion): la Home es
+      // pesada y su sección aún no está montada en los primeros frames,
+      // así que getElementById daba null y no scrolleaba. Reintentamos
+      // ~30 frames (≈0.5s) y cortamos.
+      let frames = 0
+      const tryScroll = () => {
+        const el = document.getElementById(id)
+        if (el) {
           // Offset manual restando header sticky (64 mobile / 80 desktop)
           const headerH = window.innerWidth >= 768 ? 80 : 64
           const top = el.getBoundingClientRect().top + window.scrollY - headerH
           window.scrollTo({ top, behavior: 'smooth' })
-        })
-      })
+        } else if (frames++ < 30) {
+          window.requestAnimationFrame(tryScroll)
+        }
+      }
+      window.requestAnimationFrame(tryScroll)
     }
 
-    // 1) Trigger cuando cambia el pathname/hash via React Router
-    if (hash) {
-      scrollToHash(hash)
+    // Con hash → scrollear a la sección. Sin hash → ruta nueva (ej:
+    // "Certificar" → /certificar): React Router NO resetea el scroll, así que
+    // la página siguiente abría scrolleada donde había quedado la anterior
+    // (bug reportado: "me lleva al final, no al principio"). Reset al tope
+    // INSTANTÁNEO (pisa el `scroll-behavior: smooth` global; si no, la página
+    // "viaja" animada desde el fondo). Usamos `window.location.hash` como
+    // respaldo por si el location de React Router llega desfasado, para no
+    // pisar nunca una navegación con hash con el reset al tope.
+    const targetHash = hash || window.location.hash
+    if (targetHash) {
+      scrollToHash(targetHash)
     } else {
-      // Sin hash → navegación a una ruta nueva (ej: "Certificar" → /certificar).
-      // React Router NO resetea el scroll, así que la página siguiente abría
-      // scrolleada donde había quedado la anterior (bug reportado: "me lleva
-      // al final, no al principio"). Reseteamos al tope. INSTANTÁNEO
-      // (behavior:'instant') para pisar el `scroll-behavior: smooth` global del
-      // CSS — si no, la página "viaja" animada desde el fondo, que se ve peor.
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     }
 
