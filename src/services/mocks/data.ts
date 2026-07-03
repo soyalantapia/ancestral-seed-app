@@ -7,7 +7,6 @@ import type {
   CertificationRequest,
   ChecklistCategory,
   ImprovementPlan,
-  InternalNote,
   IssuedCertification,
   MessageTemplate,
   Notification,
@@ -594,7 +593,7 @@ export const mockCertifications: Certification[] = [
   {
     id: 'c-cafe',
     slug: 'cafe-artesanal-de-montana',
-    title: 'Café ancestral Quillacinga',
+    title: 'Café Ancestral',
     authorId: 'a-efrain',
     authorSlug: 'efrain-jojoa',
     authorName: 'Segundo Efraín Jojoa',
@@ -606,7 +605,7 @@ export const mockCertifications: Certification[] = [
     category: 'Nariño',
     description:
       'Café de altura cultivado y procesado por familias del pueblo indígena Quillacinga en las montañas de Nariño. Los granos se cosechan a mano, cereza por cereza, y se secan al sol siguiendo prácticas transmitidas por generaciones, en armonía con los ciclos de la tierra y el territorio ancestral.',
-    coverUrl: '/cards/card-cafe-quillacinga.webp',
+    coverUrl: '/cards/card-cafe-ancestral.webp',
     hash: '0xC7B8A9F1E2D3C4B5A6F7E8D9C0B1A2F3E4D5C6B7A8F9E0D1A2F3E4D5C6B7A8F9',
     officialCategory: 'autentico',
     entityType: 'producto',
@@ -624,7 +623,7 @@ export const mockCertifications: Certification[] = [
       'El beneficio es artesanal: despulpado, fermentación controlada y secado al sol, sin maquinaria industrial. El resultado es un café de taza limpia y dulce, con la acidez brillante característica de las montañas de Nariño.',
     ],
     galleryUrls: [
-      '/cards/card-cafe-quillacinga.webp',
+      '/cards/card-cafe-ancestral.webp',
       '/gallery/cafe-quillacinga/01-grano-verde.webp',
       '/gallery/cafe-quillacinga/02-secado.webp',
       '/gallery/cafe-quillacinga/03-tostado.webp',
@@ -763,7 +762,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
   {
     id: 'req-002',
     number: '#002',
-    productName: 'Tejido en telar tradicional',
+    productName: 'Anillos de compromiso en filigrana',
     createdAt: '2025-09-10',
     currentStage: 'certificacion',
     status: 'Certificado',
@@ -795,10 +794,10 @@ export const mockCertificationRequests: CertificationRequest[] = [
       region: 'Nariño',
       community: 'Pastos · Quillasingas',
       productType: 'Producto físico',
-      productSector: 'Tejidos y textiles',
-      productSubcategory: 'Telar',
-      processDescription: 'Tejido en telar de pedal con fibras naturales teñidas con tintes vegetales, siguiendo patrones tradicionales de Nariño.',
-      producerType: 'Yo misma · con apoyo de la comunidad',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Filigrana',
+      processDescription: 'Anillos de compromiso trabajados en filigrana de plata, con hilos finos enrollados y soldados a mano, sin procesos industriales.',
+      producerType: 'Yo misma · con apoyo familiar',
     },
   },
   // Solicitud DENEGADA — habilita el flujo "Apelar" (la apelación existe
@@ -806,7 +805,7 @@ export const mockCertificationRequests: CertificationRequest[] = [
   {
     id: 'req-003',
     number: '#003',
-    productName: 'Cerámica esmaltada',
+    productName: 'Aretes en filigrana',
     createdAt: '2025-06-15',
     currentStage: 'evaluacion',
     status: 'Denegada',
@@ -838,9 +837,9 @@ export const mockCertificationRequests: CertificationRequest[] = [
       region: 'Nariño',
       community: 'Pastos · Quillasingas',
       productType: 'Producto físico',
-      productSector: 'Cerámica',
-      productSubcategory: 'Esmaltada',
-      processDescription: 'Cerámica modelada y esmaltada a mano con técnicas tradicionales.',
+      productSector: 'Joyería y orfebrería',
+      productSubcategory: 'Filigrana',
+      processDescription: 'Aretes en filigrana de plata, elaborados con hilos finos trenzados y soldadura artesanal, siguiendo la tradición orfebre de Nariño.',
       producerType: 'Yo misma',
     },
   },
@@ -947,7 +946,7 @@ export const mockTutorCases: TutorCase[] = [
   // Revisión inicial
   {
     id: 'CE-103',
-    productName: 'Café ancestral Quillacinga',
+    productName: 'Café Ancestral',
     applicantName: 'Segundo Efraín Jojoa',
     applicantAvatarUrl: 'https://i.pravatar.cc/200?img=13',
     scoringIA: 88,
@@ -1108,7 +1107,7 @@ export const mockIssuedCertifications: IssuedCertification[] = [
       { name: 'Joyería en filigrana momposina', author: 'Rosa Elena Villalba', img: 'https://i.pravatar.cc/100?img=32', cat: 'Joyería y orfebrería', country: 'Colombia', region: 'Bolívar' },
       { name: 'Barniz de Pasto (Mopa-Mopa)', author: 'José Antonio Obando', img: 'https://i.pravatar.cc/100?img=51', cat: 'Arte y artesanía', country: 'Colombia', region: 'Nariño' },
       { name: 'Blend Herbal Ancestral', author: 'Aurora Bustos', img: 'https://i.pravatar.cc/100?img=49', cat: 'Medicina ancestral', country: 'Argentina', region: 'Córdoba' },
-      { name: 'Café ancestral Quillacinga', author: 'Segundo Efraín Jojoa', img: 'https://i.pravatar.cc/100?img=13', cat: 'Productos agroecológicos', country: 'Colombia', region: 'Nariño' },
+      { name: 'Café Ancestral', author: 'Segundo Efraín Jojoa', img: 'https://i.pravatar.cc/100?img=13', cat: 'Productos agroecológicos', country: 'Colombia', region: 'Nariño' },
     ]
     const s = seeds[i % seeds.length]
     const issuedYear = 2025
@@ -1459,12 +1458,12 @@ export const mockScoringByCase: Record<string, ScoringValue[]> = {
     { criterionId: 'practicas', score: 8 },
     { criterionId: 'organizacion', score: 8 },
     { criterionId: 'beneficio', score: 7 },
-    { criterionId: 'territorio', score: 9, comment: 'Sin agroquímicos ni degradación.' },
+    { criterionId: 'territorio', score: 9, comment: 'Turismo de bajo impacto, sin degradación del territorio.' },
     { criterionId: 'biodiversidad', score: 8 },
     { criterionId: 'agua', score: 8 },
     { criterionId: 'cosmovision', score: 10, comment: 'Articulación espiritual sólida.' },
     { criterionId: 'apropiacion', score: 9 },
-    { criterionId: 'tecnicas', score: 9, comment: 'Herramientas heredadas en uso.' },
+    { criterionId: 'tecnicas', score: 9, comment: 'Interpretación del territorio con guías y saberes locales.' },
     { criterionId: 'reconocimiento', score: 7 },
     { criterionId: 'asociatividad', score: 7 },
     { criterionId: 'consentimiento', score: 9 },
@@ -1477,7 +1476,7 @@ export const mockScoringByCase: Record<string, ScoringValue[]> = {
     { criterionId: 'practicas', score: 7 },
     { criterionId: 'organizacion', score: 6 },
     { criterionId: 'beneficio', score: 6 },
-    { criterionId: 'territorio', score: 9, comment: 'Sin agroquímicos.' },
+    { criterionId: 'territorio', score: 9, comment: 'Territorio y ciclos naturales presentes en la obra.' },
     { criterionId: 'biodiversidad', score: 7 },
     { criterionId: 'agua', score: 7 },
     { criterionId: 'cosmovision', score: 8 },
@@ -1499,34 +1498,6 @@ export const mockEvidenceEvaluations: Record<
     { evidenceId: 'e-003', verdict: 'clarify', comment: 'Necesito ver el proceso completo.' },
   ],
 }
-
-export const mockInternalNotes: InternalNote[] = [
-  {
-    id: 'note-001',
-    caseId: 'CE-104',
-    author: TUTOR_SHORT_NAME,
-    authorRole: 'tutor',
-    body: 'Camila viene con muy buen track de la comunidad. Validar aval con la Mtra. Quispe antes de cerrar diagnóstico.',
-    at: '2026-04-25T14:30:00-03:00',
-    pinned: true,
-  },
-  {
-    id: 'note-002',
-    caseId: 'CE-104',
-    author: TUTOR_SHORT_NAME,
-    authorRole: 'tutor',
-    body: 'Falta validar la fecha de la foto de proceso. Pedí aclaración en evidencia e-003.',
-    at: '2026-04-28T09:00:00-03:00',
-  },
-  {
-    id: 'note-003',
-    caseId: 'CE-108',
-    author: TUTOR_SHORT_NAME,
-    authorRole: 'tutor',
-    body: 'Pedro va bien, pero la documentación tributaria es un blocker para certificación final.',
-    at: '2026-04-20T11:00:00-03:00',
-  },
-]
 
 // ─── Bandeja de tareas del tutor ─────────────────────────────────────────────
 
@@ -1790,7 +1761,7 @@ export const mockImprovementPlans: Record<string, ImprovementPlan> = {
       {
         id: 'a-1',
         title: 'Documentar proceso completo con video',
-        detail: '5-7 minutos mostrando hornado, modelado y quemado.',
+        detail: '5-7 minutos mostrando recolección, secado y armado del blend de hierbas.',
         criterionId: 'tecnicas',
         dueDate: '20/06',
         responsible: 'solicitante',
@@ -1864,7 +1835,32 @@ export function getExpedienteData(certId: string) {
       nextRenewalAt: '20/11/25',
     }
   }
-  // Fallback razonable
+  // Fallback ENRIQUECIDO desde el propio cert emitido: CE-003..CE-018 no
+  // tienen expediente hardcodeado, pero SÍ traen región/país/categoría/
+  // producto/fechas reales en `mockIssuedCertifications`. Antes el expediente
+  // mostraba "—" en casi todos los campos; ahora refleja los datos del cert.
+  const cert = mockIssuedCertifications.find((c) => c.id === certId)
+  if (cert) {
+    return {
+      authorPhone: '—',
+      authorEmail: '—',
+      authorRole: `Autor/a · ${cert.category}`,
+      community: `${cert.region}, ${cert.country}`,
+      productType: 'Producto ancestral',
+      productSector: cert.category,
+      productSubcategory: cert.productName,
+      productionDescription:
+        'Detalle del proceso productivo en revisión por el equipo de tutoría.',
+      productionResponsible: 'Solicitante',
+      productionCapacity: 'Pequeña escala',
+      productionMode: 'Por encargo',
+      batchIdentifier: 'Por fecha',
+      renewalCycleMonths: 24,
+      lastRenewalAt: cert.issuedAt,
+      nextRenewalAt: cert.expiresAt,
+    }
+  }
+  // Fallback final (cert no encontrado)
   return {
     authorPhone: '—',
     authorEmail: '—',
@@ -1886,11 +1882,15 @@ export function getExpedienteData(certId: string) {
 }
 
 export function getEvidenciasByCert(certId: string): CertExpedienteEvidence[] {
-  // Default 3 imágenes + 1 video + 1 documento (matchea el Figma)
+  // Default 3 imágenes + 1 video + 1 documento (matchea el Figma).
+  // Nombres GENÉRICOS (antes eran 'pieza-frente/reverso', específicos de una
+  // pieza física, incoherentes para libros/turismo/café). Se quitó el
+  // `thumbUrl` de filigrana hardcodeado en img-1, que mostraba una joya como
+  // evidencia en TODOS los certs sin importar el producto.
   return [
-    { id: `${certId}-img-1`, kind: 'image', name: 'pieza-frente.jpg', sizeKb: 1240, thumbUrl: '/cards/card-filigrana-v2.webp' },
-    { id: `${certId}-img-2`, kind: 'image', name: 'pieza-reverso.jpg', sizeKb: 980 },
-    { id: `${certId}-img-3`, kind: 'image', name: 'proceso-detalle.jpg', sizeKb: 2100 },
+    { id: `${certId}-img-1`, kind: 'image', name: 'evidencia-1.jpg', sizeKb: 1240 },
+    { id: `${certId}-img-2`, kind: 'image', name: 'evidencia-2.jpg', sizeKb: 980 },
+    { id: `${certId}-img-3`, kind: 'image', name: 'proceso.jpg', sizeKb: 2100 },
     { id: `${certId}-vid-1`, kind: 'video', name: 'proceso-completo.mp4', sizeKb: 18_200 },
     { id: `${certId}-doc-1`, kind: 'document', name: 'aval-comunidad.pdf', sizeKb: 320 },
   ]

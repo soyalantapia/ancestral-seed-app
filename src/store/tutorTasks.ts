@@ -75,8 +75,8 @@ export const useTutorTasksStore = create<TutorTasksState>()(
       reset: () => set({ tasks: mockTutorTasks, filter: 'all' }),
     }),
     {
-      name: 'ancestral-seed-tutor-tasks-v2',
-      version: 2,
+      name: 'ancestral-seed-tutor-tasks-v3',
+      version: 3,
       /**
        * Fix V2-TUT-16 (auditoría v2): antes el initial state se
        * hidrataba con `mockTutorTasks` solo la primera vez que el
@@ -88,7 +88,9 @@ export const useTutorTasksStore = create<TutorTasksState>()(
        * actualizaciones del schema.
        */
       migrate: (persisted, version) => {
-        if (version < 2) {
+        // v3: mockTutorTasks se re-sincronizó (casos CE-101..CE-110 con
+        // autores/productos reales). Reset duro para versiones previas.
+        if (version < 3) {
           // Reset duro a mock cuando subimos versión — pierde el
           // estado del demo viejo pero gana coherencia con el nuevo mock.
           return {

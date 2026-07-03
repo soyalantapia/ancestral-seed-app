@@ -42,7 +42,17 @@ export function HashScrollHandler() {
     }
 
     // 1) Trigger cuando cambia el pathname/hash via React Router
-    scrollToHash(hash)
+    if (hash) {
+      scrollToHash(hash)
+    } else {
+      // Sin hash → navegación a una ruta nueva (ej: "Certificar" → /certificar).
+      // React Router NO resetea el scroll, así que la página siguiente abría
+      // scrolleada donde había quedado la anterior (bug reportado: "me lleva
+      // al final, no al principio"). Reseteamos al tope. INSTANTÁNEO
+      // (behavior:'instant') para pisar el `scroll-behavior: smooth` global del
+      // CSS — si no, la página "viaja" animada desde el fondo, que se ve peor.
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    }
 
     // 2) Fallback: listener nativo de hashchange para clicks que solo
     //    cambian el hash dentro de la misma ruta (no triggerea

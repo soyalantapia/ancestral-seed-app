@@ -59,6 +59,10 @@ export const useTutorCasesStore = create<TutorCasesState>()(
         })),
       reset: () => set({ cases: mockTutorCases }),
     }),
-    { name: 'ancestral-seed-tutor-cases-v1' },
+    // v2: los casos mock se re-sincronizaron (autores/productos/regiones
+    // reales). Sin bumpear la key, `persist` prioriza el localStorage viejo
+    // y el tutor seguiría viendo los casos ANTERIORES. La key nueva descarta
+    // el estado viejo y siembra desde el `mockTutorCases` actualizado.
+    { name: 'ancestral-seed-tutor-cases-v2' },
   ),
 )

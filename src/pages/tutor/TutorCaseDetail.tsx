@@ -409,7 +409,11 @@ export default function TutorCaseDetail() {
               />
             )}
             {tab === 'evidencias' && (
-              <EvidenciasTab caseData={caseData} evals={evidenceEvals} />
+              <EvidenciasTab
+                key={caseData.id}
+                caseData={caseData}
+                evals={evidenceEvals}
+              />
             )}
             {tab === 'evaluacion' && (
               <EvaluacionTab
@@ -748,9 +752,9 @@ function EvidenciasTab({
   const [requestOpen, setRequestOpen] = useState(false)
 
   const mockFiles = [
-    { id: 'e-001', name: 'pieza-frente.jpg', kind: 'image' },
-    { id: 'e-002', name: 'pieza-reverso.jpg', kind: 'image' },
-    { id: 'e-003', name: 'proceso-hilado.jpg', kind: 'image' },
+    { id: 'e-001', name: 'evidencia-1.jpg', kind: 'image' },
+    { id: 'e-002', name: 'evidencia-2.jpg', kind: 'image' },
+    { id: 'e-003', name: 'proceso.jpg', kind: 'image' },
   ]
 
   const setVerdict = (evidenceId: string, verdict: EvidenceVerdict, comment?: string) => {
@@ -1359,13 +1363,13 @@ function MensajesTab({
             mine={false}
             author={caseData.applicantName}
             at="hace 2d"
-            body="Hola Juan, ya subí las 3 fotos del proceso de tejido. Avisame si necesitás algo más."
+            body={`Hola${caseData.tutorName ? ' ' + caseData.tutorName.split(' ')[0] : ''}, ya subí las 3 evidencias que me pediste. Avisame si necesitás algo más.`}
           />
           <ChatBubble
             mine
             author="Vos"
             at="hace 1d"
-            body="Camila, recibí las fotos, muchas gracias. Te confirmo el viernes con el feedback."
+            body={`${caseData.applicantName.split(' ')[0]}, recibí las evidencias, muchas gracias. Te confirmo el viernes con el feedback.`}
           />
           <ChatBubble
             mine={false}
@@ -1422,6 +1426,19 @@ function ChatBubble({
 // ─── Historial (logs inmutables) ──────────────────────────────────────────────
 
 function HistorialTab({ caseData }: { caseData: TutorCase }) {
+  // El historial refleja SOLO las etapas que el caso ya recorrió (según su
+  // `stage` actual). Antes mostraba "Avance a Elegible" incluso en casos que
+  // seguían en Postulado, con fechas hardcodeadas ANTERIORES al alta del caso.
+  const stageOrder = [
+    'postulado',
+    'revision-inicial',
+    'elegible',
+    'diagnostico',
+    'auditoria',
+    'evaluacion',
+    'certificacion',
+  ]
+  const stageIdx = stageOrder.indexOf(caseData.stage)
   const events = [
     {
       id: 'h-1',
@@ -1430,38 +1447,50 @@ function HistorialTab({ caseData }: { caseData: TutorCase }) {
       actor: 'Sistema',
       kind: 'info' as const,
     },
-    {
-      id: 'h-2',
-      title: 'Tutor asignado',
-      sub: caseData.tutorName ?? '—',
-      at: caseData.createdAt,
-      actor: 'Coordinador',
-      kind: 'info' as const,
-    },
-    {
-      id: 'h-3',
-      title: 'Avance a Revisión inicial',
-      sub: 'Sin observaciones',
-      at: '2026-05-06T10:00:00-03:00',
-      actor: caseData.tutorName ?? 'Tutor',
-      kind: 'stage' as const,
-    },
-    {
-      id: 'h-4',
-      title: 'Evidencias subidas',
-      sub: '3 archivos',
-      at: '2026-05-09T12:30:00-03:00',
-      actor: caseData.applicantName,
-      kind: 'evidence' as const,
-    },
-    {
-      id: 'h-5',
-      title: 'Avance a Elegible',
-      sub: 'Score IA ≥ 80',
-      at: '2026-05-12T09:00:00-03:00',
-      actor: caseData.tutorName ?? 'Tutor',
-      kind: 'stage' as const,
-    },
+    ...(caseData.tutorName
+      ? [
+          {
+            id: 'h-2',
+            title: 'Tutor asignado',
+            sub: caseData.tutorName,
+            at: caseData.createdAt,
+            actor: 'Coordinador',
+            kind: 'info' as const,
+          },
+        ]
+      : []),
+    ...(stageIdx >= 1
+      ? [
+          {
+            id: 'h-3',
+            title: 'Avance a Revisión inicial',
+            sub: 'Sin observaciones',
+            at: caseData.createdAt,
+            actor: caseData.tutorName ?? 'Tutor',
+            kind: 'stage' as const,
+          },
+        ]
+      : []),
+    ...(stageIdx >= 2
+      ? [
+          {
+            id: 'h-4',
+            title: 'Evidencias subidas',
+            sub: '3 archivos',
+            at: caseData.createdAt,
+            actor: caseData.applicantName,
+            kind: 'evidence' as const,
+          },
+          {
+            id: 'h-5',
+            title: 'Avance a Elegible',
+            sub: `Score IA ${caseData.scoringIA}/100`,
+            at: caseData.createdAt,
+            actor: caseData.tutorName ?? 'Tutor',
+            kind: 'stage' as const,
+          },
+        ]
+      : []),
   ]
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
@@ -2320,6 +2349,11 @@ function AISummaryModal({
   const sla = STAGE_SLA_DAYS[caseData.stage] ?? 14
   const slaTone = daysInStage > sla ? 'red' : daysInStage > sla * 0.7 ? 'yellow' : 'green'
   const estClosingDays = Math.max(7, sla - daysInStage + 14)
+  // Ventana para AGENDAR la reunión de cierre: una fracción del estimado
+  // total, acotada a 2–7 días. Antes era `Math.min(7, estClosingDays)`, que
+  // —al ser `estClosingDays` siempre ≥ 7 por el `Math.max(7, …)`— mostraba
+  // SIEMPRE 7 días, sin importar el caso.
+  const meetingDays = Math.max(2, Math.min(7, Math.round(estClosingDays / 3)))
 
   return (
     <div
@@ -2478,7 +2512,7 @@ function AISummaryModal({
             </SummaryStep>
             <SummaryStep n={3}>
               Programar reunión de cierre con el solicitante en los próximos{' '}
-              {Math.min(7, estClosingDays)} días.
+              {meetingDays} días.
             </SummaryStep>
           </ol>
         </section>

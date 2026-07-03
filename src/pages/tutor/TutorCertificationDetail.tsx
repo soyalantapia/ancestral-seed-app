@@ -85,11 +85,19 @@ const STATUS_META: Record<
   },
 }
 
-const COVER_BY_CERT: Record<string, string> = {
-  'CE-001': '/cards/card-filigrana-v2.webp',
-  'CE-002': '/cards/card-sabores-cosmicos.webp',
-  'CE-003': '/cards/card-tejido.webp',
-  'CE-004': '/cards/card-ecodestinos-v2.webp',
+// Cover por PRODUCTO (no por cert.id). Los 18 certs emitidos ciclan 8
+// productos; mapear por id dejaba CE-005..CE-018 con la portada de filigrana
+// por fallback (ej. el Barniz Mopa-Mopa o el Café se veían como joyería).
+// Los 8 productos tienen card art en /public/cards.
+const COVER_BY_PRODUCT: Record<string, string> = {
+  'Técnica ancestral: Filigrana': '/cards/card-filigrana-v2.webp',
+  'Libro: Sabores cósmicos': '/cards/card-sabores-cosmicos.webp',
+  'Tejido y diseño textil tradicional': '/cards/card-tejido.webp',
+  'Ecodestinos · Turismo regenerativo': '/cards/card-ecodestinos-v2.webp',
+  'Joyería en filigrana momposina': '/cards/card-joyeria-momposina.webp',
+  'Barniz de Pasto (Mopa-Mopa)': '/cards/card-mopa-pasto.webp',
+  'Blend Herbal Ancestral': '/cards/card-blend-herbal.webp',
+  'Café ancestral Quillacinga': '/cards/card-cafe-quillacinga.webp',
 }
 
 type Tab = 'info' | 'blockchain'
@@ -162,7 +170,7 @@ export default function TutorCertificationDetail() {
 
   const extra = getExpedienteData(cert.id)
   const meta = STATUS_META[cert.status]
-  const cover = COVER_BY_CERT[cert.id] ?? '/cards/card-filigrana-v2.webp'
+  const cover = COVER_BY_PRODUCT[cert.productName] ?? '/cards/card-filigrana-v2.webp'
   const score = parseScoreNum(cert.scoreLabel)
   const daysToExpiry = daysUntil(cert.expiresAt)
   /**
