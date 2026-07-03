@@ -565,7 +565,7 @@ export const mockCertifications: Certification[] = [
     category: 'Córdoba',
     description:
       'Blend de hierbas y flores secas —rosas, caléndula, lavanda y aromáticas de las sierras— compuesto de forma artesanal para sahumar, infusionar y acompañar rituales de limpieza y bienestar. Cada mezcla nace de un saber herbolario transmitido por generaciones en las Sierras de Córdoba.',
-    coverUrl: '/cards/card-blend-herbal.webp',
+    coverUrl: '/cards/card-blend-hierbas.webp',
     hash: '0xB1A2F3E4D5C6B7A8F9E0D1C2C8D3B2A1F4E5D6C7B8A9F1E2D3C4B5A6F7E8D9C0',
     officialCategory: 'tradicional',
     entityType: 'producto',
