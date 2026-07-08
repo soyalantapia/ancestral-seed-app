@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
   ArrowUpRight,
+  Download,
   ExternalLink,
   FileText,
   Globe,
@@ -109,6 +110,22 @@ function Disclaimer() {
 }
 
 export default function Legislacion() {
+  /**
+   * Genera y descarga el one-pager institucional (mismo contenido que la
+   * página, en PDF con enlaces oficiales clickeables) para mandar por mail
+   * o dejar en reuniones con instituciones. El código del PDF va en un
+   * chunk aparte (dynamic import) para no cargarlo hasta que se pide.
+   */
+  const handleDownloadPdf = async () => {
+    const { buildMarcoLegalPdf, downloadPdfBlob } = await import('@/lib/pdf')
+    const blob = buildMarcoLegalPdf({
+      internacional: MARCO_INTERNACIONAL,
+      jurisdicciones: JURISDICCIONES,
+      sourceUrl: 'ancestralseed.com/legal/legislacion',
+    })
+    downloadPdfBlob('marco-legal-ancestral-seed.pdf', blob)
+  }
+
   return (
     <>
       <PageMeta title="Legislación" description={INTRO} />
@@ -144,6 +161,14 @@ export default function Legislacion() {
               </Link>
               , documentado mediante acta firmada por sus referentes.
             </p>
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-gold-500 px-5 py-2.5 text-sm font-bold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+            >
+              <Download className="h-4 w-4" strokeWidth={2.25} />
+              Descargar resumen (PDF)
+            </button>
           </div>
         </div>
       </section>

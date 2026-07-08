@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import { LEGAL_ENTITY } from '@/lib/copy'
+import type { LegalInstrument, LegalJurisdiccion } from '@/data/legislacion'
 
 /**
  * Helpers para generar PDFs reales descargables — reemplaza los
@@ -399,6 +400,153 @@ export function buildActaPdf(input: ActaPdfInput): Blob {
     const hashLines = doc.splitTextToSize(input.hash, 172)
     doc.text(hashLines, left + 4, y + 12)
   }
+
+  drawFooter(doc)
+  return doc.output('blob')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Resumen de marco legal por país (apartado "Legislación")
+// One-pager institucional descargable: pilares internacionales + legislación de
+// consulta previa por país, con enlaces oficiales clickeables. Pensado para
+// mandar por mail o dejar en reuniones con instituciones (ONU, ministerios).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface MarcoLegalPdfInput {
+  internacional: LegalInstrument[]
+  jurisdicciones: LegalJurisdiccion[]
+  /** URL pública del apartado (fuente viva con todos los enlaces). */
+  sourceUrl: string
+}
+
+export function buildMarcoLegalPdf(input: MarcoLegalPdfInput): Blob {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  const pageW = doc.internal.pageSize.getWidth()
+  const left = 14
+  const contentW = pageW - left * 2
+  const bottom = 268 // corte de contenido (deja lugar al footer)
+
+  drawHeader(
+    doc,
+    'Marco legal por país',
+    'Alineación con la legislación de consulta previa de los pueblos indígenas',
+  )
+  let y = 62
+
+  // Salto de página con banda slim de continuación.
+  const ensure = (needed: number) => {
+    if (y + needed > bottom) {
+      drawFooter(doc)
+      doc.addPage()
+      doc.setFillColor(...PALETTE.navy)
+      doc.rect(0, 0, pageW, 16, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.text('ANCESTRAL SEED', left, 10)
+      doc.setTextColor(...PALETTE.gold)
+      doc.setFontSize(7)
+      doc.text('MARCO LEGAL POR PAÍS', pageW - left, 10, { align: 'right' })
+      y = 28
+    }
+  }
+
+  const heading = (text: string) => {
+    ensure(12)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.setTextColor(...PALETTE.navy)
+    doc.text(text, left, y)
+    doc.setDrawColor(...PALETTE.gold)
+    doc.setLineWidth(0.6)
+    doc.line(left, y + 1.8, left + 22, y + 1.8)
+    y += 9
+  }
+
+  const renderInstrument = (inst: LegalInstrument) => {
+    const meta = inst.anio ? `${inst.tipo} · ${inst.anio}` : inst.tipo
+    const nameLines = doc.splitTextToSize(
+      `•  ${inst.nombre}  (${meta})`,
+      contentW - 2,
+    ) as string[]
+    const urlLines = doc.splitTextToSize(inst.url, contentW - 4) as string[]
+    ensure(nameLines.length * 3.9 + urlLines.length * 3.2 + 3)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...PALETTE.text)
+    doc.text(nameLines, left + 2, y)
+    y += nameLines.length * 3.9
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7.5)
+    doc.setTextColor(...PALETTE.gold)
+    urlLines.forEach((ln, i) => {
+      doc.textWithLink(ln, left + 4, y + i * 3.2, { url: inst.url })
+    })
+    y += urlLines.length * 3.2 + 3
+  }
+
+  // Intro / tesis
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9.5)
+  doc.setTextColor(...PALETTE.text)
+  const intro = doc.splitTextToSize(
+    'Ancestral Seed certifica productos, servicios y saberes ancestrales alineándose con el marco legal de cada país sobre los derechos de los pueblos indígenas. El eje es la consulta previa —Consentimiento Libre, Previo e Informado (FPIC)—: el mecanismo por el cual el Estado garantiza que ningún tercero use la cultura, los saberes o el territorio de una comunidad sin su consentimiento. Toda certificación requiere el consentimiento expreso de la comunidad de origen.',
+    contentW,
+  ) as string[]
+  doc.text(intro, left, y)
+  y += intro.length * 4.2 + 4
+
+  heading('Marco internacional')
+  input.internacional.forEach(renderInstrument)
+  y += 3
+
+  heading('Legislación por país')
+  input.jurisdicciones.forEach((j) => {
+    // Mantener el título del país junto a su autoridad (no huérfano).
+    ensure(16)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10.5)
+    doc.setTextColor(...PALETTE.navy)
+    doc.text(j.pais, left, y)
+    y += 5
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(8)
+    doc.setTextColor(...PALETTE.mute)
+    const authLines = doc.splitTextToSize(
+      `Autoridad competente: ${j.autoridad}`,
+      contentW,
+    ) as string[]
+    doc.text(authLines, left, y)
+    y += authLines.length * 3.4 + 2
+    j.instrumentos.forEach(renderInstrument)
+    y += 3
+  })
+
+  // Disclaimer
+  const discLines = doc.splitTextToSize(
+    'Ejemplos ilustrativos y no exhaustivos. No constituye asesoría legal ni reemplaza el trámite de consulta previa ante cada Estado. La fuente oficial siempre prevalece y la decisión final es de cada comunidad.',
+    contentW - 8,
+  ) as string[]
+  const discH = discLines.length * 3.6 + 8
+  ensure(discH + 8)
+  doc.setFillColor(245, 245, 248)
+  doc.rect(left, y, contentW, discH, 'F')
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(8)
+  doc.setTextColor(...PALETTE.mute)
+  doc.text(discLines, left + 4, y + 6)
+  y += discH + 5
+
+  ensure(6)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8.5)
+  doc.setTextColor(...PALETTE.navy)
+  doc.textWithLink(
+    `Fuente viva y enlaces oficiales: ${input.sourceUrl}`,
+    left,
+    y,
+    { url: `https://${input.sourceUrl.replace(/^https?:\/\//, '')}` },
+  )
 
   drawFooter(doc)
   return doc.output('blob')
