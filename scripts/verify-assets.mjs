@@ -50,11 +50,25 @@ function listSourceFiles(dir) {
  */
 function extractLocalAssetRefs() {
   const found = new Set()
+  const re =
+    /(?:cards|gallery|authors|docs)\/[a-zA-Z0-9_./-]+\.(?:webp|jpe?g|png|svg|pdf)/g
   for (const filePath of listSourceFiles(SRC)) {
     const src = readFileSync(filePath, 'utf-8')
-    for (const m of src.matchAll(
-      /(?:cards|gallery|authors|docs)\/[a-zA-Z0-9_./-]+\.(?:webp|jpe?g|png|svg|pdf)/g,
-    )) {
+    for (const m of src.matchAll(re)) {
+      // Descartar coincidencias que son parte de una URL externa http(s):
+      // p.ej. "https://faolex.fao.org/docs/pdf/gua122086.pdf" contiene la
+      // subcadena "docs/pdf/gua122086.pdf" pero NO es un asset local (viven
+      // links legales oficiales en src/data/legislacion.ts). Aislamos el
+      // token desde la comilla que abre el string hasta el match; si ese
+      // prefijo tiene "://", es una URL y no un path local → se ignora.
+      const idx = m.index ?? 0
+      const boundary = Math.max(
+        src.lastIndexOf("'", idx),
+        src.lastIndexOf('"', idx),
+        src.lastIndexOf('`', idx),
+      )
+      const prefix = src.slice(boundary + 1, idx)
+      if (prefix.includes('://')) continue
       found.add(m[0])
     }
   }
