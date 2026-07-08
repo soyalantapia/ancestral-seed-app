@@ -118,6 +118,12 @@ export default function CertificationDetail() {
       description: cert.description,
       verifyUrl:
         typeof window !== 'undefined' ? window.location.href : undefined,
+      // Mismo criterio que la card de la ficha: solo si el país está cubierto
+      // y la cert tiene comunidad de origen (no 'inspiracion').
+      legalFrameworkCountry:
+        jurisdiccion && cert.officialCategory !== 'inspiracion'
+          ? jurisdiccion.pais
+          : undefined,
     })
     downloadPdfBlob(`${cert.slug}-certificado.pdf`, blob)
     toast.success('Certificado descargado')

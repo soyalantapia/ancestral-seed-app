@@ -26,6 +26,7 @@ import {
   Phone,
   Plus,
   RefreshCw,
+  Scale,
   ShieldCheck,
   Square,
   StickyNote,
@@ -46,6 +47,7 @@ import {
   mockScoringByCase,
   tutorIdentity,
 } from '@/services/mocks/data'
+import { getJurisdiccionForLocation } from '@/data/legislacion'
 import type {
   CertExpedienteEvidence,
   ChecklistCategory,
@@ -537,6 +539,10 @@ function SidebarAutor({
     .join('')
     .toUpperCase()
 
+  // Marco legal de consulta previa aplicable al territorio de la cert —
+  // referencia rápida para que el tutor verifique la alineación.
+  const jurisdiccion = getJurisdiccionForLocation(cert.country)
+
   return (
     <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
       <p className="text-[10px] font-bold uppercase tracking-widest text-navy-300">
@@ -572,6 +578,14 @@ function SidebarAutor({
           icon={MapPin}
           value={`${cert.country} · ${cert.region}`}
         />
+        {jurisdiccion && (
+          <ContactRow
+            icon={Scale}
+            value={`Marco legal de ${jurisdiccion.pais}`}
+            href={`${import.meta.env.BASE_URL}legal/legislacion#${jurisdiccion.id}`}
+            external
+          />
+        )}
         {extra.authorPhone && (
           <ContactRow
             icon={Phone}
@@ -595,10 +609,12 @@ function ContactRow({
   icon: Icon,
   value,
   href,
+  external,
 }: {
   icon: typeof Phone
   value: string
   href?: string
+  external?: boolean
 }) {
   const content = (
     <>
@@ -611,6 +627,9 @@ function ContactRow({
       <li>
         <a
           href={href}
+          {...(external
+            ? { target: '_blank', rel: 'noopener noreferrer' }
+            : {})}
           className="flex items-center gap-2 text-navy-500 transition-colors hover:text-gold-700"
         >
           {content}
@@ -2371,6 +2390,7 @@ async function downloadActa(
   const loadingId = toast.loading('Generando acta…')
   try {
     const { buildActaPdf, downloadPdfBlob } = await import('@/lib/pdf')
+    const actaJurisdiccion = getJurisdiccionForLocation(cert.country)
     const blob = buildActaPdf({
       certId: cert.id,
       productName: cert.productName,
@@ -2384,6 +2404,12 @@ async function downloadActa(
       category: cert.category,
       country: cert.country,
       region: cert.region,
+      // Solo afirmamos alineación si el país está cubierto y la cert no es
+      // categoría 'inspiración' (misma lógica anti over-claim que la ficha).
+      legalFrameworkCountry:
+        actaJurisdiccion && !/inspiraci/i.test(cert.category)
+          ? actaJurisdiccion.pais
+          : undefined,
       issuedAt: cert.issuedAt,
       expiresAt: cert.expiresAt,
       // El cert blockchain hash vive en la ficha pública por slug. Para

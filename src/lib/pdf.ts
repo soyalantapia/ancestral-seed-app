@@ -110,6 +110,10 @@ export interface CertificatePdfInput {
   hash: string
   description?: string
   verifyUrl?: string
+  /** País cuyo marco de consulta previa aplica (solo si corresponde: país
+   *  cubierto y cert con comunidad de origen). El caller decide; acá solo
+   *  se imprime la línea de alineación. */
+  legalFrameworkCountry?: string
 }
 
 export function buildCertificatePdf(input: CertificatePdfInput): Blob {
@@ -177,6 +181,18 @@ export function buildCertificatePdf(input: CertificatePdfInput): Blob {
     doc.setFontSize(8)
     doc.setTextColor(...PALETTE.mute)
     doc.text(`Verificá en: ${input.verifyUrl}`, left, y)
+    y += 6
+  }
+
+  if (input.legalFrameworkCountry) {
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(8)
+    doc.setTextColor(...PALETTE.mute)
+    const line = doc.splitTextToSize(
+      `Emitido en alineación con el marco legal de consulta previa de ${input.legalFrameworkCountry} (derechos de los pueblos indígenas).`,
+      180,
+    )
+    doc.text(line, left, y)
   }
 
   drawFooter(doc)
@@ -331,6 +347,8 @@ export interface ActaPdfInput {
   issuedAt: string
   expiresAt?: string
   hash?: string
+  /** País cuyo marco de consulta previa aplica (solo si corresponde). */
+  legalFrameworkCountry?: string
 }
 
 export function buildActaPdf(input: ActaPdfInput): Blob {
@@ -399,6 +417,18 @@ export function buildActaPdf(input: ActaPdfInput): Blob {
     doc.setTextColor(...PALETTE.text)
     const hashLines = doc.splitTextToSize(input.hash, 172)
     doc.text(hashLines, left + 4, y + 12)
+    y += 30
+  }
+
+  if (input.legalFrameworkCountry) {
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(8)
+    doc.setTextColor(...PALETTE.mute)
+    const line = doc.splitTextToSize(
+      `Emitido en alineación con el marco legal de consulta previa de ${input.legalFrameworkCountry} (derechos de los pueblos indígenas).`,
+      180,
+    )
+    doc.text(line, left, y)
   }
 
   drawFooter(doc)

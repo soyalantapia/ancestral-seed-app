@@ -12,6 +12,7 @@ import {
   Headphones,
   Image as ImageIcon,
   Play,
+  Scale,
   Sparkles,
   Upload,
   X,
@@ -25,6 +26,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Combobox } from '@/components/ui/combobox'
 import { LATAM_COUNTRIES, GENERIC_DOC_TYPES, getLatamCountry } from '@/data/latam'
+import { getJurisdiccionForLocation } from '@/data/legislacion'
 import { Logo } from '@/components/features/Logo'
 import { useCertifyFormStore, type CertifyFormData } from '@/store/certifyForm'
 import { useAuthStore } from '@/store/auth'
@@ -957,12 +959,43 @@ function StepIdentidad() {
 function StepComunidad() {
   const { register, watch, setValue } = useFormContext<Partial<CertifyFormData>>()
   const has = watch('hasKinship')
+  // Marco legal de consulta previa del país declarado en el paso 1.
+  const jurisdiccion = getJurisdiccionForLocation(watch('country'))
   return (
     <div>
       <StepHeader
         title="Comunidad"
         description="Ingresá la información de tu comunidad y funciones dentro de la misma."
       />
+      {jurisdiccion && (
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-gold-300 bg-gold-100/40 p-4">
+          <Scale className="mt-0.5 h-5 w-5 shrink-0 text-gold-700" />
+          <div className="text-sm leading-relaxed">
+            <p className="font-bold text-navy-500">
+              Consulta previa y marco legal
+            </p>
+            <p className="mt-1 text-navy-300">
+              Tu certificación se enmarca en la legislación de{' '}
+              <strong className="text-navy-500">{jurisdiccion.pais}</strong>{' '}
+              sobre los derechos de los pueblos indígenas y la consulta previa.
+              Requiere el{' '}
+              <strong className="text-navy-500">
+                consentimiento expreso de la comunidad de origen
+              </strong>{' '}
+              (acta firmada por sus referentes).
+            </p>
+            <a
+              href={`${import.meta.env.BASE_URL}legal/legislacion#${jurisdiccion.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-gold-700 hover:underline"
+            >
+              Ver el marco legal de {jurisdiccion.pais}
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      )}
       <div className="space-y-5">
         <FieldRow>
           <div>
