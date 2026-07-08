@@ -137,6 +137,9 @@ export function Footer() {
           <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p>© {new Date().getFullYear()} Ancestral Seed — Todos los derechos reservados</p>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link to="/legal/legislacion" className="hover:text-gold-400">
+                Legislación
+              </Link>
               <Link to="/legal/terminos" className="hover:text-gold-400">
                 Términos y condiciones
               </Link>

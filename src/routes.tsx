@@ -75,6 +75,7 @@ const TutorAgenda = lazyWithRetry(() => import('@/pages/tutor/TutorAgenda'))
 const TutorTasks = lazyWithRetry(() => import('@/pages/tutor/TutorTasks'))
 const NotFound = lazyWithRetry(() => import('@/pages/NotFound'))
 const Legal = lazyWithRetry(() => import('@/pages/Legal'))
+const Legislacion = lazyWithRetry(() => import('@/pages/Legislacion'))
 // Fix análisis proyecto — páginas nuevas Ola 2 + Ola 3
 const Renovar = lazyWithRetry(() => import('@/pages/Renovar'))
 const Apelar = lazyWithRetry(() => import('@/pages/Apelar'))
@@ -121,6 +122,9 @@ export const router = createBrowserRouter(
         { path: 'registro', element: withSuspense(<Signup />) },
         { path: 'recuperar', element: withSuspense(<RecoverPassword />) },
         { path: 'certificar', element: withSuspense(<CertifyForm />) },
+        // Apartado "Legislación" — marco legal por país / consulta previa.
+        // Ruta estática antes de legal/:section para que gane el matcher.
+        { path: 'legal/legislacion', element: withSuspense(<Legislacion />) },
         { path: 'legal/:section', element: withSuspense(<Legal />) },
         // Fix #FEAT-06: denuncia pública sin login
         { path: 'denuncias', element: withSuspense(<Denuncias />) },
