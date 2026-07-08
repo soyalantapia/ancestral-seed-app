@@ -24,27 +24,44 @@ export function HashScrollHandler() {
   const { pathname, hash } = useLocation()
 
   useEffect(() => {
+    let rafId = 0
+    const timeouts: number[] = []
     const scrollToHash = (rawHash: string) => {
       const id = rawHash.replace('#', '')
       if (!id) return
-      // Poll acotado hasta que el elemento exista. Un 2-rAF fijo fallaba
-      // al navegar DESDE otra ruta (o deep-link /#seccion): la Home es
-      // pesada y su sección aún no está montada en los primeros frames,
-      // así que getElementById daba null y no scrolleaba. Reintentamos
-      // ~30 frames (≈0.5s) y cortamos.
-      let frames = 0
-      const tryScroll = () => {
+      // Offset manual restando header sticky (64 mobile / 80 desktop)
+      const doScroll = (el: HTMLElement) => {
+        const headerH = window.innerWidth >= 768 ? 80 : 64
+        const top = el.getBoundingClientRect().top + window.scrollY - headerH
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+      // Poll acotado hasta que el elemento exista. Time-based (~3s) en vez
+      // de 30 frames fijos (≈0.5s): las páginas LAZY (ej: /legal/legislacion,
+      // deep-link a #colombia desde una ficha) pueden tardar >0.5s en montar
+      // su chunk tras la navegación, y con el poll corto getElementById daba
+      // null hasta que la ventana expiraba → el scroll no se disparaba nunca.
+      let start: number | null = null
+      const tryScroll = (ts: number) => {
+        if (start === null) start = ts
         const el = document.getElementById(id)
         if (el) {
-          // Offset manual restando header sticky (64 mobile / 80 desktop)
-          const headerH = window.innerWidth >= 768 ? 80 : 64
-          const top = el.getBoundingClientRect().top + window.scrollY - headerH
-          window.scrollTo({ top, behavior: 'smooth' })
-        } else if (frames++ < 30) {
-          window.requestAnimationFrame(tryScroll)
+          doScroll(el)
+          // Re-scroll correctivo tras la expansión de contenido que crece
+          // DESPUÉS de este primer scroll (ej: un acordeón que se abre por
+          // deep-link anima ~0.2s y desplaza el target; para el último item
+          // de una lista el primer scrollTo pudo quedar clampeado contra el
+          // layout aún colapsado). Re-medimos una vez pasada la animación.
+          timeouts.push(
+            window.setTimeout(() => {
+              const again = document.getElementById(id)
+              if (again) doScroll(again)
+            }, 350),
+          )
+        } else if (ts - start < 3000) {
+          rafId = window.requestAnimationFrame(tryScroll)
         }
       }
-      window.requestAnimationFrame(tryScroll)
+      rafId = window.requestAnimationFrame(tryScroll)
     }
 
     // Con hash → scrollear a la sección. Sin hash → ruta nueva (ej:
@@ -67,7 +84,14 @@ export function HashScrollHandler() {
     //    re-render de Layout y useLocation puede no actualizar)
     const onHashChange = () => scrollToHash(window.location.hash)
     window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    return () => {
+      window.removeEventListener('hashchange', onHashChange)
+      // Cancelar el poll y los re-scrolls pendientes al desmontar o al
+      // navegar (evita que un poll viejo de ~3s pelee el scroll con la
+      // navegación nueva).
+      window.cancelAnimationFrame(rafId)
+      timeouts.forEach((t) => window.clearTimeout(t))
+    }
   }, [pathname, hash])
 
   return null

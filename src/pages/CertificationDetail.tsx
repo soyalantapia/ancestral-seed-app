@@ -14,11 +14,13 @@ import {
   Flag,
   Globe,
   Instagram,
+  Landmark,
   Mail,
   MapPin,
   MessageCircle,
   Network,
   QrCode,
+  Scale,
   Search as SearchIcon,
   Send,
   Share2,
@@ -45,6 +47,7 @@ import { QrDownloadModal } from '@/components/features/QrDownloadModal'
 import { api } from '@/services/api'
 import { cn, formatDate, imgFallback } from '@/lib/utils'
 import { OFFICIAL_DOCS } from '@/lib/copy'
+import { getJurisdiccionForLocation } from '@/data/legislacion'
 import { certPublicUrl, renderQrCanvas } from '@/lib/qr'
 
 const PLACEHOLDER = '__placeholder__'
@@ -89,6 +92,9 @@ export default function CertificationDetail() {
       ? 'Sin región declarada'
       : cert.category)
   const mapQuery = cert.mapQuery ?? region
+  // Marco legal aplicable derivado del país del `location` de la cert.
+  // undefined si el país no está entre las jurisdicciones cubiertas.
+  const jurisdiccion = getJurisdiccionForLocation(cert.location)
 
   const galleryUrls = (
     cert.galleryUrls?.length
@@ -457,6 +463,48 @@ export default function CertificationDetail() {
                 {p}
               </p>
             ))}
+
+            {jurisdiccion && (
+              <>
+                <h2 className="mt-10 flex items-center gap-2 text-base font-bold text-navy-500">
+                  <Scale className="h-4 w-4 text-gold-700" />
+                  Marco legal aplicable
+                </h2>
+                <div className="mt-3 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm md:p-6">
+                  <p className="text-sm leading-relaxed text-navy-300">
+                    Esta certificación se enmarca en la legislación de{' '}
+                    <span className="font-semibold text-navy-500">
+                      {jurisdiccion.bandera} {jurisdiccion.pais}
+                    </span>{' '}
+                    sobre los derechos de los pueblos indígenas y la{' '}
+                    <span className="font-semibold text-navy-500">
+                      consulta previa
+                    </span>{' '}
+                    (Consentimiento Libre, Previo e Informado).
+                  </p>
+                  <p className="mt-3 flex items-start gap-2 rounded-xl bg-gold-100/50 px-3 py-2 text-xs text-navy-500">
+                    <Landmark className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-700" />
+                    <span>
+                      <strong className="font-bold">
+                        Autoridad competente:
+                      </strong>{' '}
+                      {jurisdiccion.autoridad}
+                    </span>
+                  </p>
+                  <Link
+                    to={`/legal/legislacion#${jurisdiccion.id}`}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-gold-700 hover:underline"
+                  >
+                    Ver el marco legal de {jurisdiccion.pais}
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                  <p className="mt-3 text-xs leading-relaxed text-navy-300">
+                    Referencia ilustrativa, no exhaustiva. No constituye
+                    asesoría legal.
+                  </p>
+                </div>
+              </>
+            )}
 
             <h2 className="mt-10 flex items-center gap-2 text-base font-bold text-navy-500">
               <Sprout className="h-4 w-4 text-gold-700" />

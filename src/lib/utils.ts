@@ -6,6 +6,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Normaliza un string para comparar/buscar sin importar acentos ni
+ * mayúsculas (NFD + strip de marcas diacríticas + lowercase).
+ * Ej: "Perú" y "peru" → "peru".
+ */
+export function normalizeText(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+}
+
+/**
  * Handler `onError` para <img>: si la imagen falla (404), cae a un fallback
  * UNA sola vez (flag en dataset para no loopear si el fallback también
  * falla). Útil para covers/avatars cuya foto real todavía no se subió:

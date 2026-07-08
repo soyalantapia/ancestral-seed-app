@@ -82,6 +82,8 @@ const staticEntries = [
   urlEntry(`${BASE_URL}/nosotros`, { changefreq: 'monthly', priority: 0.7 }),
   urlEntry(`${BASE_URL}/ayuda`, { changefreq: 'monthly', priority: 0.6 }),
   urlEntry(`${BASE_URL}/legal`, { changefreq: 'monthly', priority: 0.5 }),
+  // Apartado "Legislación" — página pública indexable (marco legal por país).
+  urlEntry(`${BASE_URL}/legal/legislacion`, { changefreq: 'monthly', priority: 0.6 }),
 ]
 
 const certEntries = certSlugs

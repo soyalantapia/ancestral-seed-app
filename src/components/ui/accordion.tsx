@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -12,10 +12,43 @@ export interface AccordionItem {
 interface AccordionProps {
   items: AccordionItem[]
   className?: string
+  /**
+   * Abre el item cuyo id matchea el hash de la URL (deep-link, ej:
+   * /legal/legislacion#colombia), tanto en carga inicial como ante un
+   * `hashchange` (clicks same-route). El scroll hasta el item lo resuelve
+   * el <HashScrollHandler> global del Layout (usa el `id` de cada card).
+   * Opt-in: por defecto el acordeón arranca cerrado, como siempre.
+   */
+  syncWithHash?: boolean
 }
 
-export function Accordion({ items, className }: AccordionProps) {
+export function Accordion({
+  items,
+  className,
+  syncWithHash = false,
+}: AccordionProps) {
   const [openId, setOpenId] = useState<string | null>(null)
+
+  // Ref al set actual de items para validar el hash sin re-correr el efecto
+  // por identidad del array: si un consumidor pasa `items` inline (nueva
+  // referencia en cada render), no queremos re-abrir el item del hash y
+  // pisar lo que el usuario abrió/cerró a mano. Se actualiza en efecto
+  // (no en render) para no acceder al ref durante el render.
+  const itemsRef = useRef(items)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  useEffect(() => {
+    if (!syncWithHash) return
+    const openFromHash = () => {
+      const id = window.location.hash.replace('#', '')
+      if (id && itemsRef.current.some((it) => it.id === id)) setOpenId(id)
+    }
+    openFromHash() // deep-link al montar
+    window.addEventListener('hashchange', openFromHash) // clicks same-route
+    return () => window.removeEventListener('hashchange', openFromHash)
+  }, [syncWithHash])
   return (
     <div className={cn('flex flex-col gap-3', className)}>
       {items.map((item) => {
@@ -23,8 +56,13 @@ export function Accordion({ items, className }: AccordionProps) {
         return (
           <div
             key={item.id}
+            // El ancla DOM (id + scroll-mt para el header sticky) solo se
+            // expone cuando el deep-link por hash está activo, para no
+            // publicar ids autor-controlados en otros acordeones (ej: FAQ).
+            id={syncWithHash ? item.id : undefined}
             className={cn(
               'rounded-2xl border bg-white transition-shadow',
+              syncWithHash && 'scroll-mt-24',
               open
                 ? 'border-gold-500 shadow-md'
                 : 'border-neutral-200 hover:border-gold-300',

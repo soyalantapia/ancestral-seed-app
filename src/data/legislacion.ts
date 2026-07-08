@@ -12,6 +12,8 @@
  * solo agregar entradas acá, sin tocar la UI.
  */
 
+import { normalizeText } from '@/lib/utils'
+
 export type TipoInstrumento =
   | 'Tratado'
   | 'Constitución'
@@ -388,3 +390,23 @@ export const JURISDICCIONES: LegalJurisdiccion[] = [
     ],
   },
 ]
+
+/**
+ * Deriva la jurisdicción aplicable a partir del campo `location` de una
+ * certificación o autor (formato "País · Región"). Toma el país (primer
+ * segmento antes del separador ·), lo normaliza (acentos/case) y lo
+ * matchea contra JURISDICCIONES por su campo `pais`.
+ *
+ * Devuelve `undefined` si no hay location o si el país no está entre los
+ * cubiertos — la UI debe manejar ese caso (no mostrar el bloque). Hoy los
+ * mocks usan Colombia y Argentina, ambos cubiertos.
+ */
+export function getJurisdiccionForLocation(
+  location?: string,
+): LegalJurisdiccion | undefined {
+  if (!location) return undefined
+  const pais = location.split('·')[0]?.trim()
+  if (!pais) return undefined
+  const target = normalizeText(pais)
+  return JURISDICCIONES.find((j) => normalizeText(j.pais) === target)
+}

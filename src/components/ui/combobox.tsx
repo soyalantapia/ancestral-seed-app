@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Check, ChevronDown, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, normalizeText as norm } from '@/lib/utils'
 
 export interface ComboboxOption {
   value: string
@@ -30,14 +30,6 @@ interface ComboboxProps {
   invalid?: boolean
   className?: string
   onBlur?: () => void
-}
-
-/** Normaliza para buscar sin importar acentos ni mayúsculas. */
-function norm(s: string): string {
-  return s
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
 }
 
 /**

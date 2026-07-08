@@ -171,7 +171,7 @@ export default function Legislacion() {
             a la fuente oficial. Tocá cada país para ver el detalle.
           </p>
           <div className="mt-6">
-            <Accordion items={accordionItems} />
+            <Accordion items={accordionItems} syncWithHash />
           </div>
         </section>
 
