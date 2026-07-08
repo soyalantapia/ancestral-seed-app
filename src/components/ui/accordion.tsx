@@ -68,29 +68,38 @@ export function Accordion({
                 : 'border-neutral-200 hover:border-gold-300',
             )}
           >
-            <button
-              type="button"
-              onClick={() => setOpenId(open ? null : item.id)}
-              className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-              aria-expanded={open}
-            >
-              <span className="text-sm font-semibold text-navy-500 md:text-base">
-                {item.question}
-              </span>
-              <span
-                className={cn(
-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors',
-                  open
-                    ? 'bg-gold-500 text-navy-500'
-                    : 'bg-neutral-100 text-navy-300',
-                )}
+            {/* Botón envuelto en heading (patrón APG de acordeón) para que
+                los lectores de pantalla naveguen los items por encabezado. */}
+            <h3 className="m-0">
+              <button
+                type="button"
+                id={`${item.id}-trigger`}
+                onClick={() => setOpenId(open ? null : item.id)}
+                className="flex w-full items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-500"
+                aria-expanded={open}
+                aria-controls={`${item.id}-panel`}
               >
-                {open ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              </span>
-            </button>
+                <span className="text-sm font-semibold text-navy-500 md:text-base">
+                  {item.question}
+                </span>
+                <span
+                  className={cn(
+                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors',
+                    open
+                      ? 'bg-gold-500 text-navy-500'
+                      : 'bg-neutral-100 text-navy-300',
+                  )}
+                >
+                  {open ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                </span>
+              </button>
+            </h3>
             <AnimatePresence initial={false}>
               {open && (
                 <motion.div
+                  id={`${item.id}-panel`}
+                  role="region"
+                  aria-labelledby={`${item.id}-trigger`}
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}

@@ -464,7 +464,11 @@ export default function CertificationDetail() {
               </p>
             ))}
 
-            {jurisdiccion && (
+            {/* El marco legal indígena solo aplica a certs con comunidad de
+                origen. Para 'inspiracion' (inspirado en una comunidad, sin
+                estar constituido) afirmar consulta previa + autoridad indígena
+                sería un over-claim que contradice la propia taxonomía. */}
+            {jurisdiccion && cert.officialCategory !== 'inspiracion' && (
               <>
                 <h2 className="mt-10 flex items-center gap-2 text-base font-bold text-navy-500">
                   <Scale className="h-4 w-4 text-gold-700" />

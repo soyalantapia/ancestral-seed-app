@@ -123,7 +123,9 @@ export const router = createBrowserRouter(
         { path: 'recuperar', element: withSuspense(<RecoverPassword />) },
         { path: 'certificar', element: withSuspense(<CertifyForm />) },
         // Apartado "Legislación" — marco legal por país / consulta previa.
-        // Ruta estática antes de legal/:section para que gane el matcher.
+        // React Router v7 rankea por especificidad: el segmento estático
+        // 'legislacion' gana sobre el dinámico ':section' sin importar el
+        // orden en el array. Lo dejamos primero solo por legibilidad.
         { path: 'legal/legislacion', element: withSuspense(<Legislacion />) },
         { path: 'legal/:section', element: withSuspense(<Legal />) },
         // Fix #FEAT-06: denuncia pública sin login

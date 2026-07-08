@@ -16,9 +16,11 @@ import { normalizeText } from '@/lib/utils'
 
 export type TipoInstrumento =
   | 'Tratado'
+  | 'Declaración'
   | 'Constitución'
   | 'Ley'
   | 'Decreto'
+  | 'Directiva'
   | 'Sentencia'
   | 'Acuerdo'
 
@@ -28,6 +30,9 @@ export interface LegalInstrument {
   tipo: TipoInstrumento
   url: string
   descripcion: string
+  /** Código de idioma del `nombre` si NO es español (ej: 'pt' para títulos
+   *  oficiales en portugués) → marcado lang en la UI (WCAG 3.1.2). */
+  lang?: string
 }
 
 export interface LegalJurisdiccion {
@@ -53,12 +58,12 @@ export const MARCO_INTERNACIONAL: LegalInstrument[] = [
     tipo: 'Tratado',
     url: 'https://www.ilo.org/publications/c169-indigenous-and-tribal-peoples-convention-1989',
     descripcion:
-      'Único tratado internacional vinculante específico sobre pueblos indígenas. Sus artículos 6, 7 y 15 establecen la obligación de consulta previa, libre e informada, de buena fe, cada vez que se prevean medidas que puedan afectarlos.',
+      'Único tratado internacional vinculante abierto a ratificación dedicado específicamente a los pueblos indígenas y tribales. Sus artículos 6, 7 y 15 establecen la obligación de consulta previa, libre e informada, de buena fe, cada vez que se prevean medidas que puedan afectarlos.',
   },
   {
     nombre: 'Declaración de la ONU sobre los Derechos de los Pueblos Indígenas (UNDRIP)',
     anio: '2007',
-    tipo: 'Tratado',
+    tipo: 'Declaración',
     url: 'https://www.un.org/development/desa/indigenouspeoples/wp-content/uploads/sites/19/2018/11/UNDRIP_E_web.pdf',
     descripcion:
       'Resolución 61/295 de la Asamblea General. Sus artículos 19 y 32 exigen el Consentimiento Libre, Previo e Informado (FPIC) antes de adoptar medidas que afecten a los pueblos indígenas o a sus territorios, cultura y saberes.',
@@ -93,7 +98,7 @@ export const JURISDICCIONES: LegalJurisdiccion[] = [
       {
         nombre: 'Directiva Presidencial 08 de 2020',
         anio: '2020',
-        tipo: 'Decreto',
+        tipo: 'Directiva',
         url: 'https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=141807',
         descripcion: 'Guía para la realización de la consulta previa, con sus cinco etapas.',
       },
@@ -275,6 +280,7 @@ export const JURISDICCIONES: LegalJurisdiccion[] = [
         nombre: 'Constituição Federal, arts. 231 e 232',
         anio: '1988',
         tipo: 'Constitución',
+        lang: 'pt',
         url: 'https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm',
         descripcion:
           'Reconoce a los indígenas su organización social, costumbres, lenguas y los derechos sobre las tierras que ocupan.',
@@ -283,6 +289,7 @@ export const JURISDICCIONES: LegalJurisdiccion[] = [
         nombre: 'Convenção 169 da OIT',
         anio: '1989',
         tipo: 'Tratado',
+        lang: 'pt',
         url: 'https://www.ilo.org/media/324306/download',
         descripcion: 'Texto de la Convención 169 aplicable en Brasil.',
       },

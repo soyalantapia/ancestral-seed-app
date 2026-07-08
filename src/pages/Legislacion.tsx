@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import {
   ArrowUpRight,
   ExternalLink,
+  FileText,
   Globe,
   Info,
   Landmark,
@@ -24,7 +25,7 @@ function TipoChip({ tipo, anio }: { tipo: string; anio?: string }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold text-navy-300">
       {tipo}
-      {anio && <span className="text-navy-300/70">· {anio}</span>}
+      {anio && <span className="text-navy-300">· {anio}</span>}
     </span>
   )
 }
@@ -33,28 +34,43 @@ function TipoChip({ tipo, anio }: { tipo: string; anio?: string }) {
 function InstrumentList({ instrumentos }: { instrumentos: LegalInstrument[] }) {
   return (
     <ul className="mt-4 flex flex-col gap-3">
-      {instrumentos.map((inst) => (
-        <li
-          key={inst.nombre}
-          className="rounded-2xl border border-neutral-200 bg-white p-4"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <TipoChip tipo={inst.tipo} anio={inst.anio} />
-          </div>
-          <a
-            href={inst.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mt-2 inline-flex items-start gap-1.5 text-sm font-bold text-navy-500 transition-colors hover:text-gold-700"
+      {instrumentos.map((inst) => {
+        const isPdf = inst.url.toLowerCase().endsWith('.pdf')
+        return (
+          <li
+            key={inst.nombre}
+            className="rounded-2xl border border-neutral-200 bg-white p-4"
           >
-            <span>{inst.nombre}</span>
-            <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-500 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
-          <p className="mt-1.5 text-sm leading-relaxed text-navy-300">
-            {inst.descripcion}
-          </p>
-        </li>
-      ))}
+            <div className="flex flex-wrap items-center gap-2">
+              <TipoChip tipo={inst.tipo} anio={inst.anio} />
+              {isPdf && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-gold-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-700">
+                  <FileText className="h-3 w-3" strokeWidth={2.25} aria-hidden="true" />
+                  PDF
+                </span>
+              )}
+            </div>
+            <a
+              href={inst.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-2 inline-flex items-start gap-1.5 text-sm font-bold text-navy-500 transition-colors hover:text-gold-700"
+            >
+              <span lang={inst.lang}>{inst.nombre}</span>
+              <span className="sr-only">
+                {isPdf ? ' (PDF, abre en pestaña nueva)' : ' (abre en pestaña nueva)'}
+              </span>
+              <ExternalLink
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-500 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </a>
+            <p className="mt-1.5 text-sm leading-relaxed text-navy-300">
+              {inst.descripcion}
+            </p>
+          </li>
+        )
+      })}
     </ul>
   )
 }
