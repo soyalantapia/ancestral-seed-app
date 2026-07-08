@@ -1,0 +1,1 @@
+import{i as e}from"./data-DEhOcVwx.js";function t(e){return Math.floor((Date.now()-new Date(e.createdAt).getTime())/864e5)}function n(n){let r=e[n.stage]??14,i=t(n);return i>r?`red`:i>r*.7?`yellow`:`green`}export{n,t};
