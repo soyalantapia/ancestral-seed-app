@@ -9,15 +9,21 @@ import { toCanvas } from 'qrcode'
 const QR_SITE_URL = 'https://ancestralseed.com'
 
 /**
- * URL de la ficha pública de un certificado — el destino del QR.
+ * URL de la CREDENCIAL pública de un certificado — el destino del QR.
+ *
+ * Apunta a la ruta `/c/:slug`, que se renderiza como credencial
+ * autocontenida (sin header/footer del sitio) — el objetivo es que al
+ * escanear el QR se vea como un carnet y no como "el website". La ficha
+ * navegable con chrome sigue viva en `/certificado/:slug`.
  *
  * Apunta SIEMPRE al dominio canónico de producción, sin importar desde
  * dónde se descargue: el QR va impreso en una etiqueta física permanente
- * y la demo de GitHub Pages es solo un espejo. Además, una URL corta =
- * menos datos = QR con menos módulos (líneas) = más fácil de escanear.
+ * y la demo de GitHub Pages es solo un espejo. Además `/c/` es la ruta más
+ * corta posible = menos datos = QR con menos módulos (líneas) = más fácil
+ * de escanear.
  */
 export function certPublicUrl(slug: string): string {
-  return `${QR_SITE_URL}/certificado/${slug}`
+  return `${QR_SITE_URL}/c/${slug}`
 }
 
 export type QrStyle = 'simple' | 'marca'

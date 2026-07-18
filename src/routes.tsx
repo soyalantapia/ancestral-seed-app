@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/features/Layout'
+import { CredentialLayout } from '@/components/features/CredentialLayout'
 import { RequireAuth } from '@/components/features/RequireAuth'
 import { RequireTutor } from '@/components/features/RequireTutor'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -130,6 +131,17 @@ export const router = createBrowserRouter(
         { path: 'legal/:section', element: withSuspense(<Legal />) },
         // Fix #FEAT-06: denuncia pública sin login
         { path: 'denuncias', element: withSuspense(<Denuncias />) },
+      ],
+    },
+    // Vista CREDENCIAL — destino del QR físico (/c/:slug). Reusa la misma
+    // ficha que /certificado/:slug (CertificationDetail detecta el modo por
+    // la ruta), pero bajo CredentialLayout: SIN header/footer/⌘K, para que
+    // al escanear se vea como un carnet y no como "el website".
+    {
+      path: '/',
+      element: <CredentialLayout />,
+      children: [
+        { path: 'c/:slug', element: withSuspense(<CertificationDetail />) },
       ],
     },
     {

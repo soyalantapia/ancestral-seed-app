@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   Award,
   Calendar,
@@ -71,6 +71,19 @@ type ReportForm = z.infer<typeof reportSchema>
 
 export default function CertificationDetail() {
   const { slug } = useParams()
+  const location = useLocation()
+  // Modo CREDENCIAL: se llega por el QR físico (ruta `/c/:slug`). La misma
+  // ficha se muestra como carnet autocontenido (sin chrome del sitio, ver
+  // CredentialLayout), oculta el botón "Código QR" (redundante: ya
+  // escanearon uno) y apunta el canonical a la ficha web para no duplicar
+  // contenido indexable.
+  const isCredential = location.pathname.startsWith('/c/')
+  // Botones de acción: en credencial van compactos como 3 tiles (ícono
+  // arriba + label corto) que entran en una sola fila hasta en 320px; en la
+  // ficha web siguen siendo pills anchos con el label completo.
+  const actionBtnBase = isCredential
+    ? 'flex flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2.5 text-center text-xs font-semibold leading-tight transition-colors sm:text-sm'
+    : 'inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors'
   const { data: cert, isLoading, error } = useCertification(slug)
   const [showReport, setShowReport] = useState(false)
   const [showShare, setShowShare] = useState(false)
@@ -145,7 +158,16 @@ export default function CertificationDetail() {
           `Certificado ${cert.title} por ${authorName} — ${region}.`
         }
         image={ogImage}
-        canonical={typeof window !== 'undefined' ? window.location.href : undefined}
+        canonical={
+          typeof window === 'undefined'
+            ? undefined
+            : isCredential
+              ? // En credencial el canonical apunta a la ficha web navegable,
+                // así Google consolida en una sola URL indexable.
+                `${window.location.origin}${import.meta.env.BASE_URL}certificado/${cert.slug}`
+              : window.location.href
+        }
+        noindex={isCredential}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Product',
@@ -167,7 +189,15 @@ export default function CertificationDetail() {
         }}
       />
       {/* Decorative chevron pattern strip */}
-      <div className="bg-pattern-strip h-16 md:h-24" aria-hidden />
+      {/* En credencial la franja va más fina, para que se lea como un
+          detalle delicado tipo carnet y no como banner del sitio. */}
+      <div
+        className={cn(
+          'bg-pattern-strip',
+          isCredential ? 'h-8 md:h-10' : 'h-16 md:h-24',
+        )}
+        aria-hidden
+      />
 
       <section className="bg-white">
         <div className="mx-auto max-w-[1320px] px-4 py-8 md:px-8 md:py-10">
@@ -208,9 +238,18 @@ export default function CertificationDetail() {
             </p>
           )}
 
-          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+          {/* En credencial forzamos 1 sola columna (carnet vertical): los
+              breakpoints `lg:` son de viewport, no del contenedor, así que
+              dentro de la tarjeta angosta la grilla de 2 columnas quedaba
+              desbalanceada (foto con vacío al lado) y apretada. */}
+          <div
+            className={cn(
+              'mt-8 grid grid-cols-1 gap-6',
+              !isCredential && 'lg:grid-cols-12 lg:gap-8',
+            )}
+          >
             {/* LEFT: Cover image — Figma 587x455 ≈ 1.29:1 */}
-            <div className="lg:col-span-6">
+            <div className={cn(!isCredential && 'lg:col-span-6')}>
               <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-100">
                 <img
                   src={resolveAsset(cert.coverUrl)}
@@ -222,47 +261,67 @@ export default function CertificationDetail() {
             </div>
 
             {/* RIGHT: Action buttons + Author card + Stats */}
-            <div className="space-y-5 lg:col-span-6">
+            <div className={cn('space-y-5', !isCredential && 'lg:col-span-6')}>
               {/* Fix QW-B2 (auditoría UX): los labels antes prometían
                   más de lo que entregaban. "Ver en Blockchain" hacía
                   esperar Polygonscan directo (es modal interno que sí
                   linkea afuera, ahora lo comunicamos con ícono
                   ExternalLink). "Ver Certificado Verificado" era
                   redundante ("verlo" si ya estoy en la ficha). */}
-              <div className="flex flex-wrap gap-2">
+              <div
+                className={cn(
+                  'gap-2',
+                  isCredential ? 'grid grid-cols-3' : 'flex flex-wrap',
+                )}
+              >
                 <button
                   type="button"
                   onClick={() => setShowBlockchain(true)}
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-gold-500 px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-gold-400"
+                  className={cn(
+                    actionBtnBase,
+                    'bg-gold-500 text-navy-500 hover:bg-gold-400',
+                  )}
                 >
-                  <Network className="h-4 w-4" />
-                  Ver registro blockchain
-                  <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                  <Network className="h-4 w-4 shrink-0" />
+                  {isCredential ? 'Blockchain' : 'Ver registro blockchain'}
+                  {!isCredential && (
+                    <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden />
+                  )}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowVerified(true)}
-                  className="inline-flex h-11 items-center gap-2 rounded-full bg-navy-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-navy-400"
+                  className={cn(
+                    actionBtnBase,
+                    'bg-navy-500 text-white hover:bg-navy-400',
+                  )}
                 >
-                  <ShieldCheck className="h-4 w-4" />
-                  Ver certificado oficial
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  {isCredential ? 'Certificado' : 'Ver certificado oficial'}
                 </button>
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                  className={cn(
+                    actionBtnBase,
+                    'border border-neutral-300 bg-white text-navy-500 hover:bg-neutral-100',
+                  )}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="h-4 w-4 shrink-0" />
                   Descargar
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setShowQr(true)}
-                  className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
-                >
-                  <QrCode className="h-4 w-4" />
-                  Código QR
-                </button>
+                {/* En credencial el botón "Código QR" es redundante
+                    (ya escanearon uno para llegar acá). */}
+                {!isCredential && (
+                  <button
+                    type="button"
+                    onClick={() => setShowQr(true)}
+                    className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-300 bg-white px-5 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                  >
+                    <QrCode className="h-4 w-4" />
+                    Código QR
+                  </button>
+                )}
               </div>
 
               <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6 md:p-7">
@@ -336,19 +395,30 @@ export default function CertificationDetail() {
                     <p className="text-xs font-bold uppercase tracking-widest text-navy-300">
                       Contacto y pedidos
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    {/* En credencial los chips van compactos: WhatsApp con
+                        label corto y las redes/tienda solo con ícono (con
+                        aria-label), para que la fila entre en una sola línea. */}
+                    <div className={cn('flex flex-wrap', isCredential ? 'gap-1 sm:gap-2' : 'gap-2')}>
                       {cert.contact.catalogUrl && (
                         <a
                           href={cert.contact.catalogUrl}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="inline-flex h-10 items-center gap-2 rounded-full bg-gold-500 px-4 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400"
+                          aria-label="Descargar catálogo"
+                          className={cn(
+                            'inline-flex h-10 items-center rounded-full bg-gold-500 text-sm font-semibold text-navy-500 shadow-sm transition-colors hover:bg-gold-400',
+                            isCredential ? 'h-9 w-9 justify-center' : 'gap-2 px-4',
+                          )}
                         >
                           <Download className="h-4 w-4" aria-hidden="true" />
-                          Descargar catálogo
-                          {cert.contact.catalogLabel
-                            ? ` · ${cert.contact.catalogLabel}`
-                            : ''}
+                          {!isCredential && (
+                            <>
+                              Descargar catálogo
+                              {cert.contact.catalogLabel
+                                ? ` · ${cert.contact.catalogLabel}`
+                                : ''}
+                            </>
+                          )}
                         </a>
                       )}
                       {cert.contact.whatsappUrl && (
@@ -356,11 +426,14 @@ export default function CertificationDetail() {
                           href={cert.contact.whatsappUrl}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="inline-flex h-10 items-center gap-2 rounded-full bg-success-300 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-success-400"
+                          className={cn(
+                            'inline-flex items-center rounded-full bg-success-300 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-success-400',
+                            isCredential ? 'h-9 gap-1.5 px-3' : 'h-10 gap-2 px-4',
+                          )}
                         >
-                          <MessageCircle className="h-4 w-4" />
+                          <MessageCircle className="h-4 w-4 shrink-0" />
                           WhatsApp
-                          {cert.contact.whatsappLabel
+                          {!isCredential && cert.contact.whatsappLabel
                             ? ` · ${cert.contact.whatsappLabel}`
                             : ''}
                         </a>
@@ -370,10 +443,14 @@ export default function CertificationDetail() {
                           href={cert.contact.instagramUrl}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                          aria-label="Instagram"
+                          className={cn(
+                            'inline-flex h-10 items-center rounded-full border border-neutral-300 bg-white text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100',
+                            isCredential ? 'h-9 w-9 justify-center' : 'gap-2 px-4',
+                          )}
                         >
                           <Instagram className="h-4 w-4" />
-                          Instagram
+                          {!isCredential && 'Instagram'}
                         </a>
                       )}
                       {cert.contact.facebookUrl && (
@@ -381,10 +458,14 @@ export default function CertificationDetail() {
                           href={cert.contact.facebookUrl}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                          aria-label="Facebook"
+                          className={cn(
+                            'inline-flex h-10 items-center rounded-full border border-neutral-300 bg-white text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100',
+                            isCredential ? 'h-9 w-9 justify-center' : 'gap-2 px-4',
+                          )}
                         >
                           <ExternalLink className="h-4 w-4" />
-                          Facebook
+                          {!isCredential && 'Facebook'}
                         </a>
                       )}
                       {cert.contact.websiteUrl && (
@@ -392,10 +473,14 @@ export default function CertificationDetail() {
                           href={cert.contact.websiteUrl}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="inline-flex h-10 items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100"
+                          aria-label="Tienda online"
+                          className={cn(
+                            'inline-flex h-10 items-center rounded-full border border-neutral-300 bg-white text-sm font-semibold text-navy-500 transition-colors hover:bg-neutral-100',
+                            isCredential ? 'h-9 w-9 justify-center' : 'gap-2 px-4',
+                          )}
                         >
                           <Globe className="h-4 w-4" />
-                          Tienda online
+                          {!isCredential && 'Tienda online'}
                         </a>
                       )}
                     </div>
@@ -651,9 +736,12 @@ function Gallery({
   onOpen: (i: number) => void
 }) {
   const items = urls
+  const isCredential = useLocation().pathname.startsWith('/c/')
   return (
     <div className="relative mt-10">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {/* En credencial mantenemos 2 columnas (la tarjeta angosta hace que
+          4 columnas queden diminutas y desbalanceadas). */}
+      <div className={cn('grid grid-cols-2 gap-3', !isCredential && 'md:grid-cols-4')}>
         {items.map((src, i) => (
           <button
             type="button"
@@ -742,10 +830,16 @@ function MapPreview({ region, mapQuery }: { region: string; mapQuery: string }) 
 function OfficialDocsSection() {
   const doc = OFFICIAL_DOCS.reglamentoMarca
   const href = `${import.meta.env.BASE_URL}${doc.path}`
+  const isCredential = useLocation().pathname.startsWith('/c/')
   return (
     <section className="mb-10 bg-gold-50 md:mb-16">
       <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
-        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+        <div
+          className={cn(
+            'grid items-center gap-8',
+            !isCredential && 'lg:grid-cols-2 lg:gap-14',
+          )}
+        >
           {/* Explicación en lenguaje claro — para que cualquiera entienda
               qué es este documento antes de abrirlo. */}
           <div>
@@ -833,6 +927,7 @@ function OfficialDocsSection() {
 }
 
 function MethodologySection() {
+  const isCredential = useLocation().pathname.startsWith('/c/')
   const items: { label: string; icon: typeof SearchIcon }[] = [
     { label: 'Auditoría\nPersonalizada', icon: SearchIcon },
     { label: 'Verificación\nComunitaria', icon: Users },
@@ -861,17 +956,28 @@ function MethodologySection() {
           garantizar que cada certificación refleje el origen, la trazabilidad
           y el valor cultural del producto.
         </p>
-        <ul className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 md:mt-12 md:grid-cols-4 md:gap-5">
+        {/* En credencial (tarjeta angosta) mantenemos 2 columnas: con 4
+            los pills se achican y el texto de una sola palabra se corta. */}
+        <ul
+          className={cn(
+            'mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 md:mt-12 md:gap-5',
+            !isCredential && 'md:grid-cols-4',
+          )}
+        >
           {items.map(({ label, icon: Icon }) => (
             <li
               key={label}
-              className="flex items-center gap-3 rounded-2xl bg-gold-500 px-4 py-5 text-left shadow-md ring-1 ring-gold-700/10 md:px-5"
+              className="flex flex-col items-center gap-2.5 rounded-2xl bg-gold-500 px-3 py-5 text-center shadow-md ring-1 ring-gold-700/10 sm:px-4 md:px-5"
             >
               <Icon
                 className="h-8 w-8 shrink-0 text-navy-500 md:h-9 md:w-9"
                 strokeWidth={1.75}
               />
-              <span className="whitespace-pre-line text-sm font-bold leading-[1.15] text-navy-500 md:text-base">
+              {/* Ícono arriba + texto a lo ancho del pill: evita que la
+                  palabra larga ("Personalizada") se corte contra el borde
+                  en pills angostos (4 columnas en la ficha, o la tarjeta
+                  angosta de la credencial). break-words como red de seguridad. */}
+              <span className="min-w-0 whitespace-pre-line break-words text-sm font-bold leading-[1.15] text-navy-500 md:text-base">
                 {label}
               </span>
             </li>
